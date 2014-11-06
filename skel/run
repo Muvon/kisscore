@@ -1,0 +1,12 @@
+#!/bin/bash
+trap "pgrep -P $$ | while read process; do pkill -SIGTERM -P \$process; kill \$process; done; wait; exit 0" SIGINT
+while true; do
+  readarray TASKS < tasks
+  for i in "${!TASKS[@]}"; do
+    if [[ ${PIDS[$i]+isset} && $(ps -p ${PIDS[$i]} -o pid | sed 1d) ]]; then
+      continue
+    fi
+    ( ${TASKS[$i]} ) & PIDS[$i]=$!
+  done
+  sleep 1
+done

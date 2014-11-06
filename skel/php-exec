@@ -1,0 +1,21 @@
+#!/usr/bin/php
+<?php
+putenv('PROJECT_DIR=' . __DIR__);
+putenv('APP_DIR=' . __DIR__ . '/app');
+putenv('HTML_DIR=' . __DIR__ . '/html');
+putenv('CONFIG_DIR=' . __DIR__ . '/env/etc');
+putenv('CONFIG_TEMPLATE_DIR=' . __DIR__ . '/env/etc-template');
+putenv('RUN_DIR=' . __DIR__ . '/env/run');
+putenv('HTTP_HOST=' . `hostname`);
+putenv('KISS_CORE=' . __DIR__ . '/app/core.php');
+
+include getenv('KISS_CORE');
+
+if (!isset($_SERVER['argv'][1])) {
+  throw new Exception('You must write code to execute');
+}
+
+// Получаем ответ и выполняем запрос
+App::start();
+eval($_SERVER['argv'][1] . ';');
+App::stop();

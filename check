@@ -1,0 +1,22 @@
+#!/bin/bash
+exit_code=0
+declare -A checks
+declare -A results
+
+checks['memcached']='memcached -i'
+checks['php']='php -v'
+checks['php-fpm']='php-fpm -v'
+checks['nginx']='nginx -v'
+checks['mysql']='mysql --version'
+checks['redis']='redis-server --version'
+
+for k in "${!checks[@]}"; do
+  bash -c "${checks[$k]} &> /dev/null"
+  [[ "$?" != "0" ]] && results["$k"]='Fail' && exit_code=1 || results["$k"]='Success'
+done
+
+for k in "${!results[@]}"; do
+  echo "$k - ${results[$k]}"
+done
+
+exit $exit_code

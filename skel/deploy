@@ -1,0 +1,27 @@
+#!/bin/bash
+servers='d1.devcraft.ru'
+project=$(basename `pwd`)
+
+# Deploy on each server
+for server in $servers; do
+  echo 'Deploying on server '$server
+
+  # Check for already created folder on server
+  ssh -x prod@${server} '[ ! -d /home/prod/'$project' ]'
+  if [[ $? == "0" ]]; then
+    ssh -x prod@$server 'mkdir -p /home/prod/'$project'/env/{etc,log,var,run,bin,tmp,backup}'
+    ssh -x prod@$server 'mkdir -p /home/prod/'$project'/app'
+    rsync -aiz env/etc/ prod@$server:/home/prod/$project/env/etc
+  fi
+  
+  # sync onlye changed files
+  rsync -aiz --exclude=env* --exclude=sphinx* \
+    --exclude=.git* --exclude=html/f* \
+    --exclude=connect-db . prod@$server:/home/prod/$project
+
+  # Compile project on server
+  ssh -x -t prod@${server} 'cd /home/prod/'$project' && ./init'
+  ssh -x -t prod@${server} 'rm /home/prod/'$project'/env/tmp/*'
+  # All is done
+  echo 'Deployed on server '$server
+done
