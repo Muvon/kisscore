@@ -17,7 +17,7 @@
 # Remember to edit /etc/mysql/debian.cnf when changing the socket location.
 [client]
 default-character-set 	= utf8 
-port			= 8888
+port			= %MYSQL_PORT%
 socket			= %PROJECT_DIR%/env/run/mariadb.sock
 
 # Here is entries for some specific programs

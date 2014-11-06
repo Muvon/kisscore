@@ -14,6 +14,8 @@ Kiss Core Microframework on PHP 5.5+ is the lightweight single file packed end-p
 
 ## Installation guide
 
+### Install from scratch
+
 ```bash
 git clone git@github.com:dmitrykuzmenkov/kisscore.git
 cd ~/kisscore
@@ -26,6 +28,24 @@ sudo echo '127.0.0.1 myproj.lo' >> /etc/hosts
 
 Open in browser http://myproj.lo
 
+### Create application
+You can create application with single command
+```bash
+./make-app APPLICATION
+```
+
+This will create skeleton of your project in home folder named APPLICATION. You can pass special variable to configure building of your app.
+
+### Variables to configure application creation
+* KISS_MYSQL_PORT=8888
+* KISS_MEMCACHED_SESSION_PORT=7777
+* KISS_MEMCACHED_PORT=6666
+
+For example:
+```bash
+export KISS_MYSQL_PORT=12345
+./make-app APPLICATION
+```
 
 ## Dependency
 
