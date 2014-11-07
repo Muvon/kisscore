@@ -49,6 +49,7 @@ for file in $(ls skel/env/etc); do
     | sed "s|%VIEW_COMPILE_DIR%|$tmp_dir|g" \
     | sed "s|%MEMCACHED_IP%|127.0.0.1|g" \
     | sed "s|%MEMCACHED_PORT%|$KISS_MEMCACHED_PORT|g" \
+    | sed "s|%MEMCACHED_SESSION_PORT%|$KISS_MEMCACHED_SESSION_PORT|g" \
     | sed "s|%MYSQL_PORT%|$KISS_MYSQL_PORT|g" \
     > $etc_dir/$file
 done
