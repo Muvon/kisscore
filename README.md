@@ -14,38 +14,45 @@ Kiss Core Microframework on PHP 5.5+ is the lightweight single file packed end-p
 
 ## Installation guide
 
-### Install from scratch
+### Get KISS Core package
 
+Just clone it from git:
 ```bash
 git clone git@github.com:dmitrykuzmenkov/kisscore.git
-cd ~/kisscore
+```
+
+### New application
+You can create application with single command in KISS Core dir:
+```bash
 ./make-app myproj
+```
+
+That will create your application in folder myproj under home dir. After that your need to run tasks in new application. Just go to into that dir and start run daemon:
+```bash
 cd ~/myproj
 ./run > env/log/run.log &
+```
 
+Setup domain for local test:
+```bash
 sudo echo '127.0.0.1 myproj.lo' >> /etc/hosts
 ```
 
-Open in browser http://myproj.lo
+Finaly done! Just open in your browser http://myproj.lo
 
-### Create application
-You can create application with single command
-```bash
-./make-app APPLICATION
-```
-
-This will create skeleton of your project in home folder named APPLICATION. You can pass special variable to configure building of your app.
-
-### Variables to configure application creation
+### Extra config before application creation
+There are special variables to set bunch of params that is used by make-app script:
 * KISS_MYSQL_PORT=8888
 * KISS_MEMCACHED_SESSION_PORT=7777
 * KISS_MEMCACHED_PORT=6666
 
-For example:
+You can use it like this for example:
 ```bash
 export KISS_MYSQL_PORT=12345
 ./make-app APPLICATION
 ```
+
+This will create your project with mysql database on custom port 12345.
 
 ## Dependency
 
@@ -54,9 +61,8 @@ To run project using KISS Core you need
 1. Linux (Ubuntu, Centos, Debina and so on)
 2. PHP 5.5+ with php-fpm (http://php.net)
 3. Nginx (http://nginx.org)
-4. Redis (http://redis.io)
-5. Memcached (http://memcached.org)
-6. MariaDB 10+ (http://mariadb.org)
+4. Memcached (http://memcached.org)
+5. MariaDB 10+ (http://mariadb.org)
 
 And also linux knowledge ;)
 
