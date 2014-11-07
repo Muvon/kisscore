@@ -60,6 +60,9 @@ To run project using KISS Core you need
 
 1. Linux (Ubuntu, Centos, Debina and so on)
 2. PHP 5.5+ with php-fpm (http://php.net)
+  * PDO
+  * Memcache
+  * igbinary
 3. Nginx (http://nginx.org)
 4. Memcached (http://memcached.org)
 5. MariaDB 10+ (http://mariadb.org)
