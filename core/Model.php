@@ -184,7 +184,7 @@ abstract class Model {
    * @return array
    */
   protected function flatResult(array $flat) {
-    array_drop_nulls($flat);
+    $flat = array_filter($flat);
     array_walk($flat, [$this, 'prepareResult']);
     return $flat;
   }

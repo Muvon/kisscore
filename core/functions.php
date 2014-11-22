@@ -47,23 +47,6 @@ function array_append_data(array &$items, array $data, $data_key = 'data') {
 }
 
 /**
- * Функция для очисти массива от null-данных
- *
- * @package Core
- * @subpackage Array Functions
- * @param array $items
- * @return void
- */
-function array_drop_nulls(array &$items) {
-  foreach ($items as $k => $item) {
-    if (!isset($item))
-      unset($items[$k]);
-  }
-  return;
-}
-
-
-/**
  * Функция типизации переменных
  *
  * @package Core
