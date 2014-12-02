@@ -1,11 +1,5 @@
 <?php
 class App {
-  /** @property int $start_ts Меска начала исполнения приложения */
-  protected static $start_ts = 0;
-
-  /** @property int $execution_time */
-  protected static $execution_time = 0;
-
   /** @property bool $debug */
   public static $debug = true;
   
@@ -129,15 +123,13 @@ class App {
 
     // Получаем шарды для кэша
     // @todo add shards for memcache
-
-    static::$start_ts = microtime(true);
   }
 
   /**
    * Завершение исполнени приложени
    */
   public static function stop() {
-    static::$execution_time = microtime(true) - self::$start_ts;
+    // Todo some work here
   }
   
   /**
