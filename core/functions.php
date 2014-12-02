@@ -246,19 +246,6 @@ function hrdate($date, $format = 'datetime') {
   return strtolower(trim(strftime($p, $ts)));
 }
 
-/**
- * Подгрузка библиотеки, возможно внешней
- *
- *  @param string $name
- */
-function lib($name) {
-  static $loaded = [];
-  if (!isset($loaded[$name])) {
-    include $_SERVER['APP_DIR'] . '/lib/' . $name . '.php';
-    $loaded[$name] = 1;
-  }
-}
-
 define('ALPHA_CHARS', '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
 /**
@@ -371,7 +358,7 @@ function db($query, $params = [], $shard_id = 0) {
   $Stmt->execute($params);
   
   // Определяем результат работы функции в зависимости от типа запроса к базе
-  $result = null;
+  $result = null; 
   switch (strtolower(strtok($query, ' '))) {
     case 'insert':
       $result = $DB->lastInsertId();

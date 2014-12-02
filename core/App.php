@@ -39,7 +39,7 @@ class App {
       $content = file_get_contents($file);
       if (preg_match("/(class|interface|trait) +$class/", $content)) {
         if (preg_match("/\n *namespace +\\\\?([a-zA-Z0-9_\\\\]+)/", $content, $matches)) {
-            $class = $matches[1] . '"\\"' . $class;
+            $class = $matches[1] . '\\' . $class;
         }
         $map[$class] = $file;
       }
