@@ -75,7 +75,7 @@ trait TDatabase {
    * @return mixed
    * @throws Exception
    */
-  protected function dbQuery($query, array $params = null) {
+  protected function dbQuery($query, array $params = []) {
     return db($query, $params, $this->dbShardId($params));
   }
 
@@ -209,7 +209,7 @@ trait TDatabase {
    * @param array $conditions
    * @return int
    */
-  protected function dbCount(array $conditions = null) {
+  protected function dbCount(array $conditions = []) {
     $where = $conditions ? $this->dbGetWhere($conditions) : null;
     $q = 'SELECT COUNT(*) AS `count` FROM ' . $this->table
       . ($where ? ' WHERE ' . implode('AND', $where) : '')
@@ -399,7 +399,7 @@ trait TDatabase {
    *
    * @see self::getList( );
    */
-  public function getList(array $conditions = null, array $order = null) {
+  public function getList(array $conditions = [], array $order = []) {
     // Если было установлено
     if (!isset($this->total))
       $this->setTotal($this->dbCount($conditions));

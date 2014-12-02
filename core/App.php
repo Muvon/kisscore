@@ -118,8 +118,6 @@ class App {
       ini_set('xdebug.profiler_output_dir', getenv('LOG_DIR'));
       ini_set('xdebug.profiler_output_name', 'xdebug');
     }
-    
-    ini_set('apc.enabled', !static::$debug);
 
     // Получаем шарды для кэша
     // @todo add shards for memcache
