@@ -10,11 +10,11 @@ checks['nginx']='nginx -v'
 
 for k in "${!checks[@]}"; do
   bash -c "${checks[$k]} &> /dev/null"
-  [[ "$?" != "0" ]] && results["$k"]='Fail' && exit_code=1 || results["$k"]='Success'
+  [[ "$?" != "0" ]] && results["$k"]='\e[1;31mFail' && exit_code=1 || results["$k"]='\e[1;32mSuccess'
 done
 
 for k in "${!results[@]}"; do
-  echo "$k - ${results[$k]}"
+  echo -e "\e[1;34m$k\e[0m - ${results[$k]}\e[0m"
 done
 
 exit $exit_code

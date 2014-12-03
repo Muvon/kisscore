@@ -12,7 +12,7 @@ if [[ -e $project_dir ]]; then
 fi
 
 # Start doing good staff
-echo 'Check software'
+echo -e '\e[1;35mCheck software\e[0m'
 ./check
 if [[ "$?" != "0" ]]; then
   echo "...failed"
@@ -20,12 +20,12 @@ if [[ "$?" != "0" ]]; then
 fi
 echo '...done'
 
-echo 'Copy skeleton to project dir'
+echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
 mkdir $project_dir
 cp -r skel/* $project_dir
 echo '...done'
 
-echo 'Configure etc'
+echo -e '\e[1;35mConfigure etc\e[0m'
 env_dir=$project_dir'/env'
 app_dir=$project_dir'/app'
 tmp_dir=$env_dir'/tmp'
@@ -46,17 +46,17 @@ for file in $(ls skel/env/etc); do
 done
 echo '...done'
 
-echo 'Install compiled core file to project'
+echo -e '\e[1;35mInstall compiled core file to project\e[0m'
 ./install-core $1
 echo '...done'
 
-echo 'Prepare tasks'
+echo -e '\e[1;35mPrepare tasks\e[0m'
 cat skel/tasks \
   | sed "s|%PHP_INI_CONFIG%|$project_dir/env/etc/php.ini|g" \
   | sed "s|%PHP_FPM_CONFIG%|$project_dir/env/etc/php-fpm.conf|g" \
   > $project_dir/tasks
 echo '...done'
 
-echo 'Initializing new application'
+echo -e '\e[1;35mInitializing new application\e[0m'
 $project_dir/init
 echo '...done'
