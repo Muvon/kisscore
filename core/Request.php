@@ -382,8 +382,8 @@ class Request {
    * @access public
    * @return string
    */
-  public function getRoute( ) {
-    return $this->route;
+  public function getRoute() {
+    return $this->route ? $this->route : config('defaults.route');
   }
   
   /**
