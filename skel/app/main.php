@@ -6,10 +6,12 @@ View::instance()
   ->setDebug(App::$debug)
   ->addHead('_head')
   ->addFoot('_foot')
-  ->setType(View::HTML)
   ->setTemplateExtension(config('view.template_extension'))
   ->setSourceDir(config('view.source_dir'))
   ->setCompileDir(config('view.compile_dir'))
+  ->addFilter(function ($output) {
+    return preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $output);
+  })
 ;
 
 Request::response()->addHeader('Content-type', 'text/html;charset=utf-8');
@@ -29,25 +31,13 @@ if ($response === 1) {
 // Если в ответе объекта вида
 if ($response instanceof View) {
   $vars = App::getDefinedVars();
-  
   array_walk_recursive($vars, function ($str) {
     if ($str instanceof Closure)
       return $str();
 
-    if (is_string($str)) {
-      switch  (View::instance()->getType()) {
-        case View::HTML:
-          $str = htmlspecialchars($str);
-          break;
+    return is_string($str) ? htmlspecialchars($str) : $str;
+  });
 
-        case View::XML:
-          $str = htmlentities($str);
-          break;
-      }
-    }
-    
-    return $str;
-  });  
   $response->set($vars)->render();
 }
 

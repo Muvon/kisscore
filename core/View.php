@@ -20,10 +20,6 @@
  * </code>
  */
 class View {
-  const TEXT = 1;
-  const HTML = 2;
-  const XML  = 3;
-
   protected static $Instance = null;
   /**
    * @property bool $debug
@@ -32,7 +28,7 @@ class View {
    */
   protected
   $debug         = false,
-  $type          = View::TEXT,
+  $filters       = [],
   $data          = [],
   $route         = '',
   $body          = '',
@@ -60,20 +56,16 @@ class View {
     $this->route = Request::instance( )->getRoute( );
   }
 
-  /**
-   * @return View
-   */
-  public function setType($type) {
-    $this->type = $type;
+  public function addFilter(Callable $filter) {
+    $this->filters[] = $filter;
     return $this;
   }
 
-  /**
-   * @return int
-   */
-  public function getType() {
-    return $this->type;
+  public function resetFilters() {
+    $this->filters = [];
+    return $this;
   }
+
   /**
    * @param string $template
    * @return View
@@ -383,13 +375,10 @@ class View {
     };
     $str = $compile_blocks($str, $compile_blocks);
 
-    // Подключаемые файлы
-    $str = preg_replace('#^\s+#ium', '', $str); // Замена начальных табуляций и пробелов
-
     // Замена подключений файлов
     $str = preg_replace_callback('#\{\>([a-z\_0-9\/]+)(.*?)\}#ium', function ($matches) use ($parse_params) {
       return $parse_params($matches[2]) . file_get_contents($this->compileChunk($matches[1]));
-    }, $str);
+    }, $str);    
 
     // Переменные: {array.index}
     $str = $transform_vars($str, $var_ptrn, $var);
@@ -424,12 +413,18 @@ class View {
         $content[] = file_get_contents($this->compileChunk($template));
       }
 
-      file_put_contents($file_c, implode($content));
+      $output = implode($content);
+      foreach ($this->filters as $filter) {
+        if ($filter instanceof Closure) {
+          $output = $filter($output);
+        }
+      }
+      file_put_contents($file_c, $output);
     }
     include $file_c;
     return $this;
   }
-  
+
   /**
    * Рендеринг и подготовка данных шаблона на вывод
    *
