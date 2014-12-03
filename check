@@ -3,12 +3,10 @@ exit_code=0
 declare -A checks
 declare -A results
 
-checks['memcached']='memcached -i'
+checks['nohup']='nohup --version'
 checks['php']='php -v'
 checks['php-fpm']='php-fpm -v'
 checks['nginx']='nginx -v'
-checks['mysql']='mysql --version'
-checks['redis']='redis-server --version'
 
 for k in "${!checks[@]}"; do
   bash -c "${checks[$k]} &> /dev/null"

@@ -1,15 +1,13 @@
 #!/bin/bash
 APP_DIR=$(dirname $0)
 echo 'Initialization started'
-echo '+Configuring'
-echo '...done'
 echo '+Compile project'
 $APP_DIR/php-exec 'App::compile()'
 echo '...done'
-echo '+MariaDB setup'
-echo '...done'
-echo '+Starting tasks'
-echo '...done'
 echo '+Reloading services'
 sudo /etc/init.d/nginx reload
+echo '...done'
+echo '+Starting tasks'
+pkill -f -x $APP_DIR/run
+nohup $APP_DIR/run > /dev/null 2>&1 &
 echo '...done'

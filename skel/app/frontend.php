@@ -1,1 +1,1 @@
-<?php include getenv('APP_DIR') . '/http.php';
+<?php include getenv('APP_DIR') . '/main.php';

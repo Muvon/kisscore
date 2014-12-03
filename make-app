@@ -11,11 +11,6 @@ if [[ -e $project_dir ]]; then
   exit 1
 fi
 
-# CONFIGURE CONSTANTS
-${KISS_MYSQL_PORT:=8888}
-${KISS_MEMCACHED_PORT:=6666}
-${KISS_MEMCACHED_SESSION_PORT:=7777}
-
 # Start doing good staff
 echo 'Check software'
 ./check
@@ -47,10 +42,6 @@ for file in $(ls skel/env/etc); do
     | sed "s|%DEV_HOST%|$1.lo|g" \
     | sed "s|%VIEW_SOURCE_DIR%|$app_dir/views|g" \
     | sed "s|%VIEW_COMPILE_DIR%|$tmp_dir|g" \
-    | sed "s|%MEMCACHED_IP%|127.0.0.1|g" \
-    | sed "s|%MEMCACHED_PORT%|$KISS_MEMCACHED_PORT|g" \
-    | sed "s|%MEMCACHED_SESSION_PORT%|$KISS_MEMCACHED_SESSION_PORT|g" \
-    | sed "s|%MYSQL_PORT%|$KISS_MYSQL_PORT|g" \
     > $etc_dir/$file
 done
 echo '...done'
@@ -59,35 +50,10 @@ echo 'Install compiled core file to project'
 ./install-core $1
 echo '...done'
 
-echo 'Install mysql database'
-mysql_password=$(ssh_random_string)
-mysql_config=$project_dir'/env/etc/mariadb.cnf'
-mkdir $project_dir'/env/var/mariadb'
-mysql_install_db --defaults-file=$mysql_config > /dev/null
-mysqld_safe --defaults-file=$mysql_config --nowatch > /dev/null
-sleep 5
-echo 'Mysql root password: '$mysql_password
-mysqladmin --defaults-file=$mysql_config -u root password "$mysql_password"
-echo '#!/bin/bash' > "$project_dir/connect-db"
-echo 'mysql --defaults-file='$mysql_config' -u root -p"'$mysql_password'" '$1 >> "$project_dir/connect-db"
-chmod +x "$project_dir/connect-db"
-mysql --defaults-file=$mysql_config -u root -p"$mysql_password" --silent -e 'CREATE DATABASE '$1
-pgrep -f "/usr/sbin/mysqld --defaults-file=$mysql_config" | xargs kill -TERM
-echo '[mysql]' >> "$project_dir/env/etc/app.ini"
-echo "shard[0] = 'mysql:host=127.0.0.1;port=$KISS_MYSQL_PORT;dbname=$1;user=root;password=$mysql_password'" >> "$project_dir/env/etc/app.ini"
-echo '...done'
-
 echo 'Prepare tasks'
 cat skel/tasks \
-  | sed "s|%REDIS_SESSION_CONFIG%|$project_dir/env/etc/redis-session.conf|g" \
   | sed "s|%PHP_INI_CONFIG%|$project_dir/env/etc/php.ini|g" \
   | sed "s|%PHP_FPM_CONFIG%|$project_dir/env/etc/php-fpm.conf|g" \
-  | sed "s|%MYSQL_CONFIG%|$project_dir/env/etc/mariadb.cnf|g" \
-  | sed "s|%MEMCACHED_IP%|127.0.0.1|g" \
-  | sed "s|%MEMCACHED_MEMORY%|1024|g" \
-  | sed "s|%MEMCACHED_PORT%|$KISS_MEMCACHED_PORT|g" \
-  | sed "s|%MEMCACHED_SESSION_MEMORY%|128|g" \
-  | sed "s|%MEMCACHED_SESSION_PORT%|$KISS_MEMCACHED_SESSION_PORT|g" \
   > $project_dir/tasks
 echo '...done'
 

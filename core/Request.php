@@ -191,7 +191,7 @@ class Request {
     }
     
     if (false === strpos($route, '/')) {
-      $route .= '/' . (config('common.use_actions')  ? config('defaults.action') : '');
+      $route .= '/';
     }
 
     return explode('/', $route);

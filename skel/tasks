@@ -1,4 +1,1 @@
-mysqld_safe --defaults-file=%MYSQL_CONFIG% 
 php-fpm -c %PHP_INI_CONFIG% -y %PHP_FPM_CONFIG% -F
-memcached -l %MEMCACHED_IP% -p %MEMCACHED_PORT% -m %MEMCACHED_MEMORY%
-memcached -l %MEMCACHED_IP% -p %MEMCACHED_SESSION_PORT% -m %MEMCACHED_SESSION_MEMORY%

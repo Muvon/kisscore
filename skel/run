@@ -1,7 +1,7 @@
 #!/bin/bash
 trap "pgrep -P $$ | while read process; do pkill -SIGTERM -P \$process; kill \$process; done; wait; exit 0" SIGINT
 while true; do
-  readarray TASKS < tasks
+  readarray TASKS < $(dirname $0)/tasks
   for i in "${!TASKS[@]}"; do
     if [[ ${PIDS[$i]+isset} && $(ps -p ${PIDS[$i]} -o pid | sed 1d) ]]; then
       continue
