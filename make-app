@@ -62,3 +62,7 @@ echo '...done'
 echo -e '\e[1;35mInitializing new application\e[0m'
 $project_dir/init
 echo '...done'
+
+echo -e '\e[1;35mRestarting task manager\e[0m'
+$project_dir/restart
+echo '...done'
