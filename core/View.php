@@ -10,7 +10,6 @@
  * $param1 = 'value';
  * $param2 = 2;
  * $view = new View::create('route/path')
- *   ->setEscapeMode(View::ESCAPE_HTML)
  *   ->set(compact(
  *     'param1',
  *     'param2'
@@ -21,34 +20,20 @@
  * </code>
  */
 class View {
-  /**
-   * @const ESCAPE_NONE
-   *   Отсутвие экранирования в переменных шаблона
-   * @const ESCAPE_HTML
-   *   Экранирование согласно правилам отображения HTML-документа
-   * @const ESCAPE_XML
-   *   Экранированиое по правилам XML-отображения
-   */
-  const
-    ESCAPE_NONE = 0,
-    ESCAPE_HTML = 1,
-    ESCAPE_XML  = 2
-  ;
+  const TEXT = 1;
+  const HTML = 2;
+  const XML  = 3;
 
   protected static $Instance = null;
   /**
    * @property bool $debug
-   * @property int $escape_mode
    * @property array $data массив переменных, которые использует подключаемый шаблон
-   * @property array $no_escape
-   *   Ключи переменные, которые будут игнорированы и не обработаны self::escapeString()
    * @property string $body обработанные и готовые данные для отдачи их клиенту
    */
   protected
   $debug         = false,
-  $escape_mode   = self::ESCAPE_NONE,
+  $type          = View::TEXT,
   $data          = [],
-  $no_escape     = [],
   $route         = '',
   $body          = '',
   $source_dir    = null,
@@ -75,6 +60,20 @@ class View {
     $this->route = Request::instance( )->getRoute( );
   }
 
+  /**
+   * @return View
+   */
+  public function setType($type) {
+    $this->type = $type;
+    return $this;
+  }
+
+  /**
+   * @return int
+   */
+  public function getType() {
+    return $this->type;
+  }
   /**
    * @param string $template
    * @return View
@@ -177,29 +176,6 @@ class View {
   }
   
   /**
-   * Установка режима экранирования приклепрляемых данных
-   *
-   * @access public
-   * @param mixed $mode self::ESCAPE_*
-   * @return View ссылка на объект
-   */
-  public function setEscapeMode($mode = self::ESCAPE_NONE) {
-    $this->escape_mode = $mode;
-    return $this;
-  }
-  
-  /**
-   * Установка ключей, который не будут обрабатываться escapeString
-   *
-   * @param array $keys
-   * @return View
-   */
-  public function setNoEscape(array $keys) {
-    $this->no_escape = $keys;
-    return $this;
-  }
-  
-  /**
    * Роут
    *
    * @param string $route
@@ -222,34 +198,7 @@ class View {
     $this->debug = $flag;
     return $this;
   }
-  
-  /**
-   * Обработка переменных в соответсвии с выбранным режимом
-   *
-   * @access public
-   * @param string|Closure $str
-   * @return string
-   */
-  public function escapeString($str) {
-    if ($str instanceof Closure)
-      return $str();
 
-    if (!is_string($str))
-      return $str;
-
-    switch  ($this->escape_mode) {
-      case self::ESCAPE_HTML:
-        $str = htmlspecialchars($str);
-        break;
-
-      case self::ESCAPE_XML:
-        $str = htmlentities($str);
-        break;
-    }
-
-    return $str;
-  }
-  
   /**
    * Прикрепление массива как разных переменных в шаблон
    *
@@ -374,7 +323,7 @@ class View {
       return preg_replace_callback(
         '#\{(' . $var_ptrn . ')\}#ium',
         function ($matches) use ($var) {
-          return '<?php echo $this->escapeString('
+          return '<?php echo '
           . 'isset(' . $var($matches[1], '$item') . ') ' // Есть в текущем контексте?
             . '? ' . $var($matches[1], '$item') . ' '
             . ': ( isset(' . $var($matches[1], '$item[\'parent\']') . ') ' // Есть в родительском контектсе ?
@@ -384,7 +333,7 @@ class View {
                 . ': null'
               . ')'
             . ')'
-          . '); ?>';
+          . ' ?>';
         },
         $str
       );
@@ -444,11 +393,7 @@ class View {
 
     // Переменные: {array.index}
     $str = $transform_vars($str, $var_ptrn, $var);
-    /*
-    $str = preg_replace_callback('#\{(' . $var_ptrn . ')\}#ium', function ($matches) use ($var) {
-      return '<?php if (isset(' . $var($matches[1]) . ')) echo $this->escapeString(' . $var($matches[1]) . '); ?>';
-    }, $str);
-    */
+
     file_put_contents($file_c, $str);
     return $file_c;
   }

@@ -3,10 +3,10 @@ include getenv('KISS_CORE');
 App::start(['debug' => substr(getenv('HTTP_HOST'), -3) === '.lo']);
 
 View::instance()
-  ->setEscapeMode(View::ESCAPE_HTML)
   ->setDebug(App::$debug)
   ->addHead('_head')
   ->addFoot('_foot')
+  ->setType(View::HTML)
   ->setTemplateExtension(config('view.template_extension'))
   ->setSourceDir(config('view.source_dir'))
   ->setCompileDir(config('view.compile_dir'))
@@ -28,8 +28,29 @@ if ($response === 1) {
 
 // Если в ответе объекта вида
 if ($response instanceof View) {
-  unset($GLOBALS['_GET'], $GLOBALS['_POST'], $GLOBALS['_COOKIE'], $GLOBALS['_SESSION'], $GLOBALS['_FILES'], $GLOBALS['_SERVER']);
-  $response->set($GLOBALS)->render();
+  $ignore = ['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV'];
+  $vars   = array_diff_key(get_defined_vars() + array_flip($ignore), array_flip($ignore));
+  
+  array_walk_recursive($vars, function ($str) {
+    if ($str instanceof Closure)
+      return $str();
+
+    if (!is_string($str))
+      return $str;
+
+    switch  (View::instance()->getType()) {
+      case View::HTML:
+        $str = htmlspecialchars($str);
+        break;
+
+      case View::XML:
+        $str = htmlentities($str);
+        break;
+    }
+
+    return $str;
+  });  
+  $response->set($vars)->render();
 }
 
 // Обращаемся через метод, чтобы избежать возможной перезаписи переменной в экшене
