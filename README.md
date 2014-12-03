@@ -39,6 +39,14 @@ Finaly done! Just open in your browser http://myproj.lo
 
 Easy, right? Yeah! :)
 
+## Tasks
+You can add your own tasks run under project dir in file tasks. Just put every process in new line. After tasks file modification just restart it using special script
+```bash
+./restart
+```
+
+Now process manager must start your own task. enjoy :)
+
 ## Plugins
 
 There are special plugins to use DB, Cache and other cool staff in KISSCore.
