@@ -131,15 +131,6 @@ class App {
   }
   
   /**
-   * Get vars defined in global scope
-   * @return array
-   */
-  public static function getDefinedVars() {
-    $ignore = ['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV'];
-    return array_diff_key(get_defined_vars() + array_flip($ignore), array_flip($ignore));
-  }
-
-  /**
    * Замена стандартного обработчика ошибок на эксепшены
    */
   public static function handleError($errno, $errstr, $errfile, $errline, $errcontext) {

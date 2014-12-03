@@ -30,7 +30,9 @@ if ($response === 1) {
 
 // Если в ответе объекта вида
 if ($response instanceof View) {
-  $vars = App::getDefinedVars();
+  $_IGNORE = ['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_IGNORE'];
+  $vars = array_diff_key(get_defined_vars() + array_flip($_IGNORE), array_flip($_IGNORE));
+  
   array_walk_recursive($vars, function ($str) {
     if ($str instanceof Closure)
       return $str();
