@@ -39,6 +39,11 @@ Finaly done! Just open in your browser http://myproj.lo
 
 Easy, right? Yeah! :)
 
+## Plugins
+
+There are special plugins to use DB, Cache and other cool staff in KISSCore.
+You can find plugins and help on github here: https://github.com/dmitrykuzmenkov/kisscore-plugins
+
 ## Dependency
 
 To run project using KISS Core you need
