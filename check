@@ -4,7 +4,7 @@ declare -A checks
 declare -A results
 
 checks['nohup']='nohup --version'
-checks['php']='php -v'
+checks['php']='php -r "(float) phpversion() >= 5.5 ?: exit(1);"'
 checks['php-fpm']='php-fpm -v'
 checks['nginx']='nginx -v'
 
