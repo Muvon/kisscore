@@ -34,19 +34,18 @@ if ($response instanceof View) {
     if ($str instanceof Closure)
       return $str();
 
-    if (!is_string($str))
-      return $str;
+    if (is_string($str)) {
+      switch  (View::instance()->getType()) {
+        case View::HTML:
+          $str = htmlspecialchars($str);
+          break;
 
-    switch  (View::instance()->getType()) {
-      case View::HTML:
-        $str = htmlspecialchars($str);
-        break;
-
-      case View::XML:
-        $str = htmlentities($str);
-        break;
+        case View::XML:
+          $str = htmlentities($str);
+          break;
+      }
     }
-
+    
     return $str;
   });  
   $response->set($vars)->render();
