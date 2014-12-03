@@ -9,9 +9,6 @@ View::instance()
   ->setTemplateExtension(config('view.template_extension'))
   ->setSourceDir(config('view.source_dir'))
   ->setCompileDir(config('view.compile_dir'))
-  ->addFilter(function ($output) {
-    return preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $output);
-  })
 ;
 
 Request::response()->addHeader('Content-type', 'text/html;charset=utf-8');
@@ -32,11 +29,8 @@ if ($response === 1) {
 if ($response instanceof View) {
   $_IGNORE = ['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_IGNORE'];
   $vars = array_diff_key(get_defined_vars() + array_flip($_IGNORE), array_flip($_IGNORE));
-  
-  array_walk_recursive($vars, function ($str) {
-    if ($str instanceof Closure)
-      return $str();
 
+  array_walk_recursive($vars, function ($str) {
     return is_string($str) ? htmlspecialchars($str) : $str;
   });
 

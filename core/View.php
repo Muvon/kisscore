@@ -28,7 +28,6 @@ class View {
    */
   protected
   $debug         = false,
-  $filters       = [],
   $data          = [],
   $route         = '',
   $body          = '',
@@ -54,16 +53,6 @@ class View {
    */
   final protected function __construct( ) {
     $this->route = Request::instance( )->getRoute( );
-  }
-
-  public function addFilter(Callable $filter) {
-    $this->filters[] = $filter;
-    return $this;
-  }
-
-  public function resetFilters() {
-    $this->filters = [];
-    return $this;
   }
 
   /**
@@ -315,7 +304,7 @@ class View {
       return preg_replace_callback(
         '#\{(' . $var_ptrn . ')\}#ium',
         function ($matches) use ($var) {
-          return '<?php echo '
+          return '<?php $this->printVar('
           . 'isset(' . $var($matches[1], '$item') . ') ' // Есть в текущем контексте?
             . '? ' . $var($matches[1], '$item') . ' '
             . ': ( isset(' . $var($matches[1], '$item[\'parent\']') . ') ' // Есть в родительском контектсе ?
@@ -325,7 +314,7 @@ class View {
                 . ': null'
               . ')'
             . ')'
-          . ' ?>';
+          . ') ?>';
         },
         $str
       );
@@ -375,6 +364,9 @@ class View {
     };
     $str = $compile_blocks($str, $compile_blocks);
 
+    // Remove tabs and merge into single line
+    $str = preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $str);
+
     // Замена подключений файлов
     $str = preg_replace_callback('#\{\>([a-z\_0-9\/]+)(.*?)\}#ium', function ($matches) use ($parse_params) {
       return $parse_params($matches[2]) . file_get_contents($this->compileChunk($matches[1]));
@@ -413,16 +405,19 @@ class View {
         $content[] = file_get_contents($this->compileChunk($template));
       }
 
-      $output = implode($content);
-      foreach ($this->filters as $filter) {
-        if ($filter instanceof Closure) {
-          $output = $filter($output);
-        }
-      }
-      file_put_contents($file_c, $output);
+      file_put_contents($file_c, implode($content));
     }
     include $file_c;
     return $this;
+  }
+
+  /**
+   * Print var
+   * @param mixed $var
+   * @return void
+   */
+  protected function printVar($var) {
+    echo $var instanceof Closure ? $var() : $var;
   }
 
   /**
