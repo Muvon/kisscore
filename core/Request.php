@@ -167,35 +167,6 @@ class Request {
   }
   
   /**
-   * Вспомогательная функция для разбора роута на составляющие
-   *
-   * @static
-   * @access public
-   * @param string $route строка вида module/action
-   * @return array [ $module, $action ];
-   *
-   * <code>
-   * list($module, $action) = Request::parseRoute('main/index');
-   * </code>
-   */
-  public static function parseRoute($route = '') {
-    $route = trim($route, '/');
-    // CLI?
-    if (self::$is_cli) {
-      $route = 'cli/' . $route;
-    }
-    if (!$route) {
-      $route = config('defaults.route');
-    }
-    
-    if (false === strpos($route, '/')) {
-      $route .= '/';
-    }
-
-    return explode('/', $route);
-  }
-  
-  /**
    * Инициализация правил для фильтра
    * Позволяет использовать Lazy-filter технику
    * Фильтр применяется только тогда, когда это нужно,
@@ -290,50 +261,6 @@ class Request {
       ? $_COOKIE[$name]
       : null
     ;
-  }
-
-  /**
-   * Получение пути по роуту
-   *
-   * @static
-   * @access public
-   * @param string $route
-   * @param array &$params
-   * @return string
-   */
-  public static function detectPath($route, array &$params = []) {
-    assert("is_string(\$route)");
-
-    // mini cheat :)
-    static $def_m, $def_a;
-    if (!$def_m)
-      list($def_m, $def_a) = self::parseRoute(config('defaults.route'));
-
-    list($module, $action)  = self::parseRoute($route);
-    
-    $path = '/' . ($module === $def_m
-      ? ''
-      : ($action === $def_a
-        ? $module
-        : $module . '/' . $action
-      ));
-    $Request = self::instance();
-
-    if (isset($Request->route_map[$route]) && isset($params[$Request->route_map[$route][1]])) {
-      $map = $Request->route_map[$route];
-      $pattern = array_shift($map);
-
-      $i = 0;
-      $repl = [];
-      foreach ($map as $name) {
-        $key = '<' . ((string) $i++) . '>';
-        $repl[$key] = isset($params[$name]) ? $params[$name] : null;
-        unset($params[$name]);
-      }
-
-      $path = trim(strtr($pattern, $repl)); //trim(str_replace(array_keys($repl), array_values($repl), $pattern), '/');
-    }
-    return '/' . trim($path, '/') . '/';
   }
 
   /**
