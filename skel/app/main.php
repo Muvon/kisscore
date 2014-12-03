@@ -1,6 +1,6 @@
 <?php
 include getenv('KISS_CORE');
-App::start(['debug' => config('common.dev_host') === getenv('HTTP_HOST')]);
+App::start(['debug' => substr(getenv('HTTP_HOST'), -3) === '.lo']);
 
 View::instance()
   ->setEscapeMode(View::ESCAPE_HTML)
@@ -15,8 +15,7 @@ View::instance()
 Request::response()->addHeader('Content-type', 'text/html;charset=utf-8');
 
 $file_path = getenv('APP_DIR') . '/actions/' . Request::instance()->getModule() . '.php';
-
-if (is_file($file_path)) { 
+if (is_file($file_path)) {
   $response = include $file_path;
 } else $response = ret('not_found');
 

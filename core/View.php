@@ -323,8 +323,7 @@ class View {
     if (!$this->debug && is_file($file_c))
       return $file_c;
     
-    list($module, $action) = Request::instance( )->parseRoute($route);
-    $source_file = $this->source_dir . '/' . (config('common.use_actions') ? $module . '/' . $action : $module) . '.' . $this->template_extension;
+    $source_file = $this->source_dir . '/' . strtok($route, '/') . '.' . $this->template_extension;
       
     $str = file_get_contents($source_file);
 

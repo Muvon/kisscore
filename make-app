@@ -32,6 +32,7 @@ tmp_dir=$env_dir'/tmp'
 var_dir=$env_dir'/var'
 run_dir=$env_dir'/run'
 etc_dir=$env_dir'/etc'
+secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 for file in $(ls skel/env/etc); do
   cat skel/env/etc/$file \
     | sed "s|%USER%|$USER|g" \
@@ -42,6 +43,7 @@ for file in $(ls skel/env/etc); do
     | sed "s|%DEV_HOST%|$1.lo|g" \
     | sed "s|%VIEW_SOURCE_DIR%|$app_dir/views|g" \
     | sed "s|%VIEW_COMPILE_DIR%|$tmp_dir|g" \
+    | sed "s|%SECRET_KEY%|$secret_key|g" \
     > $etc_dir/$file
 done
 echo '...done'

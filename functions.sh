@@ -2,7 +2,7 @@
 # Random password generator
 # symbols, length
 function ssh_random_string {
-  symbols='A-Z-a-z-0-9'
+  symbols='A-Za-z0-9'
   if [[ ! -z $1 ]]; then
     symbols=$1
   fi
