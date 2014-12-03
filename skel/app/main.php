@@ -14,7 +14,7 @@ View::instance()
 
 Request::response()->addHeader('Content-type', 'text/html;charset=utf-8');
 
-$file_path = getenv('APP_DIR') . '/actions/' . Request::instance()->getModule() . '.php';
+$file_path = getenv('APP_DIR') . '/actions/' . strtok(Request::instance()->getRoute(), '/') . '.php';
 if (is_file($file_path)) {
   $response = include $file_path;
 } else $response = ret('not_found');

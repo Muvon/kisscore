@@ -20,8 +20,7 @@ class Request {
    * @property Response $Response класс ответа для данного запроса
    * @property array $params все параметры, переданные в текущем запросе
    *
-   * @property string $action имя действия, которое должно выполнится в выполняемом запросе
-   * @property string $module имя модуля, который вызывается запросом
+   * @property string $route имя действия, которое должно выполнится в выполняемом запросе
    * @property string $url адрес обрабатываемого запроса
    * @property array $url_map
    * @property array $route_map
@@ -41,8 +40,7 @@ class Request {
   private
   $Response     = null,
   $params       = [],
-  $action   = '',
-  $module   = '',
+  $route   = '',
   $url      = '',
   $url_map    = [],
   $route_map  = [];
@@ -367,22 +365,6 @@ class Request {
   }
   
   /**
-   * @access public
-   * @return string
-   */
-  public function getAction( ) {
-    return $this->action;
-  }
-  
-  /**
-   * @access public
-   * @return string
-   */
-  public function getModule( ) {
-    return $this->module;
-  }
-  
-  /**
    * Установка текущего роута с последующим парсингом его в действие и модуль
    *
    * @access public
@@ -390,7 +372,7 @@ class Request {
    * @return $this
    */
   public function setRoute($route) {
-    list($this->module, $this->action) = Request::parseRoute($route);
+    $this->route = $route;
     return $this;
   }
   
@@ -401,7 +383,7 @@ class Request {
    * @return string
    */
   public function getRoute( ) {
-    return $this->module . ($this->action ? '/' . $this->action : '');
+    return $this->route;
   }
   
   /**
