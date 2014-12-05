@@ -1,6 +1,16 @@
 #!/bin/bash
-servers='d1.devcraft.ru'
 project=$(basename `pwd`)
+host_file=$(pwd)'/hosts'
+if [[ ! -f $host_file ]]; then
+  echo 'Create hosts "'$host_file'" file with hostnames to deploy on'
+  exit 1
+fi
+servers=$(cat $host_file)
+
+if [[ -z $servers ]]; then
+  echo 'There are no servers for deploy in hosts file'
+  exit 1
+fi
 
 # Deploy on each server
 for server in $servers; do
