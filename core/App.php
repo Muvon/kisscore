@@ -39,7 +39,7 @@ class App {
         $map[$class] = $file;
       }
     }
-    file_put_contents(config('common.autoload_map_file'), json_encode($map, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    App::writeJson(config('common.autoload_map_file'), $map);
   }
 
   /**
@@ -61,8 +61,7 @@ class App {
         }
       }
     }
-
-    file_put_contents(config('common.uri_map_file'), json_encode($map, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    static::writeJson(config('common.uri_map_file'), $map);
   }
 
   protected static function generateParamMap() {
@@ -82,12 +81,11 @@ class App {
         }
       }
     }
-
-    file_put_contents(config('common.param_map_file'), json_encode($map, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)); 
+    static::writeJson(config('common.param_map_file'), $map);
   }
 
   protected static function generateNginxRouteMap() {
-    $routes = json_decode(file_get_contents(config('common.uri_map_file')), true);
+    $routes = static::getJson(config('common.uri_map_file'));
     uasort($routes, function ($a, $b) {
       return (sizeof($a) > sizeof($b)) ? 1 : -1;
     });
@@ -107,7 +105,7 @@ class App {
   }
 
   public static function getImportVarsArgs($file) {
-    $params = json_decode(file_get_contents(config('common.param_map_file')), true);
+    $params = static::getJson(config('common.param_map_file'));
     $args = [];
     if (isset($params[$file])) {
       foreach ($params[$file] as $param) {
@@ -115,6 +113,18 @@ class App {
       }
     }
     return $args;
+  }
+
+  public static function writeJson($file, $data) {
+    return file_put_contents($file, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+  }
+
+  public static function getJson($file) {
+    if (!file_exists($file)) {
+      throw new Exception('Cant find file ' . $file . '. Be sure you started init script to compile application');
+    }
+
+    return json_decode(file_get_contents($file), true);
   }
 
   /**
@@ -150,9 +160,6 @@ class App {
       ini_set('xdebug.profiler_output_dir', getenv('LOG_DIR'));
       ini_set('xdebug.profiler_output_name', 'xdebug');
     }
-
-    // Получаем шарды для кэша
-    // @todo add shards for memcache
   }
 
   /**
@@ -179,10 +186,7 @@ class App {
 
     // Load map
     if (!$map) {
-      if (!file_exists($map_file = config('common.autoload_map_file'))) {
-        throw new Exception('Cant find autoload map file. Run App::compile action first and try again');
-      }
-      $map = json_decode(file_get_contents($map_file), true);
+      $map = static::getJson(config('common.autoload_map_file'));
     }
 
     // Find and include file
