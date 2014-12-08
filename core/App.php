@@ -11,6 +11,7 @@ class App {
     // Generate map for autoload classes
     App::generateAutoloadMap();
     App::generateURIMap();
+    App::generateParamMap();
     App::generateNginxRouteMap();
     // Some more staff may be in future
     // ...
@@ -47,12 +48,11 @@ class App {
   protected static function generateURIMap() {
     $map = [];
     $action_dir = getenv('APP_DIR') . '/actions';
-    $files = explode(PHP_EOL, trim(`cd $action_dir && find -L | grep \.php$`));
+    $files = explode(PHP_EOL, trim(`find -L $action_dir | grep \.php$`));
     foreach ($files as $file) {
-      $file = "$action_dir/$file";
       $action = substr(basename($file), 0, -4);
       $content = file_get_contents($file);
-      if (preg_match_all('/^##([^\:]+?)(\:(.+))?$/ium', $content, $m)) {
+      if (preg_match_all('/^\s*\*\s*\@route\s+([^\:]+?)(\:(.+))?$/ium', $content, $m)) {
         foreach ($m[0] as $k => $matches) {
           $pattern = trim($m[1][$k]);
           $params  = isset($m[2][$k]) && $m[2][$k] ? array_map('trim', explode(',', substr($m[2][$k], 1))) : [];
@@ -63,6 +63,27 @@ class App {
     }
 
     file_put_contents(config('common.uri_map_file'), json_encode($map, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+  }
+
+  protected static function generateParamMap() {
+    $map = [];
+    $action_dir = getenv('APP_DIR') . '/actions';
+    $files = explode(PHP_EOL, trim(`find -L $action_dir | grep \.php$`));
+    foreach ($files as $file) {
+      $action = substr(basename($file), 0, -4);
+      $content = file_get_contents($file);
+      if (preg_match_all('/^\s*\*\s*\@param\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
+        foreach ($m[0] as $k => $matches) {
+          $map[$file][] = [
+            'name'    => $param = substr(strtok($m[2][$k], ' '), 1),
+            'type'    => $m[1][$k],
+            'default' => trim(substr($m[2][$k], strlen($param) + 1)) ?: null,
+          ];
+        }
+      }
+    }
+
+    file_put_contents(config('common.param_map_file'), json_encode($map, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)); 
   }
 
   protected static function generateNginxRouteMap() {
@@ -83,6 +104,17 @@ class App {
     }
     // @TODO fix configs prepares
     file_put_contents(getenv('RUN_DIR'). '/nginx-route-map.conf', implode(PHP_EOL, $rewrites));
+  }
+
+  public static function getImportVarsArgs($file) {
+    $params = json_decode(file_get_contents(config('common.param_map_file')), true);
+    $args = [];
+    if (isset($params[$file])) {
+      foreach ($params[$file] as $param) {
+        $args[] = $param['name'] . ':' . $param['type'] . (isset($param['default']) ? '=' . $param['default'] : '');
+      }
+    }
+    return $args;
   }
 
   /**

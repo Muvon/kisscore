@@ -15,6 +15,7 @@ Request::response()->addHeader('Content-type', 'text/html;charset=utf-8');
 
 $file_path = getenv('APP_DIR') . '/actions/' . strtok(Request::instance()->getRoute(), '/') . '.php';
 if (is_file($file_path)) {
+  call_user_func_array('import_vars', App::getImportVarsArgs($file_path));
   $response = include $file_path;
 } else {
   Request::response()->setStatus(404);
