@@ -63,6 +63,10 @@ To run project using KISS Core you need
 
 And also linux knowledge ;)
 
+You also can check requirements on your system using this bash command in kisscore folder:
+```bash
+./check
+```
 
 ## More?
 
