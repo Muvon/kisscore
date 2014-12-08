@@ -39,7 +39,7 @@ for file in $(ls skel/env/etc); do
     | sed "s|%GROUP%|$GROUP|g" \
     | sed "s|%PROJECT_DIR%|$project_dir|g" \
     | sed "s|%URI_MAP_FILE%|$var_dir/uri_request_map.json|g" \
-    | sed "s|%PARAM_MAP_FILE%|$var_dir/import_param_map.json|g" \
+    | sed "s|%PARAM_MAP_FILE%|$var_dir/import_var_map.json|g" \
     | sed "s|%AUTOLOAD_MAP_FILE%|$var_dir/php_autoload_map.json|g" \
     | sed "s|%DEV_HOST%|$1.lo|g" \
     | sed "s|%VIEW_SOURCE_DIR%|$app_dir/views|g" \
