@@ -39,7 +39,7 @@ class App {
         $map[$class] = $file;
       }
     }
-    App::writeJson(config('common.autoload_map_file'), $map);
+    static::writeJson(config('common.autoload_map_file'), $map);
   }
 
   /**

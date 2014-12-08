@@ -32,12 +32,14 @@ tmp_dir=$env_dir'/tmp'
 var_dir=$env_dir'/var'
 run_dir=$env_dir'/run'
 etc_dir=$env_dir'/etc'
+epoch=$(date +%s)'000'
 secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 for file in $(ls skel/env/etc); do
   cat skel/env/etc/$file \
     | sed "s|%USER%|$USER|g" \
     | sed "s|%GROUP%|$GROUP|g" \
     | sed "s|%PROJECT_DIR%|$project_dir|g" \
+    | sed "s|%EPOCH%|$epoch|g" \
     | sed "s|%URI_MAP_FILE%|$var_dir/uri_request_map.json|g" \
     | sed "s|%PARAM_MAP_FILE%|$var_dir/import_var_map.json|g" \
     | sed "s|%AUTOLOAD_MAP_FILE%|$var_dir/php_autoload_map.json|g" \
