@@ -14,6 +14,7 @@ fi
 
 # Deploy on each server
 for server in $servers; do
+  (
   echo 'Deploying on server '$server
 
   # Check for already created folder on server
@@ -34,4 +35,12 @@ for server in $servers; do
   ssh -x -t prod@${server} 'rm /home/prod/'$project'/env/tmp/*'
   # All is done
   echo 'Deployed on server '$server
+  ) > $(pwd)/env/tmp/deploy.$server 2>&1 &
+done
+wait
+
+# Display result of jobs
+for file in $(ls $(pwd)/env/tmp/deploy.*); do
+  cat $file
+  rm $file
 done

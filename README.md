@@ -2,15 +2,15 @@
 
 ## What is it?
 
-Kiss Core Microframework on PHP 5.5+ is the lightweight single file packed end-project framework for rapid and fast development highload projects.
+Kiss Core Microframework on PHP 5.5+ is the lightweight single file packed end-project framework for rapid development of very fast projects.
 
 1. Single core file in project you create 
 2. Simple and very fast template engine that allows you only use blocks and iterations (easy to learn for designers)
-3. Independend task manager and other staff
+3. Independend task manager
 4. Fast routes that converts to nginx rewrite on init. Live route table in action files just with single comment
-5. Minimum dependecy
-6. Plugins with nice approach to rapid development
-7. Deploy script to production servers
+5. Minimum dependecy and maximum profit
+6. Plugins with nice approach for easy extend
+7. Deploy script to production servers in parallels!
 
 
 ## Installation guide
