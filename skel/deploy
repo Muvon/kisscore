@@ -31,8 +31,8 @@ for server in $servers; do
     --exclude=connect-db . prod@$server:/home/prod/$project
 
   # Compile project on server
-  ssh -x -t prod@${server} 'cd /home/prod/'$project' && ./init'
-  ssh -x -t prod@${server} 'rm /home/prod/'$project'/env/tmp/*'
+  ssh -x -t -t prod@${server} 'cd /home/prod/'$project' && ./init'
+  ssh -x -t -t prod@${server} 'rm /home/prod/'$project'/env/tmp/*'
   # All is done
   echo 'Deployed on server '$server
   ) > $(pwd)/env/tmp/deploy.$server 2>&1 &
