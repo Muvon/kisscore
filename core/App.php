@@ -120,7 +120,7 @@ class App {
   }
 
   public static function getJson($file) {
-    if (!file_exists($file)) {
+    if (!is_file($file)) {
       throw new Exception('Cant find file ' . $file . '. Be sure you started init script to compile application');
     }
 
