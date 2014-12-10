@@ -3,6 +3,7 @@ exit_code=0
 declare -A checks
 declare -A results
 
+checks['realpath']='realpath --version'
 checks['nohup']='nohup --version'
 checks['php']='php -r "(float) PHP_VERSION >= 5.5 ?: exit(1);"'
 checks['php-fpm']='php-fpm -v'

@@ -1,0 +1,54 @@
+#!/bin/bash
+APP_DIR=$(dirname `realpath $0`)
+if [[ -z $1 ]]; then
+  echo -e 'Usage: '$0' plugin1 plugin2 plugin3'
+  echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
+  echo -e '- \e[35;1mPLUGIN_UPDATE\e[0;0m=1              Update or skip during install. Default: 0'
+  exit 1
+fi
+
+if [[ -z $PLUGIN_DIR ]]; then
+  PLUGIN_DIR=$APP_DIR/plugins
+fi
+
+if [[ ! -d $PLUGIN_DIR ]]; then
+  echo 'No plugin dir specified or plugin dir does not exist. Define plugin dir. Use export PLUGIN_DIR=/path/to/plugin'
+  exit 1
+fi
+
+for plugin in $@; do
+  plugin_dir=$PLUGIN_DIR/$plugin
+  if [[ ! -d $plugin_dir ]]; then
+    echo 'Cant find plugin "'$plugin'" in plugin dir "'$PLUGIN_DIR'"'
+    exit 1
+  fi
+done
+
+for plugin in $@; do
+  echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
+  check_log=$APP_DIR/env/tmp/plugin-checks-$1
+  $plugin_dir'/check' > $check_log 2>&1
+  if [[ $? -ne 0 ]]; then
+    echo 'Run checks failed, skipping...'
+    /bin/cat $check_log && /bin/rm $check_log
+    continue
+  fi
+  /bin/rm $check_log
+
+  install_to=$APP_DIR/app/plugins/$plugin
+  if [[ -z $PLUGIN_UPDATE && -d $install_to ]]; then
+    echo 'Plugin already installed, skipping. Use PLUGIN_UPDATE=1 for update'
+    continue
+  fi
+
+  if [[ -d $install_to ]]; then
+    /bin/tar -czf $install_to/$(/bin/date +%Y%m%d-%H%M%S).backup.tar.gz --exclude=*.backup.tar.gz $install_to/*
+    /usr/bin/find $install_to -type f -not -name '*.backup.tar.gz' | xargs rm
+  fi
+
+  /bin/mkdir -p $install_to
+  /bin/cp -favr $plugin_dir/* $install_to
+  echo '...done'
+done
+echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
+$APP_DIR/init

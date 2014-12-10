@@ -1,5 +1,5 @@
 #!/bin/bash
-APP_DIR=$(dirname $0)
+APP_DIR=$(dirname `realpath $0`)
 echo 'Initialization started'
 echo '+Compile project'
 $APP_DIR/php-exec 'App::compile()'
