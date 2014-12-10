@@ -201,7 +201,7 @@ class App {
   }
 
   public static function handleException(Exception $Exception) {
-    static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], LOGGER_ERROR);
+    static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
   }
 
   /**
