@@ -5,7 +5,11 @@ putenv('APP_DIR=' . __DIR__ . '/app');
 putenv('HTML_DIR=' . __DIR__ . '/html');
 putenv('CONFIG_DIR=' . __DIR__ . '/env/etc');
 putenv('CONFIG_TEMPLATE_DIR=' . __DIR__ . '/env/etc-template');
+putenv('ENV_DIR=' . __DIR__ . '/env');
+putenv('BIN_DIR=' . __DIR__ . '/env/bin');
 putenv('RUN_DIR=' . __DIR__ . '/env/run');
+putenv('LOG_DIR=' . __DIR__ . '/env/log');
+putenv('VAR_DIR=' . __DIR__ . '/env/var');
 putenv('HTTP_HOST=' . `hostname`);
 putenv('KISS_CORE=' . __DIR__ . '/app/core.php');
 

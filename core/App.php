@@ -128,6 +128,27 @@ class App {
   }
 
   /**
+   * Log any message 
+   * @param string $message
+   * @param array $dump
+   * @param string $type error, info, wanr, notice
+   * @return void
+   */
+  public static function log($message, array $dump = [], $type = 'error') {
+    assert('is_string($message)');
+    assert('is_string($type)');
+    assert('in_array($type, ["info", "error", "warn", "notice"])');
+
+    $log_file = getenv('LOG_DIR') . '/' . date('Ymd') . '-' . $type . '.log';
+    $message = date('[Y-m-d H:i:s T]') 
+             . "\t" . $message 
+             . "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t" 
+             . json_encode($_COOKIE, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
+    ;
+    error_log($message, 3, $log_file);
+  }
+
+  /**
    * Иницилизация работы приложения
    * @param array $config
    */
@@ -147,6 +168,9 @@ class App {
 
     // Error handler
     set_error_handler([static::class, 'handleError'], E_ALL);
+    
+    // Handle uncatched exceptions
+    set_exception_handler([static::class, 'handleException']);
 
     ini_set('display_errors', static::$debug ? 'on' : 'off');
 
@@ -174,6 +198,10 @@ class App {
    */
   public static function handleError($errno, $errstr, $errfile, $errline, $errcontext) {
     return static::error($errstr);
+  }
+
+  public static function handleException(Exception $Exception) {
+    static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], LOGGER_ERROR);
   }
 
   /**
