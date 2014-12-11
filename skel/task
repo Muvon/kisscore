@@ -21,5 +21,4 @@ case $1 in
     exit 1
     ;;
 esac
-mv $tasks_file.tmp $tasks_file
-$APP_DIR/restart
+/bin/mv $tasks_file.tmp $tasks_file
