@@ -6,7 +6,7 @@ while true; do
     if [[ ${PIDS[$i]+isset} && $(ps -p ${PIDS[$i]} -o pid | sed 1d) ]]; then
       continue
     fi
-    ( ${TASKS[$i]} ) & PIDS[$i]=$!
+    ( ${TASKS[$i]% \#*} ) & PIDS[$i]=$!
   done
   sleep 1
 done
