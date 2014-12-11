@@ -3,9 +3,7 @@ APP_DIR=$(dirname `realpath $0`)
 . $APP_DIR/functions.sh
 
 export APP_DIR
-export -f ssh_random_string
-export -f allocate_port
-export -f run_checks
+export -f ssh_random_string allocate_port run_checks
 
 if [[ -z $1 ]]; then
   echo -e 'Usage: '$0' plugin1 plugin2 plugin3'
