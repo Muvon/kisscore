@@ -76,6 +76,10 @@ You also can check requirements on your system using this bash command in kissco
 ```bash
 ./check
 ```
+## How to extend?
+Just use lib dir into your application folder.
+You can put there any external module and use it into your project,
+KISS core allow you to start MVC fast application in just couple of minutes with minimum dependencies. But you can extends it infinite for sure :) Just try Keep It Simple as possible!
 
 ## More?
 
