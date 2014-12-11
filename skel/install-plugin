@@ -24,6 +24,7 @@ for plugin in $@; do
   fi
 done
 
+rebuild=0
 for plugin in $@; do
   echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
   check_log=$APP_DIR/env/tmp/plugin-checks-$1
@@ -48,8 +49,14 @@ for plugin in $@; do
 
   /bin/mkdir -p $install_to
   /bin/cp -favr $plugin_dir/* $install_to
-  [[ -f $install_to/setup ]] && $install_to/setup
+
+  export APP_DIR
+  [[ -x $install_to/setup ]] && $install_to/setup
   echo '...done'
+  rebuild=1
 done
-echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
-$APP_DIR/init
+
+if (( $rebuild )); then
+  echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
+  $APP_DIR/init
+fi
