@@ -1,0 +1,25 @@
+#!/bin/bash
+APP_DIR=$(dirname `realpath $0`)
+if [[ -z $2 ]];  then
+  echo 'Usage: '$0' add|remove command|#id'
+  exit 1
+fi
+
+tasks_file=$APP_DIR/tasks
+id=${2##*\#}
+
+cat $tasks_file | grep -v \#$id$ | sort -V > $tasks_file.tmp
+case $1 in
+  add)
+    echo $2 >> $tasks_file.tmp
+    ;;
+  remove)
+    
+    ;;
+  *)
+    echo 'There is no such action: '$1
+    exit 1
+    ;;
+esac
+mv $tasks_file.tmp $tasks_file
+$APP_DIR/restart
