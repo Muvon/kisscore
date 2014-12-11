@@ -1,5 +1,6 @@
 #!/bin/bash
-. $(dirname `realpath $0`)/functions.sh
+APP_DIR=$(dirname `realpath $0`)
+. $APP_DIR/functions.sh
 declare -A checks
 declare -A results
 
