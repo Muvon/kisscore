@@ -1,6 +1,12 @@
 #!/bin/bash
 APP_DIR=$(dirname `realpath $0`)
 . $APP_DIR/functions.sh
+
+export APP_DIR
+export -f ssh_random_string
+export -f allocate_port
+export -f run_checks
+
 if [[ -z $1 ]]; then
   echo -e 'Usage: '$0' plugin1 plugin2 plugin3'
   echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
@@ -52,9 +58,6 @@ for plugin in $@; do
   /bin/mkdir -p $install_to
   /bin/cp -favr $plugin_dir/* $install_to
 
-  export APP_DIR
-  export -f ssh_random_string
-  export -f allocate_port
   [[ -x $install_to/setup ]] && $install_to/setup
   echo '...done'
   rebuild=1
