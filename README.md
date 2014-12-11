@@ -40,7 +40,17 @@ Finaly done! Just open in your browser http://myproj.lo
 Easy, right? Yeah! :)
 
 ## Tasks
-You can add your own tasks run under project dir in file tasks. Just put every process in new line. After tasks file modification just restart it using special script
+You can add your own tasks using special script. Just run it:
+```bash
+./task add 'command line with task #identification'
+```bash
+
+To remove it just run:
+```bash
+./task remove '#identification'
+```
+
+When you done with task editing you must restart task manager using special command
 ```bash
 ./restart
 ```
@@ -58,7 +68,6 @@ To run project using KISS Core you need
 
 1. Linux (Ubuntu, Centos, Debina and so on)
 2. PHP 5.5+ with php-fpm (http://php.net)
-  * igbinary
 3. Nginx (http://nginx.org)
 
 And also linux knowledge ;)
