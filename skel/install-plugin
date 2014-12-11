@@ -48,6 +48,7 @@ for plugin in $@; do
 
   /bin/mkdir -p $install_to
   /bin/cp -favr $plugin_dir/* $install_to
+  [[ -f $install_to/setup ]] && $install_to/setup
   echo '...done'
 done
 echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
