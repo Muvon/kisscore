@@ -1,5 +1,6 @@
 #!/bin/bash
 APP_DIR=$(dirname `realpath $0`)
+. $APP_DIR/functions.sh
 if [[ -z $1 ]]; then
   echo -e 'Usage: '$0' plugin1 plugin2 plugin3'
   echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
@@ -27,6 +28,7 @@ done
 rebuild=0
 for plugin in $@; do
   echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
+  plugin_dir=$PLUGIN_DIR/$plugin
   check_log=$APP_DIR/env/tmp/plugin-checks-$1
   $plugin_dir'/check' > $check_log 2>&1
   if [[ $? -ne 0 ]]; then
@@ -51,6 +53,8 @@ for plugin in $@; do
   /bin/cp -favr $plugin_dir/* $install_to
 
   export APP_DIR
+  export -f ssh_random_string
+  export -f allocate_port
   [[ -x $install_to/setup ]] && $install_to/setup
   echo '...done'
   rebuild=1
