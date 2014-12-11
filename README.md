@@ -43,7 +43,7 @@ Easy, right? Yeah! :)
 You can add your own tasks using special script. Just run it:
 ```bash
 ./task add 'command line with task #identification'
-```bash
+```
 
 To remove it just run:
 ```bash
