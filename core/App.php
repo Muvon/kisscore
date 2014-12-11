@@ -8,13 +8,10 @@ class App {
    * @return void 
    */
   public static function compile() {
-    // Generate map for autoload classes
     App::generateAutoloadMap();
     App::generateURIMap();
     App::generateParamMap();
     App::generateNginxRouteMap();
-    // Some more staff may be in future
-    // ...
   }
 
 
