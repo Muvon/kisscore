@@ -1,5 +1,5 @@
 #!/bin/bash
-trap "pgrep -P $$ | while read process; do pkill -SIGTERM -P \$process; kill \$process; done; wait; exit 0" SIGINT
+trap "pgrep -P $$ | while read process; do pkill -SIGTERM -P \$process; kill \$process; done; pgrep -f $(dirname `realpath $0`) | xargs kill; wait; exit 0" SIGINT SIGTERM
 while true; do
   readarray TASKS < $(dirname $0)/tasks
   for i in "${!TASKS[@]}"; do
