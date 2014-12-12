@@ -27,10 +27,8 @@ EOF
   # Check for already created folder on server
   ssh -T prod@$server '[[ ! -d /home/prod/'$PROJECT' ]]'
   if [[ $? == "0" ]]; then
-    ssh -T prod@$server <<"EOF"
-    mkdir -p $ENV_DIR/{etc,log,var,run,bin,tmp,backup}
-    mkdir -p $APP_DIR
-EOF
+    ssh -T prod@$server 'mkdir -p /home/prod/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
+    ssh -T prod@$server 'mkdir -p /home/prod/'$PROJECT'/app'
     rsync -aiz env/etc/ prod@$server:/home/prod/$PROJECT/env/etc
   fi
   
