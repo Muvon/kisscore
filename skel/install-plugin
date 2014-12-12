@@ -38,15 +38,15 @@ function install_plugin {
 
   /bin/mkdir -p $install_to
   /bin/cp -favr $plugin_dir/* $install_to
-  
+
+  [[ -x $install_to/setup ]] && $install_to/setup
+  echo '...done'
+
   if [[ -f $install_to/require ]]; then
     for dep in `cat $install_to/require`; do
       $0 $dep
     done
   fi
-
-  [[ -x $install_to/setup ]] && $install_to/setup
-  echo '...done'
   rebuild=1
 }
 

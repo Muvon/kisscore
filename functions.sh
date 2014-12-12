@@ -17,6 +17,7 @@ function ssh_random_string {
 
 # Allocate port for service
 function allocate_port {
+  app=$(basename $APP_DIR)
   if [[ -z $1 ]]; then
     echo 'Usage: '$0' name'
     exit 1
@@ -33,9 +34,9 @@ function allocate_port {
   done
   port=$(( $max + 1 ))
   
-  line=$(cat ~/ports | grep -E ^$1\:[0-9]+$)
+  line=$(cat ~/ports | grep -E ^$app:$1\:[0-9]+$)
   if [[ -z $line ]]; then
-    echo "$1:$port" >> ~/ports
+    echo "$app:$1:$port" >> ~/ports
     cat ~/ports | sort -h > ~/ports.tmp
     mv ~/ports.tmp ~/ports
   fi
