@@ -5,7 +5,7 @@ esac
 
 if [[ "$PROJECT" ]]; then
   if [[ "$bash_interactive" ]]; then
-    HISTFILE=$ENV_DIR/.bash_history
+    HISTFILE=$VAR_DIR/.bash_history
     PS1="\[\033[1;31m\]~/\$PROJECT/\[\033[0m\] $ps1_backup"
   fi
 else
@@ -55,6 +55,7 @@ function kiss {
           RUN_DIR=$PROJECT_DIR/env/run \
           LOG_DIR=$PROJECT_DIR/env/log \
           VAR_DIR=$PROJECT_DIR/env/var \
+          TMP_DIR=$PROJECT_DIR/env/tmp \
           PATH=$PROJECT_DIR:$path_backup \
           PS1=$PS1 \
           bash
@@ -74,6 +75,7 @@ function kiss {
             RUN_DIR=$PROJECT_DIR/env/run \
             LOG_DIR=$PROJECT_DIR/env/log \
             VAR_DIR=$PROJECT_DIR/env/var \
+            TMP_DIR=$PROJECT_DIR/env/tmp \
             PATH=$PROJECT_DIR:$path_backup \
           cd ~/$PROJECT 
         fi

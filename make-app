@@ -56,19 +56,16 @@ echo -e '\e[1;35mInstall compiled core file to project\e[0m'
 ./install-core $1
 echo '...done'
 
+echo -e '\e[1;35mInstall kiss bash env\e[0m'
 /bin/cp -avr `dirname $0`/.kissrc $HOME/.kissrc
 cat $HOME/.bashrc | grep -v '#.kissrc$' > $HOME/.bashrc.tmp
 echo 'source '$HOME'/.kissrc #.kissrc' >> $HOME/.bashrc.tmp
 /bin/mv $HOME/.bashrc.tmp $HOME/.bashrc
 . $HOME/.bashrc
+echo '...done'
 
 echo -e '\e[1;35mInitializing new application\e[0m'
 kiss $1 << "EOF"
   init
 EOF
 echo '...done'
-
-crontab -l | grep -v '#'$1'$' > $HOME/.crontab.tmp
-echo '* * * * * source ~/.kissrc ; kiss '$1' ; run ; #'$1 >> $HOME/.crontab.tmp
-crontab $HOME/.crontab.tmp
-/bin/rm $HOME/.crontab.tmp

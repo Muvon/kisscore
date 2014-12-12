@@ -9,5 +9,6 @@ checks['nano']='nano --version'
 checks['php']='php -r "(float) PHP_VERSION >= 5.5 ?: exit(1);"'
 checks['php-fpm']='php-fpm -v'
 checks['nginx']='nginx -v'
+checks['crontab']='which crontab'
 
 run_checks
