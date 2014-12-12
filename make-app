@@ -1,5 +1,5 @@
 #!/bin/bash
-. functions.sh
+. `dirname $0`/.kissrc
 if [[ "$1" == "" ]]; then
   echo 'Enter name of project to create. Example: ./make-app app'
   exit 1
@@ -23,7 +23,7 @@ echo '...done'
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
 mkdir $project_dir
 cp -avr skel/* $project_dir
-cp -avr functions.sh $project_dir
+cp -avr .kissrc $project_dir
 echo '...done'
 
 echo -e '\e[1;35mConfigure etc\e[0m'
@@ -56,17 +56,19 @@ echo -e '\e[1;35mInstall compiled core file to project\e[0m'
 ./install-core $1
 echo '...done'
 
-echo -e '\e[1;35mPrepare tasks\e[0m'
-cat skel/tasks \
-  | sed "s|%PHP_INI_CONFIG%|$project_dir/env/etc/php.ini|g" \
-  | sed "s|%PHP_FPM_CONFIG%|$project_dir/env/etc/php-fpm.conf|g" \
-  > $project_dir/tasks
-echo '...done'
+/bin/cp -avr `dirname $0`/.kissrc $HOME/.kissrc
+cat $HOME/.bashrc | grep -v '#.kissrc$' > $HOME/.bashrc.tmp
+echo 'source '$HOME'/.kissrc #.kissrc' >> $HOME/.bashrc.tmp
+/bin/mv $HOME/.bashrc.tmp $HOME/.bashrc
+. $HOME/.bashrc
 
 echo -e '\e[1;35mInitializing new application\e[0m'
-$project_dir/init
+kiss $1 << "EOF"
+  init
+EOF
 echo '...done'
 
-echo -e '\e[1;35mRestarting task manager\e[0m'
-$project_dir/restart
-echo '...done'
+crontab -l | grep -v '#'$1'$' > $HOME/.crontab.tmp
+echo '* * * * * source ~/.kissrc ; kiss '$1' ; run ; #'$1 >> $HOME/.crontab.tmp
+crontab $HOME/.crontab.tmp
+/bin/rm $HOME/.crontab.tmp

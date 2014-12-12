@@ -1,6 +1,4 @@
 #!/bin/bash
-APP_DIR=$(dirname `realpath $0`)
-. $APP_DIR/functions.sh
 declare -A checks
 
 checks['tar']='tar --version'

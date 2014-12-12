@@ -7,7 +7,7 @@ update_sha
 previous_sha=$sha
 build() {
   echo -en " rebuilding..."
-  $(pwd)'/init' > /dev/null 2>&1
+  $PROJECT_DIR'/init' > /dev/null 2>&1
   echo -en "\n--> resumed watching."
 }
 compare() {

@@ -1,5 +1,4 @@
 #!/bin/bash
-project=$(basename `pwd`)
 host_file=$(pwd)'/hosts'
 if [[ ! -f $host_file ]]; then
   echo 'Create hosts "'$host_file'" file with hostnames to deploy on'
@@ -18,21 +17,21 @@ for server in $servers; do
   echo 'Deploying on server '$server
 
   # Check for already created folder on server
-  ssh -x prod@${server} '[ ! -d /home/prod/'$project' ]'
+  ssh -x prod@${server} '[ ! -d /home/prod/'$PROJECT' ]'
   if [[ $? == "0" ]]; then
-    ssh -x prod@$server 'mkdir -p /home/prod/'$project'/env/{etc,log,var,run,bin,tmp,backup}'
-    ssh -x prod@$server 'mkdir -p /home/prod/'$project'/app'
-    rsync -aiz env/etc/ prod@$server:/home/prod/$project/env/etc
+    ssh -x prod@$server 'mkdir -p /home/prod/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
+    ssh -x prod@$server 'mkdir -p /home/prod/'$PROJECT'/app'
+    rsync -aiz env/etc/ prod@$server:/home/prod/$PROJECT/env/etc
   fi
   
   # sync onlye changed files
   rsync -aiz --exclude=env* --exclude=sphinx* \
     --exclude=.git* --exclude=html/f* \
-    --exclude=connect-db . prod@$server:/home/prod/$project
+    --exclude=connect-db . prod@$server:/home/prod/$PROJECT
 
-  # Compile project on server
-  ssh -x -t -t prod@${server} 'cd /home/prod/'$project' && ./init'
-  ssh -x -t -t prod@${server} 'rm /home/prod/'$project'/env/tmp/*'
+  # Compile PROJECT on server
+  ssh -x -t -t prod@${server} 'cd /home/prod/'$PROJECT' && ./init'
+  ssh -x -t -t prod@${server} 'rm /home/prod/'$PROJECT'/env/tmp/*'
   # All is done
   echo 'Deployed on server '$server
   ) > $(pwd)/env/tmp/deploy.$server 2>&1 &

@@ -1,8 +1,7 @@
 #!/bin/bash
-APP_DIR=$(dirname `realpath $0`)
 echo 'Initialization started'
 echo '+Compile project'
-$APP_DIR/php-exec 'App::compile()'
+php-exec 'App::compile()'
 echo '...done'
 echo '+Reloading services'
 sudo /etc/init.d/nginx reload

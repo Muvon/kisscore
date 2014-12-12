@@ -1,6 +1,0 @@
-#!/bin/bash
-APP_DIR=$(dirname `realpath $0`)
-echo '+Restarting tasks'
-pkill -f -x $APP_DIR/run
-nohup $APP_DIR/run > /dev/null 2>&1 &
-echo '...done'

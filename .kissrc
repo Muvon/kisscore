@@ -1,0 +1,154 @@
+#!/bin/bash
+case $- in
+    *i*) export bash_interactive=1;;
+esac
+
+if [[ "$PROJECT" ]]; then
+  if [[ "$bash_interactive" ]]; then
+    HISTFILE=$ENV_DIR/.bash_history
+    PS1="\[\033[1;31m\]~/\$PROJECT/\[\033[0m\] $ps1_backup"
+  fi
+else
+  export path_backup="$PATH";
+  export ps1_backup="$PS1";
+fi
+
+function kiss {
+  if [[ "$PROJECT" ]]; then
+    cd $HOME/$PROJECT
+  else
+    if [[ "$1" ]]; then
+      if [[ "$2" ]]; then
+        rev="$2"
+      fi
+
+      if [[ -z "$1" ]]; then
+        if [[ "$PROJECT" ]]; then
+          if [[ "$bash_interactive" ]]; then
+            exit
+          else
+            export PATH=$path_backup
+            export PS1="$ps1_backup"
+          fi
+        fi
+    else
+      name=`basename $1`
+      if [[ -d "$HOME/$name" ]]; then
+        if [[ "$bash_interactive" ]]; then
+          if [[ "$PROJECT" == "$name" ]]; then
+              echo Error: already in $PROJECT...
+              return
+          fi
+
+          oldpath=`pwd`
+          cd $HOME/$name
+          ci_pid=$!
+
+          PROJECT=$name \
+          PROJECT_DIR=$HOME/$PROJECT \
+          APP_DIR=$PROJECT_DIR/app \
+          HTML_DIR=$PROJECT_DIR/html \
+          CONFIG_DIR=$PROJECT_DIR/env/etc \
+          CONFIG_TEMPLATE_DIR=$PROJECT_DIR/env/etc-template \
+          ENV_DIR=$PROJECT_DIR/env \
+          BIN_DIR=$PROJECT_DIR/env/bin \
+          RUN_DIR=$PROJECT_DIR/env/run \
+          LOG_DIR=$PROJECT_DIR/env/log \
+          VAR_DIR=$PROJECT_DIR/env/var \
+          PATH=$PROJECT_DIR:$path_backup \
+          PS1=$PS1 \
+          bash
+
+          [[ ! -z $ci_pid ]] && kill $ci_pid
+          cd $oldpath
+        else
+
+          export PROJECT=$name
+          export PROJECT_DIR=$HOME/$PROJECT
+          export APP_DIR=$PROJECT_DIR/app \
+            HTML_DIR=$PROJECT_DIR/html \
+            CONFIG_DIR=$PROJECT_DIR/env/etc \
+            CONFIG_TEMPLATE_DIR=$PROJECT_DIR/env/etc-template \
+            ENV_DIR=$PROJECT_DIR/env \
+            BIN_DIR=$PROJECT_DIR/env/bin \
+            RUN_DIR=$PROJECT_DIR/env/run \
+            LOG_DIR=$PROJECT_DIR/env/log \
+            VAR_DIR=$PROJECT_DIR/env/var \
+            PATH=$PROJECT_DIR:$path_backup \
+          cd ~/$PROJECT 
+        fi
+      else
+        echo Error: project $name not found...
+      fi
+    fi
+
+    else
+      echo Error: project is not selected
+    fi
+  fi
+}
+
+# Random password generator
+# symbols, length
+function ssh_random_string {
+  symbols='A-Za-z0-9'
+  if [[ -z $1 ]]; then
+    symbols=$1
+  fi
+
+  length=40
+  if [[ $2 =~ ^[0-9]+$ ]]; then
+    length=$2
+  fi
+
+  < /dev/urandom tr -dc ${symbols} | head -c${length} && echo
+}
+
+# Allocate port for service
+function allocate_port {
+  app=$(basename $PROJECT_DIR)
+  if [[ -z $1 ]]; then
+    echo 'Usage: '$0' name'
+    exit 1
+  fi
+  [[ ! -f ~/ports ]] && touch ~/ports
+
+  start=33000
+  max=33000
+  for line in `cat ~/ports`; do
+    port=${line##*:}
+    if (( $max < $port )); then
+      max=$port
+    fi
+  done
+  port=$(( $max + 1 ))
+  
+  line=$(cat ~/ports | grep -E ^$app:$1\:[0-9]+$)
+  if [[ -z $line ]]; then
+    echo "$app:$1:$port" >> ~/ports
+    cat ~/ports | sort -h > ~/ports.tmp
+    mv ~/ports.tmp ~/ports
+  else
+    port=${line##*:}
+  fi
+  echo $port
+}
+
+# Run checks using array checks
+function run_checks {
+  exit_code=0
+  declare -A results
+
+  for k in "${!checks[@]}"; do
+    bash -c "${checks[$k]} &> /dev/null"
+    [[ "$?" != "0" ]] && results["$k"]='\e[1;31mFail' && exit_code=1 || results["$k"]='\e[1;32mSuccess'
+  done
+
+  for k in "${!results[@]}"; do
+    echo -e "\e[1;34m$k\e[0m - ${results[$k]}\e[0m"
+  done
+
+  exit $exit_code
+}
+
+export -f kiss ssh_random_string allocate_port run_checks

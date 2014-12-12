@@ -1,1 +1,1 @@
-php-fpm -c %PHP_INI_CONFIG% -y %PHP_FPM_CONFIG% -F #php-fpm
+php-fpm -c $CONFIG_DIR/php.ini -y $CONFIG_DIR/php-fpm.conf -F #php-fpm

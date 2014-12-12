@@ -1,12 +1,22 @@
 #!/bin/bash
-trap "pgrep -P $$ | while read process; do pkill -SIGTERM -P \$process; kill \$process; done; pgrep -f $(dirname `realpath $0`) | xargs kill; wait; exit 0" SIGINT SIGTERM
+pid_file=$RUN_DIR/run.pid
+if [[ -f $pid_file ]]; then 
+  pid=$(cat $pid_file)
+  if ps -p $pid > /dev/null; then
+    exit 1
+  fi
+fi
+echo -n $$ > $pid_file
+
+trap "pgrep -P $$ | while read process; do pkill -SIGTERM -P \$process; kill \$process; done; wait; exit 0" SIGINT SIGTERM
 while true; do
-  readarray TASKS < $(dirname $0)/tasks
+  readarray TASKS < $PROJECT_DIR/tasks
   for i in "${!TASKS[@]}"; do
     if [[ ${PIDS[$i]+isset} && $(ps -p ${PIDS[$i]} -o pid | sed 1d) ]]; then
       continue
     fi
-    ( ${TASKS[$i]% \#*} ) & PIDS[$i]=$!
+    cmd=${TASKS[$i]%% \#*}
+    ( bash -c "$cmd" ) & PIDS[$i]=$!
   done
   sleep 1
 done

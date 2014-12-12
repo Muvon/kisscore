@@ -1,7 +1,4 @@
 #!/bin/bash
-APP_DIR=$(dirname `realpath $0`)
-. $APP_DIR/functions.sh
-
 if [[ -z $1 ]]; then
   echo -e 'Usage: '$0' plugin1 plugin2 plugin3'
   echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
@@ -9,14 +6,14 @@ if [[ -z $1 ]]; then
   exit 1
 fi
 
-export APP_DIR
+export PROJECT_DIR
 export -f ssh_random_string allocate_port run_checks
 
 function install_plugin {
   plugin=$1
   echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
   plugin_dir=$PLUGIN_DIR/$plugin
-  check_log=$APP_DIR/env/tmp/plugin-checks-$plugin
+  check_log=$PROJECT_DIR/env/tmp/plugin-checks-$plugin
   $plugin_dir'/check' > $check_log 2>&1
   if [[ $? -ne 0 ]]; then
     echo 'Run checks failed, skipping...'
@@ -25,7 +22,7 @@ function install_plugin {
   fi
   /bin/rm $check_log
 
-  install_to=$APP_DIR/app/plugins/$plugin
+  install_to=$PROJECT_DIR/app/plugins/$plugin
   if [[ -z $PLUGIN_UPDATE && -d $install_to ]]; then
     echo 'Plugin already installed, skipping. Use PLUGIN_UPDATE=1 for update'
     continue
@@ -51,7 +48,7 @@ function install_plugin {
 }
 
 if [[ -z $PLUGIN_DIR ]]; then
-  PLUGIN_DIR=$APP_DIR/plugins
+  PLUGIN_DIR=$PROJECT_DIR/plugins
 fi
 
 if [[ ! -d $PLUGIN_DIR ]]; then
@@ -74,5 +71,5 @@ done
 
 if (( $rebuild )); then
   echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
-  $APP_DIR/init
+  $PROJECT_DIR/init
 fi
