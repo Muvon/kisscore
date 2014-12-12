@@ -76,7 +76,7 @@ function kiss {
             LOG_DIR=$PROJECT_DIR/env/log \
             VAR_DIR=$PROJECT_DIR/env/var \
             TMP_DIR=$PROJECT_DIR/env/tmp \
-            PATH=$PROJECT_DIR:$path_backup \
+            PATH=$PROJECT_DIR:$path_backup
           cd ~/$PROJECT 
         fi
       else

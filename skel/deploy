@@ -1,5 +1,5 @@
 #!/bin/bash
-host_file=$(pwd)'/hosts'
+host_file=$PROJECT_DIR/hosts
 if [[ ! -f $host_file ]]; then
   echo 'Create hosts "'$host_file'" file with hostnames to deploy on'
   exit 1
@@ -15,12 +15,22 @@ fi
 for server in $servers; do
   (
   echo 'Deploying on server '$server
+  
+  scp $HOME/.kissrc prod@$server:/home/prod
+  ssh -T prod@$server <<"EOF"
+    /bin/cat $HOME/.bashrc | /bin/grep -v '#.kissrc$' > $HOME/.bashrc.tmp
+    echo "source $HOME/.kissrc #.kissrc" >> $HOME/.bashrc.tmp
+    /bin/mv $HOME/.bashrc.tmp $HOME/.bashrc
+    source $HOME/.bashrc
+EOF
 
   # Check for already created folder on server
-  ssh -x prod@${server} '[ ! -d /home/prod/'$PROJECT' ]'
+  ssh -T prod@$server '[[ ! -d /home/prod/'$PROJECT' ]]'
   if [[ $? == "0" ]]; then
-    ssh -x prod@$server 'mkdir -p /home/prod/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
-    ssh -x prod@$server 'mkdir -p /home/prod/'$PROJECT'/app'
+    ssh -T prod@$server <<"EOF"
+    mkdir -p $ENV_DIR/{etc,log,var,run,bin,tmp,backup}
+    mkdir -p $APP_DIR
+EOF
     rsync -aiz env/etc/ prod@$server:/home/prod/$PROJECT/env/etc
   fi
   
@@ -30,16 +40,19 @@ for server in $servers; do
     --exclude=connect-db . prod@$server:/home/prod/$PROJECT
 
   # Compile PROJECT on server
-  ssh -x -t -t prod@${server} 'cd /home/prod/'$PROJECT' && ./init'
-  ssh -x -t -t prod@${server} 'rm /home/prod/'$PROJECT'/env/tmp/*'
+  ssh -T prod@$server <<EOF
+    kiss $PROJECT
+    init
+    /bin/rm \$TMP_DIR/*
+EOF
   # All is done
   echo 'Deployed on server '$server
-  ) > $(pwd)/env/tmp/deploy.$server 2>&1 &
+  ) > $TMP_DIR/deploy.$server 2>&1 &
 done
 wait
 
 # Display result of jobs
-for file in $(ls $(pwd)/env/tmp/deploy.*); do
+for file in $(ls $TMP_DIR/deploy.*); do
   cat $file
   rm $file
 done
