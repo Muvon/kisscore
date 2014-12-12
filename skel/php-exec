@@ -10,6 +10,7 @@ putenv('BIN_DIR=' . __DIR__ . '/env/bin');
 putenv('RUN_DIR=' . __DIR__ . '/env/run');
 putenv('LOG_DIR=' . __DIR__ . '/env/log');
 putenv('VAR_DIR=' . __DIR__ . '/env/var');
+putenv('TMP_DIR=' . __DIR__ . '/env/tmp');
 putenv('HTTP_HOST=' . `hostname`);
 putenv('KISS_CORE=' . __DIR__ . '/app/core.php');
 
