@@ -39,6 +39,8 @@ function allocate_port {
     echo "$app:$1:$port" >> ~/ports
     cat ~/ports | sort -h > ~/ports.tmp
     mv ~/ports.tmp ~/ports
+  else
+    port=${line##*:}
   fi
   echo $port
 }
