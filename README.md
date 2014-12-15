@@ -49,17 +49,17 @@ kiss myproj
 And you are in project with special var and PATH configured
 
 ## Environment variables
-$PROJECT - Your project name 
-$PROJECT_DIR - home dir of your project (~/$PROJECT) 
-$APP_DIR - application dir with code 
-$ENV_DIR - environment dir 
-$RUN_DIR - run directory (pid files of running processes and so on) 
-$VAR_DIR - Var dir 
-$TMP_DIR - for temp files 
-$LOG_DIR - all logs from project collect here 
-$CONFIG_DIR - configuration files 
-$BIN_DIR - for special bin files and scripts 
-$HTML_DIR - public directory for static files 
+- $PROJECT - Your project name
+- $PROJECT_DIR - home dir of your project (~/$PROJECT)
+- $APP_DIR - application dir with code
+- $ENV_DIR - environment dir
+- $RUN_DIR - run directory (pid files of running processes and so on)
+- $VAR_DIR - Var dir
+- $TMP_DIR - for temp files
+- $LOG_DIR - all logs from project collect here
+- $CONFIG_DIR - configuration files
+- $BIN_DIR - for special bin files and scripts
+- $HTML_DIR - public directory for static files
 
 ## Tasks
 You can add your own tasks using special script. Just run it:
