@@ -1,5 +1,6 @@
 #!/bin/bash
-. `dirname $0`/.kissrc
+`dirname $0`/install-env
+. ~/.kissrc
 if [[ "$1" == "" ]]; then
   echo 'Enter name of project to create. Example: ./make-app app'
   exit 1
@@ -54,14 +55,6 @@ echo '...done'
 
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'
 ./install-core $1
-echo '...done'
-
-echo -e '\e[1;35mInstall kiss bash env\e[0m'
-/bin/cp -avr `dirname $0`/.kissrc $HOME/.kissrc
-cat $HOME/.bashrc | grep -v '#.kissrc$' > $HOME/.bashrc.tmp
-echo 'source '$HOME'/.kissrc #.kissrc' >> $HOME/.bashrc.tmp
-/bin/mv $HOME/.bashrc.tmp $HOME/.bashrc
-. $HOME/.bashrc
 echo '...done'
 
 echo -e '\e[1;35mInitializing new application\e[0m'

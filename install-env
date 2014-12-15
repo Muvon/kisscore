@@ -1,0 +1,8 @@
+#!/bin/bash
+echo -e '\e[1;35mInstall kiss bash env\e[0m'
+/bin/cp -avr `dirname $0`/.kissrc $HOME/.kissrc
+cat $HOME/.bashrc | grep -v '#.kissrc$' > $HOME/.bashrc.tmp
+echo 'source '$HOME'/.kissrc #.kissrc' >> $HOME/.bashrc.tmp
+/bin/mv $HOME/.bashrc.tmp $HOME/.bashrc
+. $HOME/.bashrc
+echo '...done'
