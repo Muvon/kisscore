@@ -283,4 +283,19 @@ class App {
   public static function error($error, $class = 'Exception') {
     throw new $class($error);
   }
+
+  public static function exec($cmd) {
+    $project = getenv('PROJECT');
+    return trim(`bash -c "source ~/.kissrc; kiss $project; $cmd"`);
+  }
+
+  public static function allocatePort($service) {
+    $port = (int) static::exec('allocate_port ' . $service);
+    
+    if ($port > 0) {
+      return $port;
+    }
+
+    throw new Exception('Cant allocate port for service ' . $service);
+  }
 }
