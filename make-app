@@ -24,7 +24,6 @@ echo '...done'
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
 mkdir $project_dir
 cp -avr skel/* $project_dir
-cp -avr .kissrc $project_dir
 echo '...done'
 
 echo -e '\e[1;35mConfigure etc\e[0m'
