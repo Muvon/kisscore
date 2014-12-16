@@ -7,6 +7,7 @@ secret      = '%KISS_SECRET_KEY%'
 autoload_map_file = '%VAR_DIR%/php_autoload_map.json'
 uri_map_file	  = '%VAR_DIR%/uri_request_map.json'
 param_map_file    = '%VAR_DIR%/import_var_map.json'
+nginx_route_file  = '%RUN_DIR%/nginx_route_map.conf'
 
 [defaults]
 route       = 'home'

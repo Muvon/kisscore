@@ -2,7 +2,7 @@ server {
   listen   80;
   server_name  %PROJECT%.lo;
   client_max_body_size 10m;
-  include %RUN_DIR%/nginx-route-map.conf;
+  include %NGINX_ROUTE_FILE%;
 
 
   location / {
@@ -19,9 +19,8 @@ server {
   location @app {
     access_log  %LOG_DIR%/nginx-access.log combined buffer=32k;
     expires off;
-    #root /home/$user/app;
-    #fastcgi_pass   127.0.0.1:9000;
-    include        fastcgi_params;
+
+    include        %CONFIG_DIR%/nginx_fastcgi_params;
 
     fastcgi_param  SCRIPT_FILENAME  %APP_DIR%/frontend.php;
     fastcgi_param  SCRIPT_NAME      %APP_DIR%/frontend.php;

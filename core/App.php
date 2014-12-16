@@ -8,15 +8,35 @@ class App {
    * @return void 
    */
   public static function compile() {
-    App::configure();
-    App::generateAutoloadMap();
-    App::generateURIMap();
-    App::generateParamMap();
-    App::generateNginxRouteMap();
+    static::configure(getenv('CONFIG_TEMPLATE_DIR') . '/app.ini.tpl');
+    static::configure(getenv('CONFIG_TEMPLATE_DIR'), [
+      '%NGINX_ROUTE_FILE%' => config('common.nginx_route_file'),
+    ]);
+    static::generateAutoloadMap();
+    static::generateURIMap();
+    static::generateParamMap();
+    static::generateNginxRouteMap();
+
+    static::generateConfigs();
   }
 
-  public static function configure() {
-    $params = [
+  public static function generateConfigs() {
+    foreach (static::getJson(config('common.autoload_map_file')) as $class) {
+      if (method_exists($class, 'configure')) {
+        forward_static_call([$class, 'configure']);
+      }
+    }
+  }
+
+  /**
+   * @param string $template Path to template or dir with templates
+   * @param array $params %Params% to be replaced
+   * @return void
+   */
+  public static function configure($template, array $params = []) {
+    assert('is_string($template)');
+
+    $params += [
       '%USER%'          => getenv('USER'),
       '%PROJECT%'       => getenv('PROJECT'),
       '%PROJECT_DIR%'   => getenv('PROJECT_DIR'),
@@ -30,10 +50,11 @@ class App {
       '%VAR_DIR%'       => getenv('VAR_DIR'),
       '%TMP_DIR%'       => getenv('TMP_DIR'),
       '%KISS_CORE%'     => getenv('KISS_CORE'),
-      '%HTTP_HOST%'     => getenv('HTTP_HOST'),      
+      '%HTTP_HOST%'     => getenv('HTTP_HOST'),
       '%CONFIG_TEMPLATE_DIR%' => getenv('CONFIG_TEMPLATE_DIR'),
     ];
-    foreach(glob(getenv('CONFIG_TEMPLATE_DIR') . '/*.tpl') as $file) {
+
+    foreach(is_dir($template) ? glob($template . '/*.tpl') : [$template] as $file) {
       file_put_contents(getenv('CONFIG_DIR') . '/' . basename($file, '.tpl'), strtr(file_get_contents($file), $params));
     }
   }
@@ -45,11 +66,10 @@ class App {
   protected static function generateAutoloadMap() {
     $map = [];
     $app_dir = getenv('APP_DIR');
-    $files = explode(PHP_EOL, trim(`cd $app_dir && find -L lib models plugins services | grep \.php$`));
+    $files = explode(PHP_EOL, trim(`find -L $app_dir -name *.php`));
 
     foreach($files as $file) {
       $class = substr(basename($file), 0, -4);
-      $file = "$app_dir/$file";
       
       $content = file_get_contents($file);
       if (preg_match("/(class|interface|trait) +$class/", $content)) {
@@ -121,7 +141,7 @@ class App {
       $rewrites[] = "rewrite '^/$route/?$' '$uri';";
     }
     // @TODO fix configs prepares
-    file_put_contents(getenv('RUN_DIR'). '/nginx-route-map.conf', implode(PHP_EOL, $rewrites));
+    file_put_contents(config('common.nginx_route_file'), implode(PHP_EOL, $rewrites));
   }
 
   public static function getImportVarsArgs($file) {
