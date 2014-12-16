@@ -1,19 +1,5 @@
 #!/usr/bin/php
 <?php
-putenv('PROJECT_DIR=' . __DIR__);
-putenv('APP_DIR=' . __DIR__ . '/app');
-putenv('HTML_DIR=' . __DIR__ . '/html');
-putenv('CONFIG_DIR=' . __DIR__ . '/env/etc');
-putenv('CONFIG_TEMPLATE_DIR=' . __DIR__ . '/env/etc-template');
-putenv('ENV_DIR=' . __DIR__ . '/env');
-putenv('BIN_DIR=' . __DIR__ . '/env/bin');
-putenv('RUN_DIR=' . __DIR__ . '/env/run');
-putenv('LOG_DIR=' . __DIR__ . '/env/log');
-putenv('VAR_DIR=' . __DIR__ . '/env/var');
-putenv('TMP_DIR=' . __DIR__ . '/env/tmp');
-putenv('HTTP_HOST=' . `hostname`);
-putenv('KISS_CORE=' . __DIR__ . '/app/core.php');
-
 include getenv('KISS_CORE');
 
 if (!isset($_SERVER['argv'][1])) {
@@ -23,4 +9,5 @@ if (!isset($_SERVER['argv'][1])) {
 // Получаем ответ и выполняем запрос
 App::start();
 eval($_SERVER['argv'][1] . ';');
+echo PHP_EOL;
 App::stop();
