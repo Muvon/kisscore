@@ -17,7 +17,7 @@
 [global]
 ; Pid file
 ; Default Value: none
-; pid = /home/dk/mixta/env/run/php-fpm.pid
+pid = %RUN_DIR%/php-fpm.pid
 
 ; Error log file
 ; Default Value: /var/log/php-fpm.log
