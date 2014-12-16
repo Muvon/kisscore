@@ -633,7 +633,8 @@ html_errors = Off
 ; empty.
 ; http://php.net/error-log
 ; Example:
-error_log = %PROJECT_DIR%/env/log/php-errors.log
+error_log = %LOG_DIR%/php-errors.log
+
 ; Log errors to syslog (Event Log on NT, not valid in Windows 95).
 ;error_log = syslog
 
@@ -1470,7 +1471,7 @@ session.save_handler = files
 ; where MODE is the octal representation of the mode. Note that this
 ; does not overwrite the process's umask.
 ; http://php.net/session.save-path
-session.save_path = "%PROJECT_DIR%/env/tmp"
+session.save_path = "%TMP_DIR%"
 
 ; Whether to use cookies.
 ; http://php.net/session.use-cookies

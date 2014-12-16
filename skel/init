@@ -1,6 +1,6 @@
 #!/bin/bash
 echo 'Initialization started'
-echo '+Compile project'
+echo '+Configure and compile project'
 php-exec 'App::compile()'
 echo '...done'
 echo '+Reloading services'

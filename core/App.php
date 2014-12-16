@@ -8,12 +8,35 @@ class App {
    * @return void 
    */
   public static function compile() {
+    App::configure();
     App::generateAutoloadMap();
     App::generateURIMap();
     App::generateParamMap();
     App::generateNginxRouteMap();
   }
 
+  public static function configure() {
+    $params = [
+      '%USER%'          => getenv('USER'),
+      '%PROJECT%'       => getenv('PROJECT'),
+      '%PROJECT_DIR%'   => getenv('PROJECT_DIR'),
+      '%APP_DIR%'       => getenv('APP_DIR'),
+      '%HTML_DIR%'      => getenv('HTML_DIR'),
+      '%CONFIG_DIR%'    => getenv('CONFIG_DIR'),
+      '%ENV_DIR%'       => getenv('ENV_DIR'),
+      '%BIN_DIR%'       => getenv('BIN_DIR'),
+      '%RUN_DIR%'       => getenv('RUN_DIR'),
+      '%LOG_DIR%'       => getenv('LOG_DIR'),
+      '%VAR_DIR%'       => getenv('VAR_DIR'),
+      '%TMP_DIR%'       => getenv('TMP_DIR'),
+      '%KISS_CORE%'     => getenv('KISS_CORE'),
+      '%HTTP_HOST%'     => getenv('HTTP_HOST'),      
+      '%CONFIG_TEMPLATE_DIR%' => getenv('CONFIG_TEMPLATE_DIR'),
+    ];
+    foreach(glob(getenv('CONFIG_TEMPLATE_DIR') . '/*.tpl') as $file) {
+      file_put_contents(getenv('CONFIG_DIR') . '/' . basename($file, '.tpl'), strtr(file_get_contents($file), $params));
+    }
+  }
 
   /**
    * Генерация карты для автолоада классов

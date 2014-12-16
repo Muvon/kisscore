@@ -21,7 +21,7 @@
 
 ; Error log file
 ; Default Value: /var/log/php-fpm.log
-error_log = %PROJECT_DIR%/env/log/php-fpm.log
+error_log = %LOG_DIR%/php-fpm.log
 
 ; Log level
 ; Possible Values: alert, error, warning, notice, debug
@@ -73,7 +73,7 @@ daemonize = no
 ;   '/path/to/unix/socket' - to listen on a unix socket.
 ; Note: This value is mandatory.
 ; listen = 127.0.0.1:9000
-listen = %PROJECT_DIR%/env/run/php-fpm.sock
+listen = %RUN_DIR%/php-fpm.sock
 
 
 ; Set listen(2) backlog. A value of '-1' means unlimited.
@@ -216,7 +216,7 @@ request_slowlog_timeout = 1s
  
 ; The log file for slow requests
 ; Default Value: /var/log/php-fpm.log.slow
-slowlog =%PROJECT_DIR%/env/log/php-fpm.log.slow
+slowlog =%LOG_DIR%/php-fpm.log.slow
  
 ; Set open file descriptor rlimit.
 ; Default Value: system defined value
