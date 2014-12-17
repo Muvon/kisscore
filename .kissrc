@@ -5,7 +5,7 @@ esac
 
 if [[ "$PROJECT" ]]; then
   if [[ "$bash_interactive" ]]; then
-    HISTFILE=$VAR_DIR/.bash_history
+    HISTFILE=$HOME/.${PROJECT}_history
     PS1="\[\033[1;31m\]~/\$PROJECT/\[\033[0m\] $ps1_backup"
   fi
 else

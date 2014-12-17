@@ -4,11 +4,12 @@ echo '+Configure and compile project'
 php-exec 'App::compile()'
 echo '...done'
 echo '+Reloading services'
-sudo /etc/init.d/nginx reload
+[[ -x /etc/init.d/nginx ]] && sudo /etc/init.d/nginx reload || sudo /usr/bin/systemctl reload nginx.service
 echo '...done'
 echo '+Reconfigure crontab'
-crontab -l | grep -v '#'$PROJECT'$' > $TMP_DIR/.crontab.tmp
+crontab=$(which crontab)
+$crontab -l | grep -v '#'$PROJECT'$' > $TMP_DIR/.crontab.tmp
 echo '* * * * * source ~/.kissrc ; kiss '$PROJECT' ; run ; #'$PROJECT >> $TMP_DIR/.crontab.tmp
-crontab $TMP_DIR/.crontab.tmp
+$crontab $TMP_DIR/.crontab.tmp
 /bin/rm $TMP_DIR/.crontab.tmp
 echo '...done'

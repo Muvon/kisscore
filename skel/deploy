@@ -41,7 +41,7 @@ EOF
   ssh -T prod@$server <<EOF
     kiss $PROJECT
     init
-    /bin/rm \$TMP_DIR/*
+    [[ \$(/bin/ls \$TMP_DIR) ]] && /bin/rm \$TMP_DIR/*
 EOF
   # All is done
   echo 'Deployed on server '$server
