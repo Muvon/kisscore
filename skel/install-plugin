@@ -6,23 +6,24 @@ if [[ -z $1 ]]; then
   exit 1
 fi
 
-export PROJECT_DIR
-export -f ssh_random_string allocate_port run_checks
-
 function install_plugin {
   plugin=$1
   echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
   plugin_dir=$PLUGIN_DIR/$plugin
-  check_log=$PROJECT_DIR/env/tmp/plugin-checks-$plugin
-  $plugin_dir'/check' > $check_log 2>&1
-  if [[ $? -ne 0 ]]; then
-    echo 'Run checks failed, skipping...'
-    /bin/cat $check_log && /bin/rm $check_log
-    continue
-  fi
-  /bin/rm $check_log
 
-  install_to=$PROJECT_DIR/app/plugins/$plugin
+  # Check requirements
+  if [[ -x $plugin_dir/check ]]; then
+    check_log=$TMP_DIR/plugin-checks-$plugin
+    $plugin_dir/check > $check_log 2>&1
+    if [[ $? -ne 0 ]]; then
+      echo 'Run checks failed, skipping...'
+      /bin/cat $check_log && /bin/rm $check_log
+      continue
+    fi
+    /bin/rm $check_log
+  fi
+
+  install_to=$APP_DIR/plugins/$plugin
   if [[ -z $PLUGIN_UPDATE && -d $install_to ]]; then
     echo 'Plugin already installed, skipping. Use PLUGIN_UPDATE=1 for update'
     continue

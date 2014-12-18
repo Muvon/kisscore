@@ -8,23 +8,28 @@ class App {
    * @return void 
    */
   public static function compile() {
-    static::configure(getenv('CONFIG_TEMPLATE_DIR') . '/app.ini.tpl');
-    static::configure(getenv('CONFIG_TEMPLATE_DIR'), [
-      '%NGINX_ROUTE_FILE%' => config('common.nginx_route_file'),
-    ]);
+    static::reconfigure();
     static::generateAutoloadMap();
     static::generateURIMap();
     static::generateParamMap();
     static::generateNginxRouteMap();
+  }
 
+  public static function reconfigure() {
+    static::configure(getenv('CONFIG_TEMPLATE_DIR') . '/app.ini.tpl');
+    static::configure(getenv('CONFIG_TEMPLATE_DIR'), [
+      '%NGINX_ROUTE_FILE%' => config('common.nginx_route_file'),
+    ]);
     static::generateConfigs();
   }
 
   public static function generateConfigs() {
-    foreach (static::getJson(config('common.autoload_map_file')) as $class) {
-      if (method_exists($class, 'configure')) {
-        forward_static_call([$class, 'configure']);
-      }
+    $configure = function ($file) {
+      return include $file;
+    };
+    
+    foreach (glob(getenv('APP_DIR') . '/plugins/*/configure.php') as $file) {
+      $configure($file);
     }
   }
 

@@ -94,6 +94,25 @@ function kiss {
   fi
 }
 
+# App ini template configurator
+# block, params
+function app_config {
+  if [[ -z $1 || -z $2 ]]; then
+    echo 'Usage: '$0' block params'
+    return
+  fi
+
+  if [[ -z $PROJECT ]]; then
+    echo 'Not in project. Run kiss PROJECT';
+    return
+  fi
+
+  echo "
+[$1]
+$2
+" >> $CONFIG_TEMPLATE_DIR/app.ini.tpl
+}
+
 # Random password generator
 # symbols, length
 function ssh_random_string {
@@ -157,4 +176,4 @@ function run_checks {
   exit $exit_code
 }
 
-export -f kiss ssh_random_string allocate_port run_checks
+export -f kiss ssh_random_string allocate_port run_checks app_config
