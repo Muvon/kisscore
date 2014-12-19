@@ -137,7 +137,8 @@ class App {
 
     $rewrites = [];
     foreach ($routes as $route => $action) {
-      $uri = '/?ROUTE=' . rawurlencode($route) . '&ACTION=' . array_shift($action);
+      $i = 0; // route like (bla (bla bla)) with uff8 cant handle by nginx. so hack it
+      $uri = '/?ROUTE=' . preg_replace_callback('|\([^\)]+\)|is', function ($item) use (&$i) { return '$' . ++$i; }, $route) . '&ACTION=' . array_shift($action);
 
       if ($action) {
         foreach ($action as $k => $v) {
