@@ -7,7 +7,7 @@ fi
 tasks_file=$PROJECT_DIR/tasks
 id=${2##*\#}
 
-cat $tasks_file | grep -v \#$id$ | sort -V > $tasks_file.tmp
+cat $tasks_file | grep -v \#$id$ > $tasks_file.tmp
 case $1 in
   add)
     if [[ -z $2 ]]; then
@@ -19,7 +19,7 @@ case $1 in
     ;;
   remove)
     if [[ -z $2 ]]; then
-      echo 'Specify command to add. Example: task add memcached'
+      echo 'Specify command to remove. Example: task add memcached'
       /bin/rm $tasks_file.tmp
       exit 1
     fi
@@ -36,4 +36,5 @@ case $1 in
     exit 1
     ;;
 esac
-/bin/mv $tasks_file.tmp $tasks_file
+cat $tasks_file.tmp | | sort -V > $tasks_file
+/bin/rm $tasks_file.tmp

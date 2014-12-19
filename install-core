@@ -13,3 +13,4 @@ echo '<?php' > $core_file
 for file in `ls core`; do
   tail -n +2 core/$file >> $core_file
 done
+echo >> $core_file
