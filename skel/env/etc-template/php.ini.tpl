@@ -770,7 +770,7 @@ default_mimetype = "text/html"
 
 ; PHP's default character set is set to empty.
 ; http://php.net/default-charset
-;default_charset = "iso-8859-1"
+default_charset = "utf-8"
 
 ; Always populate the $HTTP_RAW_POST_DATA variable. PHP's default behavior is
 ; to disable this feature.

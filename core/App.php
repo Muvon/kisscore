@@ -137,13 +137,14 @@ class App {
 
     $rewrites = [];
     foreach ($routes as $route => $action) {
-      $uri = '/?route=' . array_shift($action);
+      $uri = '/?ROUTE=' . rawurlencode($route) . '&ACTION=' . array_shift($action);
+
       if ($action) {
         foreach ($action as $k => $v) {
           $uri .= '&' . $v . '=$' . ($k + 1);
         }
       }
-      $rewrites[] = "rewrite '^/$route/?$' '$uri';";
+      $rewrites[] = "rewrite '(*UTF8)^/$route/?$' '$uri';";
     }
     // @TODO fix configs prepares
     file_put_contents(config('common.nginx_route_file'), implode(PHP_EOL, $rewrites));

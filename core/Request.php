@@ -40,6 +40,7 @@ class Request {
   private
   $Response     = null,
   $params       = [],
+  $action  = '',
   $route   = '',
   $url      = '',
   $url_map    = [],
@@ -129,7 +130,8 @@ class Request {
         self::$host = $_SERVER['HTTP_HOST'];
       }
       self::$Instance = new self($url);
-      self::$Instance->setRoute(self::$Instance->param('route'));
+      self::$Instance->setRoute(self::$Instance->param('ROUTE'));
+      self::$Instance->setAction(self::$Instance->param('ACTION'));
     }
     return self::$Instance;
   }
@@ -148,6 +150,10 @@ class Request {
     }
     return $url;
   }
+
+  public function getUrl() {
+    return $this->url;
+  }
   
   /**
    * Парсит и сохраняет все параметры в переменной self::$params
@@ -158,7 +164,7 @@ class Request {
   protected function parseParams( ) {
     if (self::$is_cli) {
       $file = array_shift($_SERVER['argv']);
-      $this->params['route'] = array_shift($_SERVER['argv']);
+      $this->params['action'] = $this->params['route'] = array_shift($_SERVER['argv']);
       $this->params += $_SERVER['argv']; unset($_SERVER['argv']);
     } else {
       $this->params = $_POST + $_GET; unset($_POST, $_GET);
@@ -263,33 +269,6 @@ class Request {
     ;
   }
 
-  /**
-  * Получение текущего запрашиваемого адреса
-  *
-  * @param access public
-  * @return string
-  */
-  public function getUrl( ) {
-    return $this->url;
-  }
-  
-  /**
-   * Получение пути в урле
-   *
-   * @access public
-   * @return string без слешев в начале и конце
-   */
-  public function getUrlPath( ) {
-    return trim(parse_url($this->getUrl( ), PHP_URL_PATH), '/');
-  }
-
-  /**
-   * Получение одной из частей урла, части делятся слешем - /
-   * @return string
-   */
-  public function getUrlPathPart($part = 0) {
-    return explode('/', $this->getUrlPath())[$part];
-  }
   
   /**
    * Установка текущего роута с последующим парсингом его в действие и модуль
@@ -310,7 +289,29 @@ class Request {
    * @return string
    */
   public function getRoute() {
-    return $this->route ? $this->route : config('defaults.route');
+    return $this->route ? $this->route : '';
+  }
+
+  /**
+   * Установка текущего роута с последующим парсингом его в действие и модуль
+   *
+   * @access public
+   * @param string $route
+   * @return $this
+   */
+  public function setAction($action) {
+    $this->action = preg_replace('|[^a-z0-9\_\-]+|is', '', $action);
+    return $this;
+  }
+  
+  /**
+   * Получение текущего роута
+   *
+   * @access public
+   * @return string
+   */
+  public function getAction() {
+    return $this->action ? $this->action : config('default.action');
   }
   
   /**

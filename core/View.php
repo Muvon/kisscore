@@ -52,7 +52,7 @@ class View {
    * @see self::create
    */
   final protected function __construct( ) {
-    $this->route = Request::instance( )->getRoute( );
+    $this->route = Request::instance()->getAction();
   }
 
   /**

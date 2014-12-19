@@ -9,8 +9,8 @@ uri_map_file	  = '%VAR_DIR%/uri_request_map.json'
 param_map_file    = '%VAR_DIR%/import_var_map.json'
 nginx_route_file  = '%RUN_DIR%/nginx_route_map.conf'
 
-[defaults]
-route       = 'home'
+[default]
+action       = 'home'
 
 [view]
 source_dir          = '%APP_DIR%/views'
