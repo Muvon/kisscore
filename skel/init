@@ -9,8 +9,9 @@ echo '+Reloading services'
 echo '...done'
 echo '+Reconfigure crontab'
 crontab=$(which crontab)
-$crontab -l | grep -v '#'$PROJECT'$' > $TMP_DIR/.crontab.tmp
-echo '* * * * * source ~/.kissrc ; kiss '$PROJECT' ; run ; #'$PROJECT >> $TMP_DIR/.crontab.tmp
+$crontab -l | grep -v -E '^SHELL=' | grep -v '#'$PROJECT'$' > $TMP_DIR/.crontab.tmp
+sed -i '1i SHELL=/bin/bash' $TMP_DIR/.crontab.tmp
+echo '* * * * * source ~/.kissrc ; kiss '$PROJECT' ; run > $TMP_DIR/run.log ; #'$PROJECT >> $TMP_DIR/.crontab.tmp
 $crontab $TMP_DIR/.crontab.tmp
 /bin/rm $TMP_DIR/.crontab.tmp
 echo '...done'

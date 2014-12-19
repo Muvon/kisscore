@@ -36,5 +36,5 @@ case $1 in
     exit 1
     ;;
 esac
-cat $tasks_file.tmp | | sort -V > $tasks_file
+cat $tasks_file.tmp | sort -V > $tasks_file
 /bin/rm $tasks_file.tmp

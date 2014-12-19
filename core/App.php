@@ -71,7 +71,7 @@ class App {
   protected static function generateAutoloadMap() {
     $map = [];
     $app_dir = getenv('APP_DIR');
-    $files = explode(PHP_EOL, trim(`find -L $app_dir -name *.php`));
+    $files = explode(PHP_EOL, trim(`find -L $app_dir -name '*.php'`));
 
     foreach($files as $file) {
       $class = substr(basename($file), 0, -4);
@@ -93,7 +93,7 @@ class App {
   protected static function generateURIMap() {
     $map = [];
     $action_dir = getenv('APP_DIR') . '/actions';
-    $files = explode(PHP_EOL, trim(`find -L $action_dir | grep \.php$`));
+    $files = explode(PHP_EOL, trim(`find -L $action_dir -name '*.php'`));
     foreach ($files as $file) {
       $action = substr(basename($file), 0, -4);
       $content = file_get_contents($file);
@@ -112,7 +112,7 @@ class App {
   protected static function generateParamMap() {
     $map = [];
     $action_dir = getenv('APP_DIR') . '/actions';
-    $files = explode(PHP_EOL, trim(`find -L $action_dir | grep \.php$`));
+    $files = explode(PHP_EOL, trim(`find -L $action_dir -name '*.php'`));
     foreach ($files as $file) {
       $action = substr(basename($file), 0, -4);
       $content = file_get_contents($file);
@@ -291,7 +291,7 @@ class App {
 
   public static function exec($cmd) {
     $project = getenv('PROJECT');
-    $cmd = str_replace('"', '\\\"', $cmd);
+    $cmd = addcslashes($cmd, '"');
     return trim(`bash -c "source ~/.kissrc; kiss $project; $cmd"`);
   }
 }
