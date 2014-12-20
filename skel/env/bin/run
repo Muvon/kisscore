@@ -10,7 +10,12 @@ echo -n $$ > $pid_file
 
 trap "pgrep -P $$ | while read process; do pkill -SIGTERM -P \$process; kill \$process; done; wait; exit 0" SIGINT SIGTERM
 while true; do
-  readarray TASKS < $PROJECT_DIR/tasks
+  if [[ ! -f $CONFIG_DIR/tasks ]]; then
+    echo 'File with tasks to be run not found'
+    exit 1
+  fi
+
+  readarray TASKS < $CONFIG_DIR/tasks
   for i in "${!TASKS[@]}"; do
     if [[ ${PIDS[$i]+isset} && $(ps -p ${PIDS[$i]} -o pid | sed 1d) ]]; then
       continue
@@ -18,5 +23,5 @@ while true; do
     cmd=${TASKS[$i]%% \#*}
     ( bash -c "$cmd" ) & PIDS[$i]=$!
   done
-  sleep 1
+  sleep 5
 done

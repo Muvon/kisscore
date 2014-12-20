@@ -1,5 +1,5 @@
 #!/bin/bash
-host_file=$PROJECT_DIR/hosts
+host_file=$CONFIG_DIR/hosts
 if [[ ! -f $host_file ]]; then
   echo 'Create hosts "'$host_file'" file with hostnames to deploy on'
   exit 1

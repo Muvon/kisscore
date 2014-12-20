@@ -1,13 +1,13 @@
 #!/bin/bash
 sha=0
 update_sha() {
-  sha=`ls -lR --time-style=full-iso $(pwd)/{app,env/etc} | sha1sum`
+  sha=`ls -lR --time-style=full-iso $PROJECT_DIR/{app,env/etc-template} | sha1sum`
 }
 update_sha
 previous_sha=$sha
 build() {
   echo -en " rebuilding..."
-  $PROJECT_DIR'/init' > /dev/null 2>&1
+  $BIN_DIR'/init' > /dev/null 2>&1
   echo -en "\n--> resumed watching."
 }
 compare() {
