@@ -1,0 +1,4 @@
+<?php
+App::configure(__DIR__, [
+  '%NGINX_ROUTE_FILE%' => config('common.nginx_route_file'),
+]);

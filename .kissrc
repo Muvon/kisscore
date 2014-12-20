@@ -49,7 +49,6 @@ function kiss {
           APP_DIR=$PROJECT_DIR/app \
           HTML_DIR=$PROJECT_DIR/html \
           CONFIG_DIR=$PROJECT_DIR/env/etc \
-          CONFIG_TEMPLATE_DIR=$PROJECT_DIR/env/etc-template \
           ENV_DIR=$PROJECT_DIR/env \
           BIN_DIR=$PROJECT_DIR/env/bin \
           RUN_DIR=$PROJECT_DIR/env/run \
@@ -71,7 +70,6 @@ function kiss {
           export APP_DIR=$PROJECT_DIR/app \
             HTML_DIR=$PROJECT_DIR/html \
             CONFIG_DIR=$PROJECT_DIR/env/etc \
-            CONFIG_TEMPLATE_DIR=$PROJECT_DIR/env/etc-template \
             ENV_DIR=$PROJECT_DIR/env \
             BIN_DIR=$PROJECT_DIR/env/bin \
             RUN_DIR=$PROJECT_DIR/env/run \
@@ -110,7 +108,7 @@ function app_config {
   echo "
 [$1]
 $2
-" >> $CONFIG_TEMPLATE_DIR/app.ini.tpl
+" >> $PROJECT_DIR/app.ini.tpl
 }
 
 # Random password generator

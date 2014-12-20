@@ -16,10 +16,7 @@ class App {
   }
 
   public static function reconfigure() {
-    static::configure(getenv('CONFIG_TEMPLATE_DIR') . '/app.ini.tpl');
-    static::configure(getenv('CONFIG_TEMPLATE_DIR'), [
-      '%NGINX_ROUTE_FILE%' => config('common.nginx_route_file'),
-    ]);
+    static::configure(getenv('PROJECT_DIR') . '/app.ini.tpl');
     static::generateConfigs();
   }
 

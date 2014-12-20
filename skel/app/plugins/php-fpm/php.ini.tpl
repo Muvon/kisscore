@@ -437,7 +437,7 @@ expose_php = Off
 ; Maximum execution time of each script, in seconds
 ; http://php.net/max-execution-time
 ; Note: This directive is hardcoded to 0 for the CLI SAPI
-max_execution_time = 30
+max_execution_time = 15
 
 ; Maximum amount of time each script may spend parsing request data. It's a good
 ; idea to limit this time on productions servers in order to eliminate unexpectedly
@@ -447,11 +447,11 @@ max_execution_time = 30
 ; Development Value: 60 (60 seconds)
 ; Production Value: 60 (60 seconds)
 ; http://php.net/max-input-time
-max_input_time = 60
+max_input_time = 15
 
 ; Maximum input variable nesting level
 ; http://php.net/max-input-nesting-level
-;max_input_nesting_level = 64
+max_input_nesting_level = 15
 
 ; Maximum amount of memory a script may consume (128MB)
 ; http://php.net/memory-limit
@@ -873,7 +873,7 @@ file_uploads = On
 ; Temporary directory for HTTP uploaded files (will use system default if not
 ; specified).
 ; http://php.net/upload-tmp-dir
-;upload_tmp_dir =
+upload_tmp_dir = %TMP_DIR%
 
 ; Maximum allowed size for uploaded files.
 ; http://php.net/upload-max-filesize
@@ -905,7 +905,7 @@ allow_url_include = Off
 
 ; Default timeout for socket based streams (seconds)
 ; http://php.net/default-socket-timeout
-default_socket_timeout = 1
+default_socket_timeout = 15
 
 ; If your scripts have to deal with files from Macintosh systems,
 ; or you are running on a Mac and need to deal with files from
@@ -938,54 +938,6 @@ default_socket_timeout = 1
 ;
 ; If you only provide the name of the extension, PHP will look for it in its
 ; default extension directory.
-;
-; Windows Extensions
-; Note that ODBC support is built in, so no dll is needed for it.
-; Note that many DLL files are located in the extensions/ (PHP 4) ext/ (PHP 5)
-; extension folders as well as the separate PECL DLL download (PHP 5).
-; Be sure to appropriately set the extension_dir directive.
-;
-;extension=php_bz2.dll
-;extension=php_curl.dll
-;extension=php_dba.dll
-;extension=php_exif.dll
-;extension=php_fileinfo.dll
-;extension=php_gd2.dll
-;extension=php_gettext.dll
-;extension=php_gmp.dll
-;extension=php_intl.dll
-;extension=php_imap.dll
-;extension=php_interbase.dll
-;extension=php_ldap.dll
-;extension=php_mbstring.dll
-;extension=php_ming.dll
-;extension=php_mssql.dll
-;extension=php_mysql.dll
-;extension=php_mysqli.dll
-;extension=php_oci8.dll      ; Use with Oracle 10gR2 Instant Client
-;extension=php_oci8_11g.dll  ; Use with Oracle 11g Instant Client
-;extension=php_openssl.dll
-;extension=php_pdo_firebird.dll
-;extension=php_pdo_mssql.dll
-;extension=php_pdo_mysql.dll
-;extension=php_pdo_oci.dll
-;extension=php_pdo_odbc.dll
-;extension=php_pdo_pgsql.dll
-;extension=php_pdo_sqlite.dll
-;extension=php_pgsql.dll
-;extension=php_phar.dll
-;extension=php_pspell.dll
-;extension=php_shmop.dll
-;extension=php_snmp.dll
-;extension=php_soap.dll
-;extension=php_sockets.dll
-;extension=php_sqlite.dll
-;extension=php_sqlite3.dll
-;extension=php_sybase_ct.dll
-;extension=php_tidy.dll
-;extension=php_xmlrpc.dll
-;extension=php_xsl.dll
-;extension=php_zip.dll
 
 ;;;;;;;;;;;;;;;;;;;
 ; Module Settings ;
@@ -1014,63 +966,6 @@ date.timezone = Europe/Moscow
 
 ; http://php.net/filter.default-flags
 ;filter.default_flags =
-
-[iconv]
-;iconv.input_encoding = ISO-8859-1
-;iconv.internal_encoding = ISO-8859-1
-;iconv.output_encoding = ISO-8859-1
-
-[intl]
-;intl.default_locale =
-; This directive allows you to produce PHP errors when some error
-; happens within intl functions. The value is the level of the error produced.
-; Default is 0, which does not produce any errors.
-;intl.error_level = E_WARNING
-
-[sqlite]
-; http://php.net/sqlite.assoc-case
-;sqlite.assoc_case = 0
-
-[sqlite3]
-;sqlite3.extension_dir =
-
-[Pcre]
-;PCRE library backtracking limit.
-; http://php.net/pcre.backtrack-limit
-;pcre.backtrack_limit=100000
-
-;PCRE library recursion limit.
-;Please note that if you set this value to a high number you may consume all
-;the available process stack and eventually crash PHP (due to reaching the
-;stack size limit imposed by the Operating System).
-; http://php.net/pcre.recursion-limit
-;pcre.recursion_limit=100000
-
-[Pdo]
-; Whether to pool ODBC connections. Can be one of "strict", "relaxed" or "off"
-; http://php.net/pdo-odbc.connection-pooling
-;pdo_odbc.connection_pooling=strict
-
-;pdo_odbc.db2_instance_name
-
-[Pdo_mysql]
-; If mysqlnd is used: Number of cache slots for the internal result set cache
-; http://php.net/pdo_mysql.cache_size
-pdo_mysql.cache_size = 2000
-
-; Default socket name for local MySQL connects.  If empty, uses the built-in
-; MySQL defaults.
-; http://php.net/pdo_mysql.default-socket
-pdo_mysql.default_socket=/tmp/mysql.sock
-
-[Phar]
-; http://php.net/phar.readonly
-;phar.readonly = On
-
-; http://php.net/phar.require-hash
-;phar.require_hash = On
-
-;phar.cache_list =
 
 [Syslog]
 ; Whether or not to define the various syslog variables (e.g. $LOG_PID,
@@ -1108,80 +1003,6 @@ mail.add_x_header = Off
 [SQL]
 ; http://php.net/sql.safe-mode
 sql.safe_mode = Off
-
-[ODBC]
-; http://php.net/odbc.default-db
-;odbc.default_db    =  Not yet implemented
-
-; http://php.net/odbc.default-user
-;odbc.default_user  =  Not yet implemented
-
-; http://php.net/odbc.default-pw
-;odbc.default_pw    =  Not yet implemented
-
-; Controls the ODBC cursor model.
-; Default: SQL_CURSOR_STATIC (default).
-;odbc.default_cursortype
-
-; Allow or prevent persistent links.
-; http://php.net/odbc.allow-persistent
-odbc.allow_persistent = On
-
-; Check that a connection is still valid before reuse.
-; http://php.net/odbc.check-persistent
-odbc.check_persistent = On
-
-; Maximum number of persistent links.  -1 means no limit.
-; http://php.net/odbc.max-persistent
-odbc.max_persistent = -1
-
-; Maximum number of links (persistent + non-persistent).  -1 means no limit.
-; http://php.net/odbc.max-links
-odbc.max_links = -1
-
-; Handling of LONG fields.  Returns number of bytes to variables.  0 means
-; passthru.
-; http://php.net/odbc.defaultlrl
-odbc.defaultlrl = 4096
-
-; Handling of binary data.  0 means passthru, 1 return as is, 2 convert to char.
-; See the documentation on odbc_binmode and odbc_longreadlen for an explanation
-; of odbc.defaultlrl and odbc.defaultbinmode
-; http://php.net/odbc.defaultbinmode
-odbc.defaultbinmode = 1
-
-;birdstep.max_links = -1
-
-[Interbase]
-; Allow or prevent persistent links.
-ibase.allow_persistent = 1
-
-; Maximum number of persistent links.  -1 means no limit.
-ibase.max_persistent = -1
-
-; Maximum number of links (persistent + non-persistent).  -1 means no limit.
-ibase.max_links = -1
-
-; Default database name for ibase_connect().
-;ibase.default_db =
-
-; Default username for ibase_connect().
-;ibase.default_user =
-
-; Default password for ibase_connect().
-;ibase.default_password =
-
-; Default charset for ibase_connect().
-;ibase.default_charset =
-
-; Default timestamp format.
-ibase.timestampformat = "%Y-%m-%d %H:%M:%S"
-
-; Default date format.
-ibase.dateformat = "%Y-%m-%d"
-
-; Default time format.
-ibase.timeformat = "%H:%M:%S"
 
 [MySQL]
 ; Allow accessing, from PHP's perspective, local files with LOAD DATA statements
@@ -1288,7 +1109,7 @@ mysqli.default_user =
 mysqli.default_pw =
 
 ; Allow or prevent reconnect
-mysqli.reconnect = Off
+mysqli.reconnect = On
 
 [mysqlnd]
 ; Enable / Disable collection of general statstics by mysqlnd which can be
@@ -1309,126 +1130,6 @@ mysqlnd.net_cmd_buffer_size = 4096
 ; bytes.
 ; http://php.net/mysqlnd.net_read_buffer_size
 mysqlnd.net_read_buffer_size = 32768
-
-[OCI8]
-
-; Connection: Enables privileged connections using external
-; credentials (OCI_SYSOPER, OCI_SYSDBA)
-; http://php.net/oci8.privileged-connect
-;oci8.privileged_connect = Off
-
-; Connection: The maximum number of persistent OCI8 connections per
-; process. Using -1 means no limit.
-; http://php.net/oci8.max-persistent
-;oci8.max_persistent = -1
-
-; Connection: The maximum number of seconds a process is allowed to
-; maintain an idle persistent connection. Using -1 means idle
-; persistent connections will be maintained forever.
-; http://php.net/oci8.persistent-timeout
-;oci8.persistent_timeout = -1
-
-; Connection: The number of seconds that must pass before issuing a
-; ping during oci_pconnect() to check the connection validity. When
-; set to 0, each oci_pconnect() will cause a ping. Using -1 disables
-; pings completely.
-; http://php.net/oci8.ping-interval
-;oci8.ping_interval = 60
-
-; Connection: Set this to a user chosen connection class to be used
-; for all pooled server requests with Oracle 11g Database Resident
-; Connection Pooling (DRCP).  To use DRCP, this value should be set to
-; the same string for all web servers running the same application,
-; the database pool must be configured, and the connection string must
-; specify to use a pooled server.
-;oci8.connection_class =
-
-; High Availability: Using On lets PHP receive Fast Application
-; Notification (FAN) events generated when a database node fails. The
-; database must also be configured to post FAN events.
-;oci8.events = Off
-
-; Tuning: This option enables statement caching, and specifies how
-; many statements to cache. Using 0 disables statement caching.
-; http://php.net/oci8.statement-cache-size
-;oci8.statement_cache_size = 20
-
-; Tuning: Enables statement prefetching and sets the default number of
-; rows that will be fetched automatically after statement execution.
-; http://php.net/oci8.default-prefetch
-;oci8.default_prefetch = 100
-
-; Compatibility. Using On means oci_close() will not close
-; oci_connect() and oci_new_connect() connections.
-; http://php.net/oci8.old-oci-close-semantics
-;oci8.old_oci_close_semantics = Off
-
-[PostgresSQL]
-; Allow or prevent persistent links.
-; http://php.net/pgsql.allow-persistent
-pgsql.allow_persistent = On
-
-; Detect broken persistent links always with pg_pconnect().
-; Auto reset feature requires a little overheads.
-; http://php.net/pgsql.auto-reset-persistent
-pgsql.auto_reset_persistent = Off
-
-; Maximum number of persistent links.  -1 means no limit.
-; http://php.net/pgsql.max-persistent
-pgsql.max_persistent = -1
-
-; Maximum number of links (persistent+non persistent).  -1 means no limit.
-; http://php.net/pgsql.max-links
-pgsql.max_links = -1
-
-; Ignore PostgreSQL backends Notice message or not.
-; Notice message logging require a little overheads.
-; http://php.net/pgsql.ignore-notice
-pgsql.ignore_notice = 0
-
-; Log PostgreSQL backends Notice message or not.
-; Unless pgsql.ignore_notice=0, module cannot log notice message.
-; http://php.net/pgsql.log-notice
-pgsql.log_notice = 0
-
-[Sybase-CT]
-; Allow or prevent persistent links.
-; http://php.net/sybct.allow-persistent
-sybct.allow_persistent = On
-
-; Maximum number of persistent links.  -1 means no limit.
-; http://php.net/sybct.max-persistent
-sybct.max_persistent = -1
-
-; Maximum number of links (persistent + non-persistent).  -1 means no limit.
-; http://php.net/sybct.max-links
-sybct.max_links = -1
-
-; Minimum server message severity to display.
-; http://php.net/sybct.min-server-severity
-sybct.min_server_severity = 10
-
-; Minimum client message severity to display.
-; http://php.net/sybct.min-client-severity
-sybct.min_client_severity = 10
-
-; Set per-context timeout
-; http://php.net/sybct.timeout
-;sybct.timeout=
-
-;sybct.packet_size
-
-; The maximum time in seconds to wait for a connection attempt to succeed before returning failure.
-; Default: one minute
-;sybct.login_timeout=
-
-; The name of the host you claim to be connecting from, for display by sp_who.
-; Default: none
-;sybct.hostname=
-
-; Allows you to define how often deadlocks are to be retried. -1 means "forever".
-; Default: 0
-;sybct.deadlock_retry_count=
 
 [bcmath]
 ; Number of decimal digits for all bcmath functions.
@@ -1478,7 +1179,7 @@ session.save_path = "%TMP_DIR%"
 session.use_cookies = 1
 
 ; http://php.net/session.cookie-secure
-;session.cookie_secure =
+session.cookie_secure = Off
 
 ; This option forces PHP to fetch and use a cookie for storing and maintaining
 ; the session id. We encourage this operation as it's very helpful in combatting
@@ -1489,7 +1190,7 @@ session.use_only_cookies = 1
 
 ; Name of the session (used as cookie name).
 ; http://php.net/session.name
-session.name = session
+session.name = KISS
 
 ; Initialize session on request startup.
 ; http://php.net/session.auto-start
@@ -1650,58 +1351,6 @@ session.hash_bits_per_character = 6
 ; http://php.net/url-rewriter.tags
 url_rewriter.tags = "a=href,img=src"
 
-[MSSQL]
-; Allow or prevent persistent links.
-mssql.allow_persistent = On
-
-; Maximum number of persistent links.  -1 means no limit.
-mssql.max_persistent = -1
-
-; Maximum number of links (persistent+non persistent).  -1 means no limit.
-mssql.max_links = -1
-
-; Minimum error severity to display.
-mssql.min_error_severity = 10
-
-; Minimum message severity to display.
-mssql.min_message_severity = 10
-
-; Compatibility mode with old versions of PHP 3.0.
-mssql.compatability_mode = Off
-
-; Connect timeout
-;mssql.connect_timeout = 5
-
-; Query timeout
-;mssql.timeout = 60
-
-; Valid range 0 - 2147483647.  Default = 4096.
-;mssql.textlimit = 4096
-
-; Valid range 0 - 2147483647.  Default = 4096.
-;mssql.textsize = 4096
-
-; Limits the number of records in each batch.  0 = all records in one batch.
-;mssql.batchsize = 0
-
-; Specify how datetime and datetim4 columns are returned
-; On => Returns data converted to SQL server settings
-; Off => Returns values as YYYY-MM-DD hh:mm:ss
-;mssql.datetimeconvert = On
-
-; Use NT authentication when connecting to the server
-mssql.secure_connection = Off
-
-; Specify max number of processes. -1 = library default
-; msdlib defaults to 25
-; FreeTDS defaults to 4096
-;mssql.max_procs = -1
-
-; Specify client character set.
-; If empty or not set the client charset from freetds.comf is used
-; This is only used when compiled with FreeTDS
-;mssql.charset = "ISO-8859-1"
-
 [Assertion]
 ; Assert(expr); active by default.
 ; http://php.net/assert.active
@@ -1723,31 +1372,6 @@ assert.callback = 0
 ; error_reporting(0) around the eval().
 ; http://php.net/assert.quiet-eval
 assert.quiet_eval = 1
-
-[COM]
-; path to a file containing GUIDs, IIDs or filenames of files with TypeLibs
-; http://php.net/com.typelib-file
-;com.typelib_file =
-
-; allow Distributed-COM calls
-; http://php.net/com.allow-dcom
-;com.allow_dcom = true
-
-; autoregister constants of a components typlib on com_load()
-; http://php.net/com.autoregister-typelib
-;com.autoregister_typelib = true
-
-; register constants casesensitive
-; http://php.net/com.autoregister-casesensitive
-;com.autoregister_casesensitive = false
-
-; show warnings on duplicate constant registrations
-; http://php.net/com.autoregister-verbose
-;com.autoregister_verbose = true
-
-; The default character set code-page to use when passing strings to and from COM objects.
-; Default: system ANSI code page
-;com.code_page=
 
 [mbstring]
 ; language for internal character representation.
@@ -1887,10 +1511,3 @@ ldap.max_links = -1
 ; Directory where to load mcrypt modes
 ; Default: Compiled in into libmcrypt (usually /usr/local/lib/libmcrypt)
 ;mcrypt.modes_dir=
-
-[dba]
-;dba.default_handler=
-
-; Local Variables:
-; tab-width: 4
-; End:

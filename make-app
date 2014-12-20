@@ -32,16 +32,14 @@ app_dir=$project_dir'/app'
 tmp_dir=$env_dir'/tmp'
 var_dir=$env_dir'/var'
 run_dir=$env_dir'/run'
-etc_dir=$env_dir'/etc-template'
+etc_dir=$env_dir'/etc'
 epoch=$(date +%s)'000'
 secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 # Replace global static variables for init project
-for file in $(ls skel/env/etc-template); do
-  cat skel/env/etc-template/$file \
-    | sed "s|%KISS_EPOCH%|$epoch|g" \
-    | sed "s|%KISS_SECRET_KEY%|$secret_key|g" \
-    > $etc_dir/$file
-done
+cat skel/app.ini.tpl \
+  | sed "s|%KISS_EPOCH%|$epoch|g" \
+  | sed "s|%KISS_SECRET_KEY%|$secret_key|g" \
+  > $etc_dir/app.ini.tpl
 echo '...done'
 
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'
