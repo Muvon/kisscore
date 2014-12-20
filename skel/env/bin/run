@@ -8,7 +8,19 @@ if [[ -f $pid_file ]]; then
 fi
 echo -n $$ > $pid_file
 
-trap "pgrep -P $$ | while read process; do pkill -SIGTERM -P \$process; kill \$process; done; wait; exit 0" SIGINT SIGTERM
+function kill_subshells {
+  for file in $(/bin/ls -I $pid_file $RUN_DIR/*.pid); do
+    cat $file | xargs pkill -SIGTERM -P
+  done
+
+  for pid in ${PIDS[@]}; do
+    pkill -SIGTERM -P $pid
+  done
+  wait
+  exit 0
+}
+
+trap kill_subshells SIGINT SIGTERM
 while true; do
   if [[ ! -f $CONFIG_DIR/tasks ]]; then
     echo 'File with tasks to be run not found'
