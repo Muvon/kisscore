@@ -1,0 +1,4 @@
+#!/bin/bash
+declare -A checks
+checks['nginx']='nginx -v'
+run_checks

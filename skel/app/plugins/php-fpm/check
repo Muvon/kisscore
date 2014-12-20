@@ -1,0 +1,5 @@
+#!/bin/bash
+declare -A checks
+checks['php']='php -r "(float) PHP_VERSION >= 5.5 ?: exit(1);"'
+checks['php-fpm']='php-fpm -v'
+run_checks
