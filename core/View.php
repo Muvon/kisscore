@@ -394,7 +394,7 @@ class View {
     assert("is_string(\$this->template_extension)");
     assert("isset(\$this->template_extension[0])");
 
-    $file_c =  $this->compile_dir . '/view-' . md5($this->route) . '.page';
+    $file_c =  $this->compile_dir . '/view-' . md5(implode(',', $this->head) . ':' . $this->route . ':' . implode(',', $this->foot)) . '.page';
     if ($this->debug || !is_file($file_c)) {
       $content = [];
       foreach ($this->head as $template) {
