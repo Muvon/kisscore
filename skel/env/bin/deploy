@@ -33,7 +33,7 @@ EOF
   fi
   
   # sync onlye changed files
-  rsync -aiz --exclude=env* --exclude=sphinx* \
+  rsync -aiz --exclude=env/{etc,log,var,run,tmp,backup} --exclude=sphinx* \
     --exclude=.git* --exclude=html/f* \
     --exclude=connect-db . prod@$server:/home/prod/$PROJECT
 
