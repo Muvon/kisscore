@@ -14,7 +14,7 @@ fi
 
 # Start doing good staff
 echo -e '\e[1;35mCheck software\e[0m'
-./check
+
 if [[ "$?" != "0" ]]; then
   echo "...failed"
   exit 1

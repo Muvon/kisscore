@@ -2,7 +2,6 @@
 echo 'Initialization started'
 
 echo '+Configure and compile project'
-task add "php-fpm -c $CONFIG_DIR/php.ini -y $CONFIG_DIR/php-fpm.conf -F #php-fpm"
 php-exec 'App::compile()'
 echo '...done'
 
