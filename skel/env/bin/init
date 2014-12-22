@@ -16,3 +16,7 @@ echo '* * * * * source ~/.kissrc ; kiss '$PROJECT' ; run > $TMP_DIR/run.log ; #'
 crontab $TMP_DIR/.crontab.tmp
 /bin/rm $TMP_DIR/.crontab.tmp
 echo '...done'
+
+echo '+Running init-app script'
+[[ -x $BIN_DIR/init-app ]] && $BIN_DIR/init-app
+echo '...done'

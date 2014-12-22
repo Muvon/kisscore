@@ -15,7 +15,7 @@ fi
 cat $1 |
   # Remove all comments
   sed 's@/\*.*\*/@@g' |
-  sed 's|//.*$||g' |
+  sed -r 's/\/\/.*$//g' |
 
   # Remove all blank lines
   sed '/^$/d' |
@@ -26,14 +26,20 @@ cat $1 |
   # Replace multiple white spaces with a single white space
   tr -s ' ' |
 
+  sed -r 's/([^\(\[\{\,])$/\1\;/g' |
+  sed -r 's/};}/}}/g' |
+
+  # For css
+  sed -r 's/};([\.\#\@])/}\1/g' |
+
   # Remove all line feeds
   tr -d '\n' |
 
   # Remove all white spaces before and after the colon
-  sed -r 's/\s*([\+\=\,\;\?\:\{\}\(\)])\s*/\1/g' |
+  sed -r 's/\s*([\+\=\>\<\,\;\?\:\{\}\(\)])\s*/\1/g' |
   
   # Replace special operators
-  sed -r 's/\s*([|]|&&|==|===)\s*/\1/g' |
+  sed -r 's/\s*(\[|\]|\&\&|==|===|\!=|\!==)\s*/\1/g' |
 
   # Replace semicolons
   sed -r 's/(;|,)}/}/g'
