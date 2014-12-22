@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Check command line arguments
+if [[ -z $1 ]]; then
+  echo 'Usage: '$0' [file] > [result]'
+  exit 1
+fi
+
+if [[ ! -f $1 ]]; then
+  echo 'Source file to be minified not found'
+  exit 1
+fi
+
+# Reduce number of bytes
+cat $1 |
+  # Remove all comments
+  sed 's@/\*.*\*/@@g' |
+  sed 's|//.*$||g' |
+
+  # Remove all blank lines
+  sed '/^$/d' |
+
+  # Remove all leading and trailing white spaces from each line
+  sed -r 's/^\s*//;s/\s*$//' |
+
+  # Replace multiple white spaces with a single white space
+  tr -s ' ' |
+
+  # Remove all line feeds
+  tr -d '\n' |
+
+  # Remove all white spaces before and after the colon
+  sed -r 's/\s*([\+\=\,\;\?\:\{\}\(\)])\s*/\1/g' |
+  
+  # Replace special operators
+  sed -r 's/\s*([|]|&&|==|===)\s*/\1/g' |
+
+  # Replace semicolons
+  sed -r 's/(;|,)}/}/g'

@@ -1,11 +1,13 @@
 #!/bin/bash
 declare -A checks
 
-checks['tar']='tar --version'
-checks['xargs']='xargs --version'
-checks['realpath']='realpath --version'
-checks['nohup']='nohup --version'
-checks['nano']='nano --version'
+checks['tar']='wchi tar'
+checks['xargs']='which xargs'
+checks['realpath']='which realpath'
+checks['nohup']='which nohup'
+checks['nano']='which nano'
 checks['crontab']='which crontab'
+checks['sed']='which sed'
+checks['tr']='which tr'
 
 run_checks
