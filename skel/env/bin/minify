@@ -30,19 +30,18 @@ code=$(cat $1 |
   sed -r 's/\{;/\{/g' |
   # Replace semicolons
   sed -r 's/[\;\,]\}/\}/g' |
-  sed -r 's/\;$//g' 
+  sed -r 's/\;+/\;/g' |
+  sed -r 's/\;$//g' |
+  sed -r 's/\,\;/\,/g'
 )
 
 # Special rules for js files
-if [[ ${1##*.} -eq 'j1s' ]]; then 
-  code=$(echo $code |
-    sed -r 's/\,\;/\,/g' |
-    sed -r 's/\}([^\}\,])/\}\;\1/g'
-  )
+if [[ ${1##*.} == 'js' ]]; then 
+  code=$(echo $code)
 fi
 
 # Special rules for css files
-if [[ ${1##*.} -eq 'css' ]]; then
+if [[ ${1##*.} == 'css' ]]; then
   code=$(echo $code |
     sed -r 's/\}\;/\}/g' |
     sed -r 's/and\(/and \(/g' |
