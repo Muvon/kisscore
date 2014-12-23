@@ -12,34 +12,43 @@ if [[ ! -f $1 ]]; then
 fi
 
 # Reduce number of bytes
-cat $1 |
-  # Remove all comments
-  sed 's@/\*.*\*/@@g' |
-  sed -r 's/\/\/.*$//g' |
-
-  # Remove all blank lines
-  sed '/^$/d' |
-
-  # Remove all leading and trailing white spaces from each line
-  sed -r 's/^\s*//;s/\s*$//' |
-
-  # Replace multiple white spaces with a single white space
+code=$(cat $1 |
+  sed 's@/\*.*\*/@@g' | 
+  sed -r 's/\/\/.*$//g' | 
+  sed '/^$/d' | 
+  tr '\n' ';' |
+  sed -r 's/^\s*//;s/\s*$//' | 
   tr -s ' ' |
-
-  sed -r 's/([^\(\[\{\,])$/\1\;/g' |
-  sed -r 's/};}/}}/g' |
-
-  # For css
-  sed -r 's/};([\.\#\@])/}\1/g' |
-
-  # Remove all line feeds
-  tr -d '\n' |
+  sed -r 's/\}\;\}/\}\}/g' |
 
   # Remove all white spaces before and after the colon
   sed -r 's/\s*([\+\=\>\<\,\;\?\:\{\}\(\)])\s*/\1/g' |
-  
+
   # Replace special operators
   sed -r 's/\s*(\[|\]|\&\&|==|===|\!=|\!==)\s*/\1/g' |
 
+  sed -r 's/\{;/\{/g' |
   # Replace semicolons
-  sed -r 's/(;|,)}/}/g'
+  sed -r 's/[\;\,]\}/\}/g' |
+  sed -r 's/\;$//g' 
+)
+
+# Special rules for js files
+if [[ ${1##*.} -eq 'j1s' ]]; then 
+  code=$(echo $code |
+    sed -r 's/\,\;/\,/g' |
+    sed -r 's/\}([^\}\,])/\}\;\1/g'
+  )
+fi
+
+# Special rules for css files
+if [[ ${1##*.} -eq 'css' ]]; then
+  code=$(echo $code |
+    sed -r 's/\}\;/\}/g' |
+    sed -r 's/and\(/and \(/g' |
+    sed -r 's/\#([abcdefa-z]{3})\1/\#\1/g' |
+    sed -r 's/\}\;/\}/g'
+  )
+fi
+
+echo $code
