@@ -42,6 +42,7 @@ EOF
     kiss $PROJECT
     init
     [[ \$(/bin/ls \$TMP_DIR) ]] && /bin/rm \$TMP_DIR/*
+    php-exec 'opcache_reset()' > /dev/null
 EOF
   # All is done
   echo 'Deployed on server '$server

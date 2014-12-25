@@ -228,6 +228,7 @@ class App {
       ini_set('xdebug.profiler_output_dir', getenv('LOG_DIR'));
       ini_set('xdebug.profiler_output_name', 'xdebug');
     }
+    ini_set('opcache.validate_timestamps', static::$debug ? 'on' : 'off');
   }
 
   /**
