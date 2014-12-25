@@ -229,6 +229,8 @@ class App {
       ini_set('xdebug.profiler_output_name', 'xdebug');
     }
     ini_set('opcache.validate_timestamps', static::$debug ? 'on' : 'off');
+    ini_set('opcache.save_comments', 0);
+    ini_set('opcache.fast_shutdown', 1);
   }
 
   /**
