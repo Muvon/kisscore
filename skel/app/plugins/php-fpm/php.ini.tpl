@@ -726,7 +726,7 @@ auto_globals_jit = On
 
 ; Maximum size of POST data that PHP will accept.
 ; http://php.net/post-max-size
-post_max_size = 512M
+post_max_size = %UPLOAD_MAX_FILESIZE%
 
 ; Magic quotes are a preprocessing feature of PHP where PHP will attempt to
 ; escape any character sequences in GET, POST, COOKIE and ENV data which might
@@ -877,7 +877,7 @@ upload_tmp_dir = %TMP_DIR%
 
 ; Maximum allowed size for uploaded files.
 ; http://php.net/upload-max-filesize
-upload_max_filesize = 512M
+upload_max_filesize = %UPLOAD_MAX_FILESIZE%
 
 ; Maximum number of files that can be uploaded via a single request
 max_file_uploads = 20

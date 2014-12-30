@@ -7,7 +7,7 @@ log_format  %PROJECT%
 server {
   listen   80;
   server_name  %PROJECT%.lo;
-  client_max_body_size 10m;
+  client_max_body_size %UPLOAD_MAX_FILESIZE%;
   include %NGINX_ROUTE_FILE%;
 
 
