@@ -1,3 +1,9 @@
+log_format  %PROJECT%  
+  '$remote_addr - $remote_user [$time_local] "$request" '
+  '$status $body_bytes_sent "$http_referer" '
+  '"$http_user_agent" "$http_x_forwarded_for" '
+  '$upstream_response_time sec "$host"';
+  
 server {
   listen   80;
   server_name  %PROJECT%.lo;
@@ -17,7 +23,7 @@ server {
   }
 
   location @app {
-    access_log  %LOG_DIR%/nginx-access.log combined buffer=32k;
+    access_log  %LOG_DIR%/nginx-access.log %PROJECT% buffer=32k;
     expires off;
 
     include        %CONFIG_DIR%/nginx_fastcgi_params;
