@@ -54,6 +54,7 @@ class App {
       '%KISS_CORE%'     => getenv('KISS_CORE'),
       '%HTTP_HOST%'     => getenv('HTTP_HOST'),
       '%CONFIG_TEMPLATE_DIR%' => getenv('CONFIG_TEMPLATE_DIR'),
+      '%DEBUG%'         => (int) App::$debug,
     ];
 
     foreach(is_dir($template) ? glob($template . '/*.tpl') : [$template] as $file) {
@@ -216,21 +217,11 @@ class App {
     // Handle uncatched exceptions
     set_exception_handler([static::class, 'handleException']);
 
-    ini_set('display_errors', static::$debug ? 'on' : 'off');
-
     // Ini settings
     if (static::$debug) {
+      ini_set('display_errors', 1);
       ini_set('assert.active', 1);
-      ini_set('assert.bail', 0);
-      ini_set('assert.callback', static::class .'::handleAssertion');
-      ini_set('xdebug.profiler_enable', 1);
-      ini_set('xdebug.profiler_append', 1);
-      ini_set('xdebug.profiler_output_dir', getenv('LOG_DIR'));
-      ini_set('xdebug.profiler_output_name', 'xdebug');
     }
-    ini_set('opcache.validate_timestamps', static::$debug ? 'on' : 'off');
-    ini_set('opcache.save_comments', 0);
-    ini_set('opcache.fast_shutdown', 1);
   }
 
   /**
