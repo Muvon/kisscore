@@ -1,13 +1,12 @@
-#!/usr/bin/php
+#!/bin/bash
+php=$(which php)
+$php -c $CONFIG_DIR/php.ini <<EOF
 <?php
-include getenv('KISS_CORE');
+  include getenv('KISS_CORE');
 
-if (!isset($_SERVER['argv'][1])) {
-  throw new Exception('You must write code to execute');
-}
-
-// Получаем ответ и выполняем запрос
-App::start();
-eval($_SERVER['argv'][1] . ';');
-echo PHP_EOL;
-App::stop();
+  // Получаем ответ и выполняем запрос
+  App::start();
+  $1;
+  App::stop();
+EOF
+echo
