@@ -1519,12 +1519,6 @@ assert.active = 0
 assert.bail = 0
 assert.callback = "App::handleAssertion"
 
-xdebug.profiler_enable = 0
-xdebug.profiler_append = 1
-xdebug.profiler_output_dir = "%LOG_DIR%"
-xdebug.profiler_output_name = "trace.%H"
-xdebug.cli_color = 1
-
 opcache.validate_timestamps = 1
 opcache.save_comments = 0
 opcache.fast_shutdown = 1

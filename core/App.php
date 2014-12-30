@@ -54,7 +54,7 @@ class App {
       '%KISS_CORE%'     => getenv('KISS_CORE'),
       '%HTTP_HOST%'     => getenv('HTTP_HOST'),
       '%CONFIG_TEMPLATE_DIR%' => getenv('CONFIG_TEMPLATE_DIR'),
-      '%DEBUG%'         => (int) App::$debug,
+      '%DEBUG%'         => (int) static::$debug,
     ];
 
     foreach(is_dir($template) ? glob($template . '/*.tpl') : [$template] as $file) {
