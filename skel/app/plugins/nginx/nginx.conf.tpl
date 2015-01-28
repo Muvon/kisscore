@@ -3,7 +3,7 @@ log_format  %PROJECT%
   '$status $body_bytes_sent "$http_referer" '
   '"$http_user_agent" "$http_x_forwarded_for" '
   '$upstream_response_time sec "$host"';
-  
+
 server {
   listen   80;
   server_name  %PROJECT%.lo;

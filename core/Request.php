@@ -36,7 +36,7 @@ class Request {
    * @property bool $is_cli является ли запрос CLI или же обычный HTTP
    * @property bool $is_ajax запрос посылается через ajax
    */
-  
+
   private
   $Response     = null,
   $params       = [],
@@ -45,7 +45,7 @@ class Request {
   $url      = '',
   $url_map    = [],
   $route_map  = [];
-  
+
   private static
   $Instance    = null,
   $method      = 'GET',
@@ -58,7 +58,7 @@ class Request {
   $user_agent  = '',
   $is_cli      = false,
   $is_ajax     = false;
-  
+
   /**
    * @param string|bool $url адрес текущего запроса
    */
@@ -71,7 +71,7 @@ class Request {
       ->initFilter( )
     ;
   }
-  
+
   /**
    * Получение ссылки на экземпляр объекта исходного запроса
    *
@@ -105,7 +105,7 @@ class Request {
         if (isset($_SERVER['HTTP_REFERER'])) {
           self::$referer = $_SERVER['HTTP_REFERER'];
         }
-        
+
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
           self::$xff = $_SERVER['HTTP_X_FORWARDED_FOR'];
         }
@@ -135,7 +135,7 @@ class Request {
     }
     return self::$Instance;
   }
-  
+
   /**
    * Определение текущего адреса запроса
    *
@@ -154,7 +154,7 @@ class Request {
   public function getUrl() {
     return $this->url;
   }
-  
+
   /**
    * Парсит и сохраняет все параметры в переменной self::$params
    *
@@ -171,7 +171,7 @@ class Request {
     }
     return $this;
   }
-   
+
   /**
    * Инициализация правил для фильтра
    * Позволяет использовать Lazy-filter технику
@@ -187,7 +187,7 @@ class Request {
     $this->filter = implode('', $exclude);
     return $this;
   }
-  
+
   /**
    * Фильтрация значения
    *
@@ -203,7 +203,7 @@ class Request {
     }
     return $this;
   }
-  
+
   /**
    * Получение переменной запроса
    *
@@ -229,7 +229,7 @@ class Request {
 
     return $ret;
   }
-  
+
   /**
    * Извлечение параметром из запроса по мнемоническим правилам
    *
@@ -254,7 +254,7 @@ class Request {
     }
     return $params;
   }
-  
+
   /**
    * Получение данных куки
    *
@@ -269,7 +269,7 @@ class Request {
     ;
   }
 
-  
+
   /**
    * Установка текущего роута с последующим парсингом его в действие и модуль
    *
@@ -281,7 +281,7 @@ class Request {
     $this->route = $route;
     return $this;
   }
-  
+
   /**
    * Получение текущего роута
    *
@@ -303,7 +303,7 @@ class Request {
     $this->action = preg_replace('|[^a-z0-9\_\-]+|is', '', $action);
     return $this;
   }
-  
+
   /**
    * Получение текущего роута
    *
@@ -313,7 +313,7 @@ class Request {
   public function getAction() {
     return $this->action ? $this->action : config('default.action');
   }
-  
+
   /**
    * Юзер агент посетителя, запрашивающего данный запрос
    *
@@ -323,7 +323,7 @@ class Request {
   public function getUserAgent( ) {
     return self::$user_agent;
   }
-  
+
   /**
    * Запрашиваемый хост в текущем запросе
    *
@@ -333,7 +333,7 @@ class Request {
   public function getHost( ) {
     return self::$host;
   }
-  
+
   /**
    * Получение IP-адреса клиента
    *
@@ -343,7 +343,7 @@ class Request {
   public function getIp( ) {
     return self::$ip;
   }
-  
+
   /**
    * Получение реального адреса клиента (если скрывается под прокси)
    *
@@ -363,7 +363,7 @@ class Request {
   public function getReferer( ) {
     return self::$referer;
   }
-  
+
   /**
    * Метод запроса: POST | GET
    *
@@ -373,7 +373,7 @@ class Request {
   public function getMethod( ) {
     return self::$method;
   }
-  
+
   /**
    * Протокоол взаимодействия с текущим запросом: CLI | HTTP
    *
@@ -383,7 +383,7 @@ class Request {
   public function getProtocol( ) {
     return self::$protocol;
   }
-  
+
   /**
    * CLI запрос из строки шелла или нет
    *
@@ -393,7 +393,7 @@ class Request {
   public function isCli( ) {
     return self::$is_cli;
   }
-  
+
   /**
    * Посылается запрос с использованием AJAX или нет
    *
@@ -403,7 +403,7 @@ class Request {
   public function isAjax( ) {
     return self::$is_ajax;
   }
-  
+
   /**
    * Статическая функция для доступа к текущему ответу
    * Если ответ не имеется, он создается
@@ -419,7 +419,7 @@ class Request {
     }
     return $Req->Response;
   }
-  
+
   /**
    * Установка другого ответа для текущего запроса
    *

@@ -110,8 +110,8 @@ function import_vars( ) {
 
 /**
  * Функция для получения конфигурационных параметров из файла
- * @param  string $param Параметр в виде раздел.параметр 
- * @return mixed        
+ * @param  string $param Параметр в виде раздел.параметр
+ * @return mixed
  */
 function config($param) {
   assert('is_string($param)');

@@ -21,7 +21,7 @@ class Response {
   $headers  = [],
   $body     = '',
   $status   = 200;
-  
+
   protected static
   $messages = [
     200 => 'OK',
@@ -31,13 +31,13 @@ class Response {
     204 => 'No Content',
     205 => 'Reset Content',
     206 => 'Partial Content',
-    
+
     301 => 'Moved Permanently',
     302 => 'Found',
     303 => 'See Other',
     304 => 'Not Modified',
     305 => 'Use Proxy',
-    
+
     400 => 'Bad Request',
     401 => 'Unauthorized',
     402 => 'Payment Required',
@@ -56,7 +56,7 @@ class Response {
     415 => 'Unsupported Media Type',
     416 => 'Requested Range Not Satisfiable',
     417 => 'Expectation Failed',
-    
+
     500 => 'Internal Server Error',
     501 => 'Not Implemented',
     502 => 'Bad Gateway',
@@ -65,7 +65,7 @@ class Response {
     505 => 'HTTP Version Not Supported',
 
   ];
-  
+
   /**
    * Инициализация объекта ответа по HTTP коду-возврата в случае HTTP запроса
    *
@@ -88,7 +88,7 @@ class Response {
   public static function create($status = 200) {
     return new self($status);
   }
-  
+
   /**
    * @access public
    * @param int $status новый статус ответа
@@ -100,7 +100,7 @@ class Response {
     }
     return $this;
   }
-  
+
   /**
   * Получение данных для вывода клиенту
   *
@@ -110,8 +110,7 @@ class Response {
   public function __toString( ) {
     return (string) $this->body;
   }
-  
-  
+
   /**
    * Добавление кук для отправки
    *
@@ -131,7 +130,7 @@ class Response {
     ];
     return $this;
   }
-  
+
   /**
    * Отправка кук, если установлены
    *
@@ -144,7 +143,7 @@ class Response {
     }
     return $this;
   }
-  
+
   /**
    * Отправка тела ответа
    *
@@ -155,7 +154,7 @@ class Response {
     echo (string) $this;
     return $this;
   }
-  
+
   /**
    * Метод отпрваки заголовков и тела ответа
    *
@@ -170,7 +169,7 @@ class Response {
     ;
     return $this;
   }
-  
+
   /**
   * Выполнение редиректа на определенный URL
   *
@@ -194,7 +193,7 @@ class Response {
     ;
     exit;
   }
-  
+
   /**
   * Очистка всех уже ранее добавленных заголовков в массив
   *
@@ -205,7 +204,7 @@ class Response {
     $this->headers = [];
     return $this;
   }
-  
+
   /**
   * Добавление заголовка в пул заголовков для вывода
   *
@@ -243,7 +242,7 @@ class Response {
     }
     return $this;
   }
-  
+
   /**
   * Установка содержимого для ответа
   *

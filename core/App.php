@@ -2,10 +2,10 @@
 class App {
   /** @property bool $debug */
   public static $debug = true;
-  
+
   /**
    * Прекомпиляция исходного кода для работы
-   * @return void 
+   * @return void
    */
   public static function compile() {
     static::reconfigure();
@@ -24,7 +24,7 @@ class App {
     $configure = function ($file) {
       return include $file;
     };
-    
+
     foreach (glob(getenv('APP_DIR') . '/plugins/*/configure.php') as $file) {
       $configure($file);
     }
@@ -64,7 +64,7 @@ class App {
 
   /**
    * Генерация карты для автолоада классов
-   * @return void 
+   * @return void
    */
   protected static function generateAutoloadMap() {
     $map = [];
@@ -73,7 +73,7 @@ class App {
 
     foreach($files as $file) {
       $class = substr(basename($file), 0, -4);
-      
+
       $content = file_get_contents($file);
       if (preg_match("/(class|interface|trait) +$class/", $content)) {
         if (preg_match("/\n *namespace +\\\\?([a-zA-Z0-9_\\\\]+)/", $content, $matches)) {
@@ -173,7 +173,7 @@ class App {
   }
 
   /**
-   * Log any message 
+   * Log any message
    * @param string $message
    * @param array $dump
    * @param string $type error, info, wanr, notice
@@ -213,7 +213,7 @@ class App {
 
     // Error handler
     set_error_handler([static::class, 'handleError'], E_ALL);
-    
+
     // Handle uncatched exceptions
     set_exception_handler([static::class, 'handleException']);
 
@@ -230,7 +230,7 @@ class App {
   public static function stop() {
     // Todo some work here
   }
-  
+
   /**
    * Замена стандартного обработчика ошибок на эксепшены
    */
@@ -264,7 +264,7 @@ class App {
   /**
    * Хэндлер для управления ошибками ассертов
    * @param	stirng  $file
-   * @param	string	$line	
+   * @param	string	$line
    * @param	string	$code
    * @throws Exception
    */

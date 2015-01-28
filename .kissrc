@@ -162,7 +162,7 @@ function run_checks {
   declare -A results
 
   for k in "${!checks[@]}"; do
-    bash -c "${checks[$k]} &> /dev/null"
+    ${checks[$k]} &> /dev/null
     [[ "$?" != "0" ]] && results["$k"]='\e[1;31mFail' && exit_code=1 || results["$k"]='\e[1;32mSuccess'
   done
 
