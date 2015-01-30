@@ -120,7 +120,7 @@ listen.allowed_clients = 127.0.0.1
 ;                                    of 'idle' processes is greater than this
 ;                                    number then some children will be killed.
 ; Note: This value is mandatory.
-pm = dynamic
+pm = ondemand
 
 ; The number of child processes to be created when pm is set to 'static' and the
 ; maximum number of child processes to be created when pm is set to 'dynamic'.
