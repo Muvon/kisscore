@@ -53,6 +53,12 @@ class View {
    */
   final protected function __construct( ) {
     $this->route = Request::instance()->getAction();
+
+    // Setup default settings
+    $this->debug = App::$debug;
+    $this->template_extension = config('view.template_extension');
+    $this->source_dir = config('view.source_dir');
+    $this->compile_dir = config('view.compile_dir');
   }
 
   /**
@@ -95,7 +101,7 @@ class View {
    */
   public function setTemplateExtension($extension) {
     assert("is_string(\$extension)");
-    $this->tpl_ext = $extension;
+    $this->template_extension = $extension;
     return $this;
   }
 
@@ -133,7 +139,7 @@ class View {
   public static function create($route = '') {
     return new self;
   }
-  
+
   /**
    * @static
    * @access public
@@ -145,7 +151,7 @@ class View {
     }
     return self::$Instance;
   }
-  
+
   /**
    * Получает уже обработанные и готовые данные для вывода функцией self::render()
    *
@@ -155,7 +161,7 @@ class View {
   public function __toString( ) {
     return $this->body;
   }
-  
+
   /**
    * Роут
    *
@@ -167,7 +173,7 @@ class View {
     $this->route = $route;
     return $this;
   }
-  
+
   /**
    * Режим отладки
    *
@@ -189,6 +195,15 @@ class View {
    */
   public function set(array $data) {
     $this->data = $data;
+    return $this;
+  }
+
+  public function assign($key, $val = null) {
+    if (is_string($key)) {
+      $this->data[$key] = $val;
+    } elseif (is_array($key)) {
+      $this->data = array_merge($this->data, $key);
+    }
     return $this;
   }
 

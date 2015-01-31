@@ -232,6 +232,32 @@ class App {
   }
 
   /**
+   * @param Request $Request
+   * @return View
+   */
+  public static function process(Request $Request) {
+    $process = function (&$_RESPONSE) use ($Request) {
+      $_ACTION = getenv('APP_DIR') . '/actions/' . $Request->getAction() . '.php';
+      extract($Request->getParams(static::getImportVarsArgs($_ACTION)));
+      $_RESPONSE = include $_ACTION;
+
+      return get_defined_vars();
+    };
+
+    $vars = $process($View);
+
+    if (!$View instanceof View) {
+      $View = View::create();
+    }
+
+    array_walk_recursive($vars, function ($str) {
+      return is_string($str) ? htmlspecialchars($str) : $str;
+    });
+
+    return $View->set($vars);
+  }
+
+  /**
    * Замена стандартного обработчика ошибок на эксепшены
    */
   public static function handleError($errno, $errstr, $errfile, $errline, $errcontext) {
