@@ -16,7 +16,9 @@ class Session implements ArrayAccess {
    */
   public function __construct($session_name = 'session') {
     assert("is_string(\$session_name)");
-    session_start($session_name);
+    if (!Request::instance()->isCli()) {
+      session_start($session_name);
+    }
 
     $this->container = &$_SESSION;
   }

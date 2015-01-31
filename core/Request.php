@@ -353,7 +353,7 @@ class Request {
   public function getRealIp( ) {
     return self::$real_ip;
   }
-  
+
   /**
    * Получение реферера при посещении текущего роута
    *

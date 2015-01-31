@@ -4,9 +4,13 @@ $php -c $CONFIG_DIR/php.ini <<EOF
 <?php
   include getenv('KISS_CORE');
 
-  // Получаем ответ и выполняем запрос
-  App::start();
-  $1;
-  App::stop();
+  // Получаем ответ   и выполняем запрос
+  try {
+    App::start();
+    $1;
+    App::stop();
+  } catch (Exception \$E) {
+    echo 'Error: ' . \$E->getMessage() . PHP_EOL . 'More info: tail -f $LOG_DIR/' . date('Ymd') . '-error.log';
+  }
 EOF
 echo
