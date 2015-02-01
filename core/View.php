@@ -34,6 +34,11 @@ class View {
   $source_dir    = null,
   $compile_dir   = null;
 
+  protected static $filter_funcs  = [
+    'html' => 'htmlspecialchars',
+    'raw'  => '',
+  ];
+
   /** @var string $template_extension */
   protected $template_extension = 'tpl';
 
@@ -318,7 +323,7 @@ class View {
       return $code;
     };
 
-    // Блоки пошли
+    // Transform variables from template
     $transform_vars = function ($str) use($var_ptrn, $var) {
       return preg_replace_callback(
         '#\{(' . $var_ptrn . ')(\:raw|\:html)?\}#ium',
@@ -328,18 +333,8 @@ class View {
             $filter = substr($matches[2], 1);
           }
 
-          switch ($filter) {
-            case 'html':
-              $func = 'htmlspecialchars';
-              break;
-            case 'raw':
-            default:
-              $func = '';
-              break;
-          }
-
           return '<?php if (isset(' . ($v = $var($matches[1], '$item')) . ')) {'
-          . 'echo ' . $func . '(' . $v . ');'
+          . 'echo ' . static::$filter_funcs[$filter] . '(' . $v . ');'
           . '} ?>';
         },
         $str
