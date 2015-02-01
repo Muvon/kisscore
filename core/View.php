@@ -271,9 +271,9 @@ class View {
     $file_c = $this->compile_dir . '/view-' . md5($route) . '.chunk';
     if (!$this->debug && is_file($file_c))
       return $file_c;
-    
+
     $source_file = $this->source_dir . '/' . strtok($route, '/') . '.' . $this->template_extension;
-      
+
     $str = file_get_contents($source_file);
 
     // Получение переменной из шаблона
@@ -285,7 +285,7 @@ class View {
       }
       return $var;
     };
-    
+
     $var_exists = function ($v, $container = '$this->data') {
       $ex = explode('.', $v);
       $sz = sizeof($ex);
@@ -300,7 +300,7 @@ class View {
       $array = ($var ? $var : $container);
       return 'isset(' . $array . ') && array_key_exists(\'' . $p . '\', ' . $array . ')';
     };
-    
+
     // Шаблон имени переменной
     $var_ptrn = '[a-z\_]{1}[a-z0-9\.\_]*';
 
@@ -338,9 +338,9 @@ class View {
               break;
           }
 
-          return '<?php echo isset(' . ($v = $var($matches[1], '$item')) . ') '
-          . '? ' . $func . '(' . $v . ')'
-          . ' : \'\' ?>';
+          return '<?php if (isset(' . ($v = $var($matches[1], '$item')) . ')) {'
+          . 'echo ' . $func . '(' . $v . ');'
+          . '} ?>';
         },
         $str
       );
