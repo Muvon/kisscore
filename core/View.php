@@ -250,7 +250,7 @@ class View {
       } unset($key,  $item, $value, $i, $last);
     } elseif ($param) {
       if ($arrays[$key]) {
-        $item   = $param + ['parent' => $item];
+        $item   = $param + ['global' => &$this->data, 'parent' => $item];
         $block($item);
         $item = $item['parent'];
       } else $block($item);
@@ -337,17 +337,10 @@ class View {
               $func = '';
               break;
           }
-          return '<?php echo ' . $func . '('
-          . 'isset(' . $var($matches[1], '$item') . ') ' // Есть в текущем контексте?
-            . '? ' . $var($matches[1], '$item') . ' '
-            . ': ( isset(' . $var($matches[1], '$item[\'parent\']') . ') ' // Есть в родительском контектсе ?
-              . '? ' . $var($matches[1], '$item[\'parent\']') . ''
-              . ': (isset(' . $var($matches[1], '$this->data') . ') ' // Есть в глобальном пространстве?
-                . '? ' . $var($matches[1], '$this->data') . ' '
-                . ': null'
-              . ')'
-            . ')'
-          . ') ?>';
+
+          return '<?php echo isset(' . ($v = $var($matches[1], '$item')) . ') '
+          . '? ' . $func . '(' . $v . ')'
+          . ' : \'\' ?>';
         },
         $str
       );
@@ -438,6 +431,8 @@ class View {
         $content[] = file_get_contents($this->compileChunk($template));
       }
 
+      // Init global context
+      array_unshift($content, '<?php $item = &$this->data; ?>');
       file_put_contents($file_c, implode($content));
     }
     include $file_c;
