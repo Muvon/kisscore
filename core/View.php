@@ -308,7 +308,7 @@ class View {
       $str = trim($str);
       if (!$str)
         return '';
-        
+
       $ex = array_map('trim', explode(' ', $str));
       $code = '';
       foreach ($ex as $item) {
@@ -321,9 +321,23 @@ class View {
     // Блоки пошли
     $transform_vars = function ($str) use($var_ptrn, $var) {
       return preg_replace_callback(
-        '#\{(' . $var_ptrn . ')\}#ium',
+        '#\{(' . $var_ptrn . ')(\:raw|\:html)?\}#ium',
         function ($matches) use ($var) {
-          return '<?php $this->printVar('
+          $filter = 'raw';
+          if (isset($matches[2])) {
+            $filter = substr($matches[2], 1);
+          }
+
+          switch ($filter) {
+            case 'html':
+              $func = 'htmlspecialchars';
+              break;
+            case 'raw':
+            default:
+              $func = '';
+              break;
+          }
+          return '<?php echo ' . $func . '('
           . 'isset(' . $var($matches[1], '$item') . ') ' // Есть в текущем контексте?
             . '? ' . $var($matches[1], '$item') . ' '
             . ': ( isset(' . $var($matches[1], '$item[\'parent\']') . ') ' // Есть в родительском контектсе ?
@@ -338,7 +352,7 @@ class View {
         $str
       );
     };
-    
+
     // Закрываем строчные блоки
     $line_block = '#\{(' . $var_ptrn . ')\:\}(.+)$#ium';
 
@@ -389,7 +403,7 @@ class View {
     // Замена подключений файлов
     $str = preg_replace_callback('#\{\>([a-z\_0-9\/]+)(.*?)\}#ium', function ($matches) use ($parse_params) {
       return $parse_params($matches[2]) . file_get_contents($this->compileChunk($matches[1]));
-    }, $str);    
+    }, $str);
 
     // Переменные: {array.index}
     $str = $transform_vars($str, $var_ptrn, $var);
@@ -428,15 +442,6 @@ class View {
     }
     include $file_c;
     return $this;
-  }
-
-  /**
-   * Print var
-   * @param mixed $var
-   * @return void
-   */
-  protected function printVar($var) {
-    echo $var instanceof Closure ? $var() : $var;
   }
 
   /**
