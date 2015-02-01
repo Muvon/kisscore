@@ -207,6 +207,10 @@ class View {
     return $this;
   }
 
+  public function &access($key) {
+    return $this->data[$key];
+  }
+
   /**
    * Обработчик блочных элементов скомпилированном шаблоне
    *
