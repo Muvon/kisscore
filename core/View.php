@@ -431,6 +431,11 @@ class View {
     return $this;
   }
 
+  public function setBody($body) {
+    $this->body = $body;
+    return $this;
+  }
+
   /**
    * Рендеринг и подготовка данных шаблона на вывод
    *
@@ -443,13 +448,16 @@ class View {
    */
   public function render($route = '') {
     assert("is_string(\$route)");
+    if ($this->body) {
+      return $this;
+    }
     ob_start();
-
     if ($route)
       $this->setRoute($route);
 
     $this->compile();
     $this->body = ob_get_clean();
+
     return $this;
   }
 }
