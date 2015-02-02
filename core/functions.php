@@ -74,41 +74,6 @@ function redirect($to, $code = 302) {
 }
 
 /**
- * Импорт переменных в глобальное пространство экшена
- *
- * @package Core
- * @subpackage Help Functions
- *
- * @see Request::getParams()
- *
- * @return void
- *
- * <code>
- * import_vars('var1', 'var2', 'var3');
- * var_dump($var1);
- * </code>
- *
- * <code>
- * import_vars('form', ['id', 'name']);
- * var_dump($form); // array [id, name]
- * </code>
- */
-function import_vars( ) {
-  $args = func_get_args( );
-  // Если импорт в одну переменную
-  if (isset($args[1]) && is_array($args[1])) {
-    $GLOBALS[$args[0]] = Request::instance()
-      ->getParams($args[1])
-    ;
-  } else { // или в глобальную видимость
-    $GLOBALS += Request::instance( )
-      ->getParams($args)
-    ;
-  }
-  return;
-}
-
-/**
  * Функция для получения конфигурационных параметров из файла
  * @param  string $param Параметр в виде раздел.параметр
  * @return mixed
