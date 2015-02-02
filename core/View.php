@@ -235,13 +235,10 @@ class View {
 
     static $arrays = [];
     $arrays[$key] = is_array($param);
-
-    if ($arrays[$key] && is_int(key($param))) {
-      $last = sizeof($param) - 1;
-      foreach ($param as $key => $value) {
+    if ($arrays[$key] && range(0, $last = sizeof($param) - 1) === array_keys($param)) {
+      foreach ($param as $k => $value) {
         static $i = 0;
-
-        if (!is_array($value)) { 
+        if (!is_array($value)) {
           $value = ['parent' => $item, 'this' => $value];
         }
 
@@ -252,7 +249,7 @@ class View {
         $value['odd']        = !$value['even'];
         $value['iteration']  = ++$i;
         $block($value);
-      } unset($key,  $item, $value, $i, $last);
+      }
     } elseif ($param) {
       if ($arrays[$key]) {
         $item   = $param + ['global' => &$this->data, 'parent' => $item];
@@ -282,7 +279,7 @@ class View {
     $str = file_get_contents($source_file);
 
     // Получение переменной из шаблона
-    $var = function ($v, $container = '$this->data') {
+    $var = function ($v, $container = '$item') {
       $ex = explode('.', $v);
       $var = '';
       foreach ($ex as $p) {
@@ -291,7 +288,7 @@ class View {
       return $var;
     };
 
-    $var_exists = function ($v, $container = '$this->data') {
+    $var_exists = function ($v, $container = '$item') {
       $ex = explode('.', $v);
       $sz = sizeof($ex);
       $var = '';
@@ -374,9 +371,9 @@ class View {
             $denial = true;
 
           return
-            '<?php $param = ' . $var_exists($m[1], '$item') . ' ? ' . $var($m[1], '$item') . ' : (isset(' . $var($m[1]) . ') ? ' . $var($m[1]) . ' : null);'
-          . ($denial ? ' if (!isset($param)) $param = !( ' . $var_exists($key, '$item') . ' ? ' . $var($key, '$item') . ' : (isset(' . $var($key) . ') ? ' . $var($key) . ' : null));' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
-          . '$this->block(\'' . $key . '\', $param, isset($item) ? $item : null, function ($item = null) { ?>'
+            '<?php $param = ' . $var_exists($m[1], '$item') . ' ? ' . $var($m[1], '$item') . ' : null;'
+          . ($denial ? ' if (!isset($param)) $param = !( ' . $var_exists($key, '$item') . ' ? ' . $var($key, '$item') . ' : null);' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
+          . '$this->block(\'' . $key . '\', $param, $item, function ($item = null) { ?>'
             . $compiled
           . '<?php }); ?>';
         },
