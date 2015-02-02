@@ -72,5 +72,7 @@ done
 
 if (( $rebuild )); then
   echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
-  $PROJECT_DIR/init
+  kiss $PROJECT << "EOF"
+    init
+  EOF
 fi
