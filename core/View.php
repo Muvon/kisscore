@@ -230,7 +230,7 @@ class View {
    *   Скомпилированный код, которые отображается внутри блока
    * @return View
    */
-  public function block($key, $param, $item, Closure $block) {
+  protected function block($key, $param, $item, Closure $block) {
     assert("is_string(\$key)");
 
     static $arrays = [];
@@ -270,7 +270,7 @@ class View {
    * @return string
    *   Имя скомпилированного файла
    */
-  public function compileChunk($route) {
+  protected function compileChunk($route) {
     $file_c = $this->compile_dir . '/view-' . md5($route) . '.chunk';
     if (!$this->debug && is_file($file_c))
       return $file_c;

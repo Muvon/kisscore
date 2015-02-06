@@ -120,7 +120,7 @@ class Request {
 
 
         if ($url === true) {
-          $url = self::detectUrl( );
+          $url = self::detectUrl();
         }
         self::$host = filter_input(INPUT_SERVER, 'HTTP_HOST');
       }
@@ -176,7 +176,7 @@ class Request {
    * @access protected
    * @return $this
    */
-  protected function initFilter( ) {
+  protected function initFilter() {
     $exclude = array_map('chr', range(0, 31));
     unset($exclude[9], $exclude[10]); // Разрешаем табы и переводы строк
     $this->filter = implode('', $exclude);

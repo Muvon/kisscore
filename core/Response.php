@@ -74,7 +74,7 @@ class Response {
    * @param int $status статус ответа при необходимости
    */
   final protected function __construct($status = 200) {
-    assert("is_int(\$status)");
+    assert("is_int(\$status)", 'Status must be integer');
     $this->setStatus($status);
   }
   /**
@@ -95,6 +95,7 @@ class Response {
    * @return Response
    */
   public function setStatus($status) {
+    assert('in_array($status, array_keys(self::$messages)');
     if (isset(self::$messages[$status])) {
       $this->status = $status;
     }
@@ -122,6 +123,8 @@ class Response {
    * @return $this
    */
   public function addCookie($name, $value, $time, $path = '/') {
+    assert('is_string($name)');
+
     $this->cookies[] = [
       'name'  => $name,
       'value' => $value,
@@ -150,7 +153,7 @@ class Response {
    * @access public
    * @return $this
    */
-  public function sendBody( ) {
+  public function sendBody() {
     echo (string) $this;
     return $this;
   }
@@ -161,11 +164,11 @@ class Response {
    * @access public
    * @return $this
    */
-  public function send( ) {
+  public function send() {
     $this
-      ->sendCookies( )
-      ->sendHeaders( )
-      ->sendBody( )
+      ->sendCookies()
+      ->sendHeaders()
+      ->sendBody()
     ;
     return $this;
   }
@@ -183,6 +186,9 @@ class Response {
   * @return void
   */
   public function redirect($url, $code = 302) {
+    assert('is_string($url)');
+    asesrt('in_array($code, [301, 302])');
+
     $this->status = $code;
     $this
       ->flushHeaders()
@@ -216,6 +222,9 @@ class Response {
   * @return Response
   */
   public function addHeader($header, $value) {
+    assert('is_string($header)');
+    assert('is_string($value)');
+
     $this->headers[$header] = $value;
     return $this;
   }
@@ -226,7 +235,7 @@ class Response {
    * @access public
    * @return Response
    */
-  public function sendHeaders( ) {
+  public function sendHeaders() {
     if (headers_sent( )) {
       return $this;
     }
@@ -250,6 +259,8 @@ class Response {
   * @return $this
   */
   public function setBody($body) {
+    assert('is_string($body)');
+
     $this->body = $body;
     return $this;
   }
