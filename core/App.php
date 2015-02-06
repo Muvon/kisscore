@@ -185,10 +185,10 @@ class App {
     assert('in_array($type, ["info", "error", "warn", "notice"])');
 
     $log_file = getenv('LOG_DIR') . '/' . date('Ymd') . '-' . $type . '.log';
-    $message = date('[Y-m-d H:i:s T]') 
-             . "\t" . $message 
+    $message = date('[Y-m-d H:i:s T]')
+             . "\t" . $message
              . "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t" 
-             . json_encode($_COOKIE, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
+             . json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
     ;
     error_log($message, 3, $log_file);
   }

@@ -230,10 +230,8 @@ class Response {
     if (headers_sent( )) {
       return $this;
     }
-    $protocol = 'HTTP/1.1';
-    if (isset($_SERVER['SERVER_PROTOCOL'])) {
-      $protocol = $_SERVER['SERVER_PROTOCOL'];
-    }
+    $protocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL') ?: 'HTTP/1.1';
+
     // HTTP-строка статуса
     header($protocol . ' ' . $this->status . ' ' . self::$messages[$this->status], true);
 

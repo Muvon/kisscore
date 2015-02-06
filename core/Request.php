@@ -67,8 +67,8 @@ class Request {
 
     $this->url  = $url;
     $this
-      ->parseParams( )
-      ->initFilter( )
+      ->parseParams()
+      ->initFilter()
     ;
   }
 
@@ -85,7 +85,7 @@ class Request {
 
     if (!self::$Instance) {
       // Режим кли или нет
-      if (isset($_SERVER['argc'])) {
+      if (filter_input(INPUT_SERVER, 'argc')) {
         self::$is_cli = true;
       }
 
@@ -96,24 +96,19 @@ class Request {
         self::$host     = 'localhost';
         self::$real_ip  = self::$ip;
       } else {
-        if (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS'])) {
+        if (filter_input(INPUT_SERVER, 'HTTPS')) {
           self::$method = 'HTTPS';
         }
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+        if (filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH')) {
           self::$is_ajax = true;
         }
-        if (isset($_SERVER['HTTP_REFERER'])) {
-          self::$referer = $_SERVER['HTTP_REFERER'];
-        }
-
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-          self::$xff = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        }
+        self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
+        self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
 
         // Эти переменные всегда определены в HTTP-запросе
-        self::$method = $_SERVER['REQUEST_METHOD'];
-        self::$user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'undefined';
-        self::$ip = $_SERVER['REMOTE_ADDR'];
+        self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+        self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
+        self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 
 
         // Real IP
@@ -127,7 +122,7 @@ class Request {
         if ($url === true) {
           $url = self::detectUrl( );
         }
-        self::$host = $_SERVER['HTTP_HOST'];
+        self::$host = filter_input(INPUT_SERVER, 'HTTP_HOST');
       }
       self::$Instance = new self($url);
       self::$Instance->setRoute(self::$Instance->param('ROUTE'));
@@ -143,12 +138,11 @@ class Request {
    * @access public
    * @return string
    */
-  public static function detectUrl( ) {
-    $url = '/';
-    if (isset($_SERVER['REQUEST_URI'])) {
-      $url = rtrim($_SERVER['REQUEST_URI'], ';&?');
+  public static function detectUrl() {
+    if ($url = filter_input(INPUT_SERVER, 'REQUEST_URI')) {
+      $url = rtrim($url, ';&?');
     }
-    return $url;
+    return $url ?: '/';
   }
 
   public function getUrl() {
@@ -163,11 +157,12 @@ class Request {
    */
   protected function parseParams( ) {
     if (self::$is_cli) {
-      $file = array_shift($_SERVER['argv']);
-      $this->params['action'] = $this->params['route'] = array_shift($_SERVER['argv']);
-      $this->params += $_SERVER['argv']; unset($_SERVER['argv']);
+      $argv = filter_input(INPUT_SERVER, 'argv');
+      $file = array_shift($argv);
+      $this->params['action'] = $this->params['route'] = array_shift($argv);
+      $this->params += $argv;
     } else {
-      $this->params = $_POST + $_GET; unset($_POST, $_GET);
+      $this->params = filter_input_array(INPUT_POST) + filter_input_array(INPUT_GET);
     }
     return $this;
   }
@@ -263,10 +258,7 @@ class Request {
    * @return string
    */
   public function getCookie($name) {
-    return isset($_COOKIE[$name])
-      ? $_COOKIE[$name]
-      : null
-    ;
+    return filter_input(INPUT_COOKIE, $name);
   }
 
 
