@@ -95,7 +95,7 @@ class Response {
    * @return Response
    */
   public function setStatus($status) {
-    assert('in_array($status, array_keys(self::$messages)');
+    assert('in_array($status, array_keys(self::$messages))');
     if (isset(self::$messages[$status])) {
       $this->status = $status;
     }
