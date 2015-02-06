@@ -2,7 +2,7 @@
 
 ## What is it?
 
-Kiss Core Microframework on PHP 5.5+ is the lightweight single file packed end-project framework for rapid development of very fast projects.
+Kiss Core Microframework on PHP 5.6+ is the lightweight single file packed end-project framework for rapid development of very fast projects.
 
 1. Single core file in project you create 
 2. Simple and very fast template engine that allows you only use blocks and iterations (easy to learn for designers)
@@ -84,7 +84,7 @@ You can find plugins and help on github here: https://github.com/dmitrykuzmenkov
 To run project using KISS Core you need
 
 1. Linux (Ubuntu, Centos, Debina and so on)
-2. PHP 5.5+ with php-fpm (http://php.net)
+2. PHP 5.6+ with php-fpm (http://php.net)
 3. Nginx (http://nginx.org)
 
 And also linux knowledge ;)

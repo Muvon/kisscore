@@ -15,7 +15,7 @@ fi
 for server in $servers; do
   (
   echo 'Deploying on server '$server
-  
+
   scp $HOME/.kissrc prod@$server:/home/prod
   ssh -T prod@$server <<"EOF"
     /bin/cat $HOME/.bashrc | /bin/grep -v '#.kissrc$' > $HOME/.bashrc.tmp
@@ -31,7 +31,7 @@ EOF
     ssh -T prod@$server 'mkdir -p /home/prod/'$PROJECT'/app'
     rsync -aiz env/etc/ prod@$server:/home/prod/$PROJECT/env/etc
   fi
-  
+
   # sync onlye changed files
   rsync -aiz --exclude=env/{etc,log,var,run,tmp,backup} --exclude=sphinx* \
     --exclude=.git* --exclude=html/f* \

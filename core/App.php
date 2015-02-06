@@ -219,8 +219,7 @@ class App {
 
     // Ini settings
     if (static::$debug) {
-      ini_set('display_errors', 1);
-      ini_set('assert.active', 1);
+      assert_options(ASSERT_ACTIVE, true);
     }
   }
 

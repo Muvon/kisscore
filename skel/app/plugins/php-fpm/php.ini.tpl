@@ -1513,7 +1513,7 @@ ldap.max_links = -1
 ;mcrypt.modes_dir=
 
 [kisscore]
-display_errors = Off
+display_errors = %DEBUG%
 
 assert.active = 0
 assert.bail = 0
