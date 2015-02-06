@@ -204,6 +204,7 @@ class View {
   }
 
   public function assign($key, $val = null) {
+    assert('in_array(gettype($key), ["string", "array"])');
     if (is_string($key)) {
       $this->data[$key] = $val;
     } elseif (is_array($key)) {
@@ -235,10 +236,10 @@ class View {
 
     static $arrays = [];
     $arrays[$key] = is_array($param);
-    if ($arrays[$key] && is_int(key($param))) {
+    if ($arrays[$key] && is_array(end($param))) {
       $last = sizeof($param) - 1;
+      $i = 0;
       foreach ($param as $k => $value) {
-        static $i = 0;
         if (!is_array($value)) {
           $value = ['parent' => $item, 'this' => $value];
         }
@@ -300,14 +301,14 @@ class View {
           $var .= ($var ? '' : $container) . '[\'' . $p . '\']';
         }
       }
-      $array = ($var ? $var : $container);
+      $array = ($var ?: $container);
       return 'isset(' . $array . ') && array_key_exists(\'' . $p . '\', ' . $array . ')';
     };
 
     // Шаблон имени переменной
     $var_ptrn = '[a-z\_]{1}[a-z0-9\.\_]*';
 
-    $parse_params = function ($str) use($var) {
+    $parse_params = function ($str) use ($var) {
       $str = trim($str);
       if (!$str)
         return '';
@@ -322,9 +323,19 @@ class View {
     };
 
     // Transform variables from template
-    $transform_vars = function ($str) use($var_ptrn, $var) {
+    $transform_vars = function ($str) use ($var_ptrn, $var) {
+      $filter_ptrn = implode(
+        '|' ,
+        array_map(
+          function($v) {
+            return '\:' . $v;
+          },
+          array_keys(static::$filter_funcs)
+        )
+      );
+
       return preg_replace_callback(
-        '#\{(' . $var_ptrn . ')(\:raw|\:html)?\}#ium',
+        '#\{(' . $var_ptrn . ')(' . $filter_ptrn . ')?\}#ium',
         function ($matches) use ($var) {
           $filter = 'raw';
           if (isset($matches[2])) {
@@ -347,7 +358,7 @@ class View {
       $str = preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
 
     // Компиляция блоков
-    $compile_blocks = function ($str, $compile_blocks) use($var_ptrn, $transform_vars, $var, $var_exists) {
+    $compile_blocks = function ($str, $compile_blocks) use ($var_ptrn, $transform_vars, $var, $var_exists) {
       return preg_replace_callback(
         '#\{(' . $var_ptrn . ')\}(.+?){\/\\1}#ius',
         function ($m) use($var, $var_exists, $transform_vars, $compile_blocks, $str) {
@@ -374,7 +385,7 @@ class View {
           return
             '<?php $param = ' . $var_exists($m[1], '$item') . ' ? ' . $var($m[1], '$item') . ' : null;'
           . ($denial ? ' if (!isset($param)) $param = !( ' . $var_exists($key, '$item') . ' ? ' . $var($key, '$item') . ' : null);' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
-          . '$this->block(\'' . $key . '\', $param, $item, function ($item = null) { ?>'
+          . '$this->block(\'' . $key . '\', $param, $item, function ($item) { ?>'
             . $compiled
           . '<?php }); ?>';
         },
