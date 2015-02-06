@@ -136,7 +136,16 @@ class App {
     $rewrites = [];
     foreach ($routes as $route => $action) {
       $i = 0; // route like (bla (bla bla)) with uff8 cant handle by nginx. so hack it
-      $uri = '/?ROUTE=' . preg_replace_callback('|\([^\)]+\)|is', function ($item) use (&$i) { return '$' . ++$i; }, $route) . '&ACTION=' . array_shift($action);
+      $uri = '/?ROUTE='
+           . preg_replace_callback(
+              '|\([^\)]+\)|is',
+              function ($item) use (&$i) {
+                return '$' . ++$i;
+              },
+              $route
+            )
+           . '&ACTION=' . array_shift($action)
+      ;
 
       if ($action) {
         foreach ($action as $k => $v) {
@@ -187,7 +196,7 @@ class App {
     $log_file = getenv('LOG_DIR') . '/' . date('Ymd') . '-' . $type . '.log';
     $message = date('[Y-m-d H:i:s T]')
              . "\t" . $message
-             . "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t" 
+             . "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t"
              . json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
     ;
     error_log($message, 3, $log_file);
