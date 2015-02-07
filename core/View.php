@@ -236,7 +236,7 @@ class View {
 
     static $arrays = [];
     $arrays[$key] = is_array($param);
-    if ($arrays[$key] && is_array(end($param))) {
+    if ($arrays[$key] && is_int(key($param))) {
       $last = sizeof($param) - 1;
       $i = 0;
       foreach ($param as $k => $value) {

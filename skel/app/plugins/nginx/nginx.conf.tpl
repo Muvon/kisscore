@@ -10,13 +10,12 @@ server {
   client_max_body_size %UPLOAD_MAX_FILESIZE%;
   include %NGINX_ROUTE_FILE%;
 
-
+  root %HTML_DIR%;
   location = / {
     if ($request_method !~ ^(GET|HEAD|POST)$ ) {
       return 444;
     }
 
-    root %HTML_DIR%;
     try_files $uri @app;
     log_not_found  off;
     error_log      /dev/null;

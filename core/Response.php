@@ -187,7 +187,7 @@ class Response {
   */
   public function redirect($url, $code = 302) {
     assert('is_string($url)');
-    asesrt('in_array($code, [301, 302])');
+    assert('in_array($code, [301, 302])');
 
     $this->status = $code;
     $this
