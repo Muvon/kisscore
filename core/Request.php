@@ -162,7 +162,7 @@ class Request {
       $this->params['action'] = $this->params['route'] = array_shift($argv);
       $this->params += $argv;
     } else {
-      $this->params = filter_input_array(INPUT_POST) + filter_input_array(INPUT_GET);
+      $this->params = (array) filter_input_array(INPUT_POST) + (array) filter_input_array(INPUT_GET);
     }
     return $this;
   }
