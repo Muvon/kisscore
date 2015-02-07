@@ -1515,7 +1515,7 @@ ldap.max_links = -1
 [kisscore]
 display_errors = %DEBUG%
 
-assert.active = 0
+assert.active = %DEBUG%
 assert.bail = 0
 assert.callback = "App::handleAssertion"
 

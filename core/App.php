@@ -225,11 +225,6 @@ class App {
 
     // Handle uncatched exceptions
     set_exception_handler([static::class, 'handleException']);
-
-    // Ini settings
-    if (static::$debug) {
-      assert_options(ASSERT_ACTIVE, true);
-    }
   }
 
   /**
