@@ -236,7 +236,7 @@ class View {
 
     static $arrays = [];
     $arrays[$key] = is_array($param);
-    if ($arrays[$key] && is_int(key($param))) {
+    if ($arrays[$key] && is_array(end($param))) {
       $last = sizeof($param) - 1;
       $i = 0;
       foreach ($param as $k => $value) {
@@ -306,7 +306,7 @@ class View {
     };
 
     // Шаблон имени переменной
-    $var_ptrn = '[a-z\_]{1}[a-z0-9\.\_]*';
+    $var_ptrn = '\!?[a-z\_]{1}[a-z0-9\.\_]*';
 
     $parse_params = function ($str) use ($var) {
       $str = trim($str);
@@ -373,11 +373,8 @@ class View {
           $denial = false;
           $key    = $m[1];
 
-          if (0 === stripos($m[1], 'no_'))
-            $key = substr($m[1], 3);
-
-          if (0 === stripos($m[1], 'not_'))
-            $key = substr($m[1], 4);
+          if (0 === stripos($m[1], '!'))
+            $key = substr($m[1], 1);
 
           if (strlen($m[1]) !== strlen($key))
             $denial = true;
