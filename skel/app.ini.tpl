@@ -11,6 +11,8 @@ nginx_route_file  = '%RUN_DIR%/nginx_route_map.conf'
 
 upload_max_filesize = '10M'
 
+domain = '%PROJECT%.lo'
+
 [default]
 action       = 'home'
 
