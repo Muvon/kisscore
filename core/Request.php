@@ -66,10 +66,7 @@ class Request {
     assert("in_array(gettype(\$url), ['string', 'boolean'])");
 
     $this->url  = $url;
-    $this
-      ->parseParams()
-      ->initFilter()
-    ;
+    $this->parseParams();
   }
 
   /**
@@ -162,39 +159,7 @@ class Request {
       $this->params['action'] = $this->params['route'] = array_shift($argv);
       $this->params += $argv;
     } else {
-      $this->params = (array) filter_input_array(INPUT_POST) + (array) filter_input_array(INPUT_GET);
-    }
-    return $this;
-  }
-
-  /**
-   * Инициализация правил для фильтра
-   * Позволяет использовать Lazy-filter технику
-   * Фильтр применяется только тогда, когда это нужно,
-   * а не при инициализации переданных переменных
-   *
-   * @access protected
-   * @return $this
-   */
-  protected function initFilter() {
-    $exclude = array_map('chr', range(0, 31));
-    unset($exclude[9], $exclude[10]); // Разрешаем табы и переводы строк
-    $this->filter = implode('', $exclude);
-    return $this;
-  }
-
-  /**
-   * Фильтрация значения
-   *
-   * @access public
-   * @param mixed $param Может быть строкой или массивом
-   * @return $this
-   */
-  public function filter(&$param) {
-    if (is_string($param)) {
-      $param = trim(strtr(rawurldecode($param), $this->filter, ''));
-    } elseif(is_array($param)) {
-      array_map([$this, 'filter'], $param);
+      $this->params = (array) filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS) + (array) filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
     }
     return $this;
   }
@@ -208,21 +173,10 @@ class Request {
    * @return mixed значение переменной, если она существует, или значение по умолчанию
    */
   public function param($key = null, $default = null) {
-    static $filtered = [];
     if (!isset($key))
       return $this->params;
 
-    if (isset($this->params[$key])) {
-      $ret = $this->params[$key];
-    } else $ret = $default;
-
-    // Фильтровали ранее?
-    if (!isset($filtered[$key])) {
-      $filter[$key] = true;
-      $this->filter($ret);
-    }
-
-    return $ret;
+    return isset($this->params[$key]) ? $this->params[$key] : $default;
   }
 
   /**
