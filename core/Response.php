@@ -9,7 +9,6 @@
 
 class Response {
   /**
-   * @property array $cookies Массив с куками, необходимый для отправки в ответе
    * @property array $headers Список заголовков, которые отправляются клиенту
    * @property string $body ответ клиенту, содержаший необходимый контент на выдачу
    * @property int $status код HTTP-статуса
@@ -17,7 +16,6 @@ class Response {
    * @property array $messages возможные статусы и сообщения HTTP-ответов
    */
   protected
-  $cookies  = [],
   $headers  = [],
   $body     = '',
   $status   = 200;
@@ -113,41 +111,6 @@ class Response {
   }
 
   /**
-   * Добавление кук для отправки
-   *
-   * @access public
-   * @param string $name
-   * @param string $value
-   * @param int $time
-   * @param string $path
-   * @return $this
-   */
-  public function addCookie($name, $value, $time, $path = '/') {
-    assert('is_string($name)');
-
-    $this->cookies[] = [
-      'name'  => $name,
-      'value' => $value,
-      'time'  => $time,
-      'path'  => $path,
-    ];
-    return $this;
-  }
-
-  /**
-   * Отправка кук, если установлены
-   *
-   * @access public
-   * @return $this
-   */
-  public function sendCookies( ) {
-    foreach ($this->cookies as $cookie) {
-      setcookie($cookie['name'], $cookie['value'], $cookie['time'], $cookie['path']);
-    }
-    return $this;
-  }
-
-  /**
    * Отправка тела ответа
    *
    * @access public
@@ -165,12 +128,7 @@ class Response {
    * @return $this
    */
   public function send() {
-    $this
-      ->sendCookies()
-      ->sendHeaders()
-      ->sendBody()
-    ;
-    return $this;
+    return $this->sendHeaders()->sendBody();
   }
 
   /**
@@ -194,7 +152,6 @@ class Response {
       ->flushHeaders()
       ->addHeader('Content-type', '')
       ->addHeader('Location', $url)
-      ->sendCookies()
       ->sendHeaders()
     ;
     exit;
@@ -236,7 +193,8 @@ class Response {
    * @return Response
    */
   public function sendHeaders() {
-    if (headers_sent( )) {
+    Cookie::send(); // This is not good but fuck it :D
+    if (headers_sent()) {
       return $this;
     }
     $protocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL') ?: 'HTTP/1.1';

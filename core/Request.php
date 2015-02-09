@@ -205,18 +205,6 @@ class Request {
   }
 
   /**
-   * Получение данных куки
-   *
-   * @access public
-   * @param string $name
-   * @return string
-   */
-  public function getCookie($name) {
-    return filter_input(INPUT_COOKIE, $name);
-  }
-
-
-  /**
    * Установка текущего роута с последующим парсингом его в действие и модуль
    *
    * @access public
