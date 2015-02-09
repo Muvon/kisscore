@@ -1,116 +1,112 @@
 <?php
 /**
  * Class Session
- * Работа с механизмом сессий
+ * Work with sessions
+ *
+ * <code>
+ * Session::start();
+ * Session::set('key', 'Test value');
+ * Session::get('key');
+ * Session::remove('key');
+ * if (Session::has('key')) echo 'Found key in Session';
+ * Session::regenerate();
+ * </code>
+ *
+ * Add calculated data if key not exists
+ * <code>
+ * Session::add('key', function () { return time(); });
+ * </code>
+ *
+ * Get key from session with default value
+ * <code>
+ * Session:get('key', 'default');
+ * </code>
  */
-class Session implements ArrayAccess {
+class Session {
   /** @var Session $Instance */
-  private static $Instance = null;
+  protected static $Instance = null;
 
   /** @var array $container */
-  private $container = [];
+  protected static $container = [];
 
-  /**
-   * Инициализация и настройка выполнения сессий
-   * @param string $session_name
-   */
-  public function __construct($session_name = 'session') {
-    assert("is_string(\$session_name)");
-    if (!Request::instance()->isCli()) {
-      session_start($session_name);
-    }
+  public final function __construct() {}
 
-    $this->container = &$_SESSION;
+  public static function start() {
+    self::$Instance = new static(config('session.name'));
+
+    session_start($session_name);
+    static::$container = &$_SESSION;
+  }
+
+  public static function regenerate() {
+    session_regenerate_id();
   }
 
   /**
-   * Получение текущего инстанса сессииы
-   *
-   * @return Session
+   * @param string $key
+   * @return bool
    */
-  public static function current() {
-    if (!isset(self::$Instance))
-      self::$Instance = new Session(config('session.name'));
-
-    return self::$Instance;
+  public static function has($key) {
+    assert('is_string($key)');
+    return isset(static::$container[$key]);
   }
 
   /**
    * Добавление данных в сессию, если ранее добавлено ничего не было
    *
    * @param string $key
-   * @param mixed $value
-   * @return Session
+   * @param mailparse_determine_best_xfer_encoding(fp) $value
+   * @return void
    */
-  public function add($key, $value) {
+  public static function add($key, $value) {
     assert("!array_key_exists(\$key, \$this->container)");
-    return $this->set($key, $value);
+    if (!static::has($key)) {
+      static::set($key, is_callable($value) ? $value() : $value);
+    }
   }
 
   /**
-   * Установка переменной в сессию
+   * Set new var into session
    *
    * @param string $key
    * @param mixed $value
-   * @return Session
+   * @return void
    */
-  public function set($key, $value) {
+  public static function set($key, $value) {
     assert("is_string(\$key)");
-    $this->container[$key] = $value;
-    return $this;
+    static::$container[$key] = $value;
   }
 
   /**
-   * Удаление ключа из сесссии
+   * Remove the key from session array
    *
    * @param string $key
-   * @return Session
-   */
-  public function delete($key) {
-    assert("is_string(\$key)");
-    if (isset($this->container[$key]))
-      unset($this->container[$key]);
-    return $this;
-  }
-
-  /**
-   * Получение переменной из сессии
-   *
-   * @param string $key
-   * @return mixed
-   */
-  public function get($key) {
-    return isset($this->container[$key]) ? $this->container[$key] : null;
-  }
-
-  /**
-   * @param mixed $offset
-   * @param mixed $value
-   */
-  public function offsetSet($offset, $value) {
-    $this->set($offset, $value);
-  }
-
-  /**
-   * @param mixed $offset
    * @return bool
    */
-  public function offsetExists($offset) {
-    return isset($this->container[$offset]);
+  public static function remove($key) {
+    assert("is_string(\$key)");
+    if (isset(static::$container[$key])) {
+      unset(static::$container[$key]);
+      return true;
+    }
+    return  false;
   }
 
   /**
-   * @param mixed $offset
+   * Alias for self::remove
    */
-  public function offsetUnset($offset) {
-    unset($this->container[$offset]);
+  public static function delete($key) {
+    return static::remove($key);
   }
 
   /**
-   * @param mixed $offset
-   * @return mixed|null
+   * Get var with key from session array
+   *
+   * @param string $key
+   * @param mixed $default Return default there is no such key
+   * @return mixed
    */
-  public function offsetGet($offset) {
-    return $this->get($offset);
+  public static function get($key, $default = null) {
+    return isset(static::$container[$key]) ? static::$container[$key] : $default;
   }
 }
