@@ -253,10 +253,6 @@ class App {
       $View = View::create();
     }
 
-    array_walk_recursive($vars, function ($str) {
-      return is_string($str) ? htmlspecialchars($str) : $str;
-    });
-
     return $View->set($vars);
   }
 
