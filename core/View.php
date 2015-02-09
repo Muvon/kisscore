@@ -236,7 +236,7 @@ class View {
 
     static $arrays = [];
     $arrays[$key] = is_array($param);
-    if ($arrays[$key] && is_array(end($param))) {
+    if ($arrays[$key] && is_int(key($param))) {
       $last = sizeof($param) - 1;
       $i = 0;
       foreach ($param as $k => $value) {
@@ -373,7 +373,7 @@ class View {
           $denial = false;
           $key    = $m[1];
 
-          if (0 === stripos($m[1], '!'))
+          if (0 === strpos($m[1], '!'))
             $key = substr($m[1], 1);
 
           if (strlen($m[1]) !== strlen($key))
