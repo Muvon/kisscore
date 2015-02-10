@@ -7,26 +7,15 @@
  * @subpackage View
  *
  * <code>
- * $param1 = 'value';
- * $param2 = 2;
- * $view = new View::create('route/path')
- *   ->set(compact(
- *     'param1',
- *     'param2'
- *   ))
- *   ->render( )
- *   ->getBody( )
- * ;
+ * View::create('template')->set(['test_var' => 'test_val'])->render();
  * </code>
  */
 class View {
   /**
-   * @property bool $debug
    * @property array $data массив переменных, которые использует подключаемый шаблон
    * @property string $body обработанные и готовые данные для отдачи их клиенту
    */
   protected
-  $debug         = false,
   $data          = [],
   $route         = '',
   $body          = '',
@@ -59,7 +48,6 @@ class View {
     $this->route = config('default.action');
 
     // Setup default settings
-    $this->debug = App::$debug;
     $this->template_extension = config('view.template_extension');
     $this->source_dir = config('view.source_dir');
     $this->compile_dir = config('view.compile_dir');
@@ -100,39 +88,6 @@ class View {
   }
 
   /**
-   * @param string $extension
-   * @return View
-   */
-  public function setTemplateExtension($extension) {
-    assert("is_string(\$extension)");
-    $this->template_extension = $extension;
-    return $this;
-  }
-
-  /**
-   * @access public
-   * @param string $dir
-   * @return View
-   */
-  public function setSourceDir($dir) {
-    assert("is_string(\$dir)");
-    assert("is_dir(\$dir)");
-    $this->source_dir = $dir;
-    return $this;
-  }
-
-  /**
-   * @param $dir
-   * @return View
-   */
-  public function setCompileDir($dir) {
-    assert("is_string(\$dir)");
-    assert("is_dir(\$dir)");
-    $this->compile_dir = $dir;
-    return $this;
-  }
-
-  /**
    * Создание нового объекта вида
    *
    * @static
@@ -140,12 +95,16 @@ class View {
    * @param string $route строка вида модуль/шаблон, имя шаблона обычно приравнивается выполняемому действию
    * @return View
    */
-  public static function create($route = '') {
-    return (new static)->setRoute($route);
+  public static function create($route) {
+    $View = new static;
+    $View->route = $route;
+    return $View;
   }
 
   public static function fromString($content) {
-    return static::create()->setBody($content);
+    $View = new static;
+    $View->body = $content;
+    return $View;
   }
 
   /**
@@ -156,30 +115,6 @@ class View {
    */
   public function __toString( ) {
     return $this->body;
-  }
-
-  /**
-   * Роут
-   *
-   * @param string $route
-   * @return View
-   */
-  public function setRoute($route) {
-    assert("is_string(\$route)");
-    $this->route = $route;
-    return $this;
-  }
-
-  /**
-   * Режим отладки
-   *
-   * @param bool $flag
-   * @return View
-   */
-  public function setDebug($flag) {
-    assert("is_bool(\$flag)");
-    $this->debug = $flag;
-    return $this;
   }
 
   /**
@@ -264,7 +199,7 @@ class View {
    */
   protected function compileChunk($route) {
     $file_c = $this->compile_dir . '/view-' . md5($route) . '.chunk';
-    if (!$this->debug && is_file($file_c))
+    if (!App::$debug && is_file($file_c))
       return $file_c;
 
     $source_file = $this->source_dir . '/' . strtok($route, '/') . '.' . $this->template_extension;
@@ -413,7 +348,7 @@ class View {
     assert("isset(\$this->template_extension[0])");
 
     $file_c =  $this->compile_dir . '/view-' . md5(implode(',', $this->head) . ':' . $this->route . ':' . implode(',', $this->foot)) . '.page';
-    if ($this->debug || !is_file($file_c)) {
+    if (App::$debug || !is_file($file_c)) {
       $content = [];
       foreach ($this->head as $template) {
         $content[] = file_get_contents($this->compileChunk($template));
@@ -428,11 +363,6 @@ class View {
       file_put_contents($file_c, implode($content));
     }
     include $file_c;
-    return $this;
-  }
-
-  public function setBody($body) {
-    $this->body = $body;
     return $this;
   }
 
