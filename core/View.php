@@ -258,6 +258,38 @@ class View {
     );
   }
 
+  protected function chunkCompileBlocks($str) {
+    return preg_replace_callback(
+      '#\{(' . static::VAR_PTRN . ')\}(.+?){\/\\1}#ius',
+      function ($m) use ($str) {
+        $ret = '';
+        // Oh Shit so magic :)
+        $this->block_path[] = $m[1];
+        $block_key = implode('.', $this->block_path);
+        $compiled  = static::chunkTransformVars(static::chunkCompileBlocks($m[2]));
+        array_pop($this->block_path);
+
+        // Если стоит отрицание
+        $denial = false;
+        $key    = $m[1];
+
+        if (0 === strpos($m[1], '!'))
+          $key = substr($m[1], 1);
+
+        if (strlen($m[1]) !== strlen($key))
+          $denial = true;
+
+        return
+          '<?php $param = ' . static::chunkVarExists($m[1], '$item') . ' ? ' . static::chunkVar($m[1], '$item') . ' : null;'
+        . ($denial ? ' if (!isset($param)) $param = !( ' . static::chunkVarExists($key, '$item') . ' ? ' . static::chunkVar($key, '$item') . ' : null);' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
+        . '$this->block(\'' . $key . '\', $param, $item, function ($item) { ?>'
+          . $compiled
+        . '<?php }); ?>';
+      },
+      $str
+    );
+  }
+
   /**
    * Компиляция примитивов шаблона
    *
@@ -283,38 +315,7 @@ class View {
       $str = preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
 
     // Компиляция блоков
-    $compile_blocks = function ($str, $compile_blocks) {
-      return preg_replace_callback(
-        '#\{(' . static::VAR_PTRN . ')\}(.+?){\/\\1}#ius',
-        function ($m) use ($compile_blocks, $str) {
-          $ret = '';
-          // Oh Shit so magic :)
-          $this->block_path[] = $m[1];
-          $block_key = implode('.', $this->block_path);
-          $compiled  = static::chunkTransformVars($compile_blocks($m[2], $compile_blocks));
-          array_pop($this->block_path);
-
-          // Если стоит отрицание
-          $denial = false;
-          $key    = $m[1];
-
-          if (0 === strpos($m[1], '!'))
-            $key = substr($m[1], 1);
-
-          if (strlen($m[1]) !== strlen($key))
-            $denial = true;
-
-          return
-            '<?php $param = ' . static::chunkVarExists($m[1], '$item') . ' ? ' . static::chunkVar($m[1], '$item') . ' : null;'
-          . ($denial ? ' if (!isset($param)) $param = !( ' . static::chunkVarExists($key, '$item') . ' ? ' . static::chunkVar($key, '$item') . ' : null);' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
-          . '$this->block(\'' . $key . '\', $param, $item, function ($item) { ?>'
-            . $compiled
-          . '<?php }); ?>';
-        },
-        $str
-      );
-    };
-    $str = $compile_blocks($str, $compile_blocks);
+    $str = static::chunkCompileBlocks($str);
 
     // Remove tabs and merge into single line
     $str = preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $str);
@@ -325,7 +326,7 @@ class View {
     }, $str);
 
     // Переменные: {array.index}
-    $str = static::chunkTransformVars($str);
+    $str = $this->chunkTransformVars($str);
 
     file_put_contents($file_c, $str);
     return $file_c;
