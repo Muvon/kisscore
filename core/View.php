@@ -20,7 +20,6 @@
  * </code>
  */
 class View {
-  protected static $Instance = null;
   /**
    * @property bool $debug
    * @property array $data массив переменных, которые использует подключаемый шаблон
@@ -56,8 +55,8 @@ class View {
    *
    * @see self::create
    */
-  final protected function __construct( ) {
-    $this->route = Request::instance()->getAction();
+  final protected function __construct() {
+    $this->route = config('default.action');
 
     // Setup default settings
     $this->debug = App::$debug;
@@ -142,19 +141,11 @@ class View {
    * @return View
    */
   public static function create($route = '') {
-    return new self;
+    return (new static)->setRoute($route);
   }
 
-  /**
-   * @static
-   * @access public
-   * return $this
-   */
-  public static function instance( ) {
-    if (!isset(self::$Instance)) {
-      self::$Instance = self::create( );
-    }
-    return self::$Instance;
+  public static function fromString($content) {
+    return static::create()->setBody($content);
   }
 
   /**
@@ -449,21 +440,17 @@ class View {
    * Рендеринг и подготовка данных шаблона на вывод
    *
    * @access public
-   * @param string $route
-   *   Опциональное указание роута
    * @return View
    *   Записывает результат во внутреннюю переменную $body
    *   и возвращает ссылку на объект
    */
-  public function render($route = '') {
+  public function render() {
     assert("is_string(\$route)");
     if ($this->body) {
       return $this;
     }
-    ob_start();
-    if ($route)
-      $this->setRoute($route);
 
+    ob_start();
     $this->compile();
     $this->body = ob_get_clean();
 

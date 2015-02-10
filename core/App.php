@@ -247,7 +247,7 @@ class App {
     $vars = $process($View);
 
     if (!$View instanceof View) {
-      $View = View::create();
+      $View = View::create($Request->getAction());
     }
 
     return $View->set($vars);

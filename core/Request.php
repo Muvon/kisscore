@@ -53,7 +53,7 @@ class Request {
   /**
    * @param string|bool $url адрес текущего запроса
    */
-  public function __construct($url) {
+  final protected function __construct($url) {
     assert("in_array(gettype(\$url), ['string', 'boolean'])");
 
     $this->url  = $url;
@@ -67,50 +67,49 @@ class Request {
    * @param $url
    * @return Request ссылка на объекта запроса
    */
-  public static function instance($url = true) {
+  public static function create($url = true) {
     assert("in_array(gettype(\$url), ['string', 'boolean'])");
 
-    if (!self::$Instance) {
-      if (filter_input(INPUT_SERVER, 'argc')) {
-        self::$method   = 'GET';
-        self::$protocol = 'CLI';
-        self::$ip       = '127.0.0.1';
-        self::$host     = 'localhost';
-        self::$real_ip  = self::$ip;
-      } else {
-        if (filter_input(INPUT_SERVER, 'HTTPS')) {
-          self::$method = 'HTTPS';
-        }
-        if (filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH')) {
-          self::$is_ajax = true;
-        }
-        self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
-        self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
-
-        // Эти переменные всегда определены в HTTP-запросе
-        self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-        self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
-        self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-
-
-        // Real IP
-        self::$real_ip = self::$ip;
-        if (self::$xff) {
-          self::$real_ip = str_replace(self::$ip, '', self::$xff);
-          self::$real_ip = trim(self::$real_ip, ' ,');
-        }
-
-
-        if ($url === true) {
-          $url = self::detectUrl();
-        }
-        self::$host = filter_input(INPUT_SERVER, 'HTTP_HOST');
+    if (filter_input(INPUT_SERVER, 'argc')) {
+      self::$method   = 'GET';
+      self::$protocol = 'CLI';
+      self::$ip       = '127.0.0.1';
+      self::$host     = 'localhost';
+      self::$real_ip  = self::$ip;
+    } else {
+      if (filter_input(INPUT_SERVER, 'HTTPS')) {
+        self::$method = 'HTTPS';
       }
-      self::$Instance = new self($url);
-      self::$Instance->setRoute(Input::get('ROUTE'));
-      self::$Instance->setAction(Input::get('ACTION'));
+      if (filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH')) {
+        self::$is_ajax = true;
+      }
+      self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
+      self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
+
+      // Эти переменные всегда определены в HTTP-запросе
+      self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+      self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
+      self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+
+
+      // Real IP
+      self::$real_ip = self::$ip;
+      if (self::$xff) {
+        self::$real_ip = str_replace(self::$ip, '', self::$xff);
+        self::$real_ip = trim(self::$real_ip, ' ,');
+      }
+
+
+      if ($url === true) {
+        $url = self::detectUrl();
+      }
+      self::$host = filter_input(INPUT_SERVER, 'HTTP_HOST');
     }
-    return self::$Instance;
+
+    return (new static($url))
+      ->setRoute(Input::get('ROUTE'))
+      ->setAction(Input::get('ACTION'))
+    ;
   }
 
   /**

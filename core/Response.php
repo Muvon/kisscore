@@ -73,7 +73,7 @@ class Response {
    */
   final protected function __construct($status = 200) {
     assert("is_int(\$status)", 'Status must be integer');
-    $this->setStatus($status);
+    $this->status($status);
   }
   /**
    * Создание нового ответа
@@ -84,7 +84,7 @@ class Response {
    * @return Response
    */
   public static function create($status = 200) {
-    return new self($status);
+    return new static($status);
   }
 
   /**
@@ -92,7 +92,7 @@ class Response {
    * @param int $status новый статус ответа
    * @return Response
    */
-  public function setStatus($status) {
+  public function status($status) {
     assert('in_array($status, array_keys(self::$messages))');
     if (isset(self::$messages[$status])) {
       $this->status = $status;

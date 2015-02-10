@@ -13,7 +13,7 @@ class Input {
     if (filter_input(INPUT_SERVER, 'argc')) {
       $argv = filter_input(INPUT_SERVER, 'argv');
       array_shift($argv); // file
-      static::$params['action'] = static::$params['route'] = array_shift($argv);
+      static::$params['ACTION'] = array_shift($argv);
       static::$params += $argv;
     } else {
       static::$params = (array) filter_input_array(INPUT_POST) + (array) filter_input_array(INPUT_GET);
