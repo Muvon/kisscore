@@ -13,8 +13,6 @@ class Request {
    *
    * @property string $route имя действия, которое должно выполнится в выполняемом запросе
    * @property string $url адрес обрабатываемого запроса
-   * @property array $url_map
-   * @property array $route_map
    *
    * @property Request $instance хэндлер объекта текущего запроса
    * @property string $method вызываемый метод на данном запросе (GET | POST)
@@ -32,9 +30,7 @@ class Request {
   $params       = [],
   $action  = '',
   $route   = '',
-  $url      = '',
-  $url_map    = [],
-  $route_map  = [];
+  $url      = '';
 
   private static
   $Instance    = null;
@@ -71,18 +67,10 @@ class Request {
     assert("in_array(gettype(\$url), ['string', 'boolean'])");
 
     if (filter_input(INPUT_SERVER, 'argc')) {
-      self::$method   = 'GET';
       self::$protocol = 'CLI';
-      self::$ip       = '127.0.0.1';
-      self::$host     = 'localhost';
-      self::$real_ip  = self::$ip;
     } else {
-      if (filter_input(INPUT_SERVER, 'HTTPS')) {
-        self::$method = 'HTTPS';
-      }
-      if (filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH')) {
-        self::$is_ajax = true;
-      }
+      self::$protocol = filter_input(INPUT_SERVER, 'HTTPS') ?: 'HTTP';
+      self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
       self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
       self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
 
@@ -91,19 +79,11 @@ class Request {
       self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
       self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 
+      static::parseRealIp();
 
-      // Real IP
-      self::$real_ip = self::$ip;
-      if (self::$xff) {
-        self::$real_ip = str_replace(self::$ip, '', self::$xff);
-        self::$real_ip = trim(self::$real_ip, ' ,');
+      if ($url === true && $url = filter_input(INPUT_SERVER, 'REQUEST_URI')) {
+        $url = rtrim($url, ';&?') ?: '/';
       }
-
-
-      if ($url === true) {
-        $url = self::detectUrl();
-      }
-      self::$host = filter_input(INPUT_SERVER, 'HTTP_HOST');
     }
 
     return (new static($url))
@@ -112,18 +92,12 @@ class Request {
     ;
   }
 
-  /**
-   * Определение текущего адреса запроса
-   *
-   * @static
-   * @access public
-   * @return string
-   */
-  public static function detectUrl() {
-    if ($url = filter_input(INPUT_SERVER, 'REQUEST_URI')) {
-      $url = rtrim($url, ';&?');
+  protected static function parseRealIp() {
+    self::$real_ip = self::$ip;
+    if (self::$xff) {
+      self::$real_ip = str_replace(self::$ip, '', self::$xff);
+      self::$real_ip = trim(self::$real_ip, ' ,');
     }
-    return $url ?: '/';
   }
 
   public function getUrl() {
