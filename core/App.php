@@ -238,10 +238,10 @@ class App {
    * @param Request $Request
    * @return View
    */
-  public static function process(Request $Request) {
-    $process = function (&$_RESPONSE) use ($Request) {
+  public static function process(Request $Request, Response $Response) {
+    $process = function (&$_RESPONSE) use ($Request, $Response) {
       $_ACTION = getenv('APP_DIR') . '/actions/' . $Request->getAction() . '.php';
-      extract($Request->getParams(static::getImportVarsArgs($_ACTION)));
+      extract(Input::get(static::getImportVarsArgs($_ACTION)));
       $_RESPONSE = include $_ACTION;
 
       return get_defined_vars();

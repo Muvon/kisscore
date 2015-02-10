@@ -1,13 +1,10 @@
 <?php
 include getenv('KISS_CORE');
 App::start(['debug' => substr(getenv('HTTP_HOST'), -3) === '.lo']);
-Request::response()->addHeader('Content-type', 'text/html;charset=utf-8');
-$View = App::process(Request::instance())
+$Response = Response::instance()->header('Content-type', 'text/html;charset=utf-8');
+$View = App::process(Request::create(), $Response)
   ->addHead('_head')
   ->addFoot('_foot')
 ;
-Request::response()
-  ->setBody((string) $View->render())
-  ->send()
-;
+$Response->send((string) $View->render());
 App::stop();

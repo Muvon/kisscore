@@ -127,31 +127,28 @@ class Response {
    * @access public
    * @return $this
    */
-  public function send() {
-    return $this->sendHeaders()->sendBody();
+  public function send($content = '') {
+    return $this->sendHeaders()->setBody($content)->sendBody();
   }
 
   /**
   * Выполнение редиректа на определенный URL
-  *
-  * @uses self::flushHeaders()
-  * @uses self::addHeader()
-  * @uses self::sendHeaders()
   *
   * @access public
   * @param string $url полный HTTP-адрес страницы для редиректа
   * @param int $code код редиректа (301 | 302)
   * @return void
   */
-  public function redirect($url, $code = 302) {
+  public static function redirect($url, $code = 302) {
     assert('is_string($url)');
     assert('in_array($code, [301, 302])');
 
-    $this->status = $code;
-    $this
-      ->flushHeaders()
-      ->addHeader('Content-type', '')
-      ->addHeader('Location', $url)
+    if ($url[0] === '/')
+      $url = 'http://' . getenv('HTTP_HOST') . $url;
+
+    static::create($code)
+      ->header('Content-type', '')
+      ->header('Location', $url)
       ->sendHeaders()
     ;
     exit;
@@ -178,7 +175,7 @@ class Response {
   *   значение заголовка, для Location это просто адрес редиректа
   * @return Response
   */
-  public function addHeader($header, $value) {
+  public function header($header, $value) {
     assert('is_string($header)');
     assert('is_string($value)');
 
@@ -192,7 +189,7 @@ class Response {
    * @access public
    * @return Response
    */
-  public function sendHeaders() {
+  protected function sendHeaders() {
     Cookie::send(); // This is not good but fuck it :D
     if (headers_sent()) {
       return $this;

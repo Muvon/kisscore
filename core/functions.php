@@ -54,25 +54,6 @@ function typify(&$var, $type) {
 // Вспомогательные функции
 //
 
-
-/**
- * Выполнение http-редиректа внутри сайта или на внешний сайт
- *
- * @package Core
- * @subpackage Help Functions
- *
- * @param string $to
- * @param int $code
- * @return void
-*/
-function redirect($to, $code = 302) {
-  if ($to[0] === '/')
-    $to = 'http://' . getenv('HTTP_HOST') . $to;
-
-  Request::response()->redirect($to, $code);
-  return;
-}
-
 /**
  * Функция для получения конфигурационных параметров из файла
  * @param  string $param Параметр в виде раздел.параметр

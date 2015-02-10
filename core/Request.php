@@ -5,15 +5,6 @@
  * @final
  * @package Core
  * @subpackage Request
- *
- * <code>
- * $response = Request::instance( )
- *   ->getResponse()
- *   ->addHeader('Content-type', 'text/html;charset=utf-8')
- *   ->sendHeaders( )
- * ;
- * echo $response;
- * </code>
  */
 class Request {
   /**
@@ -33,7 +24,6 @@ class Request {
    * @property string $xff ip адрес при использовании прокси, заголовок: X-Forwarded-For
    * @property string $user_agent строка, содержащая USER AGENT браузера клиента
    * @property string $host Хост, который выполняет запрос
-   * @property bool $is_cli является ли запрос CLI или же обычный HTTP
    * @property bool $is_ajax запрос посылается через ajax
    */
 
@@ -56,7 +46,6 @@ class Request {
   $xff         = '',
   $host        = '',
   $user_agent  = '',
-  $is_cli      = false,
   $is_ajax     = false;
 
   /**
@@ -66,7 +55,6 @@ class Request {
     assert("in_array(gettype(\$url), ['string', 'boolean'])");
 
     $this->url  = $url;
-    $this->parseParams();
   }
 
   /**
@@ -81,12 +69,7 @@ class Request {
     assert("in_array(gettype(\$url), ['string', 'boolean'])");
 
     if (!self::$Instance) {
-      // Режим кли или нет
       if (filter_input(INPUT_SERVER, 'argc')) {
-        self::$is_cli = true;
-      }
-
-      if (self::$is_cli) {
         self::$method   = 'GET';
         self::$protocol = 'CLI';
         self::$ip       = '127.0.0.1';
@@ -122,8 +105,8 @@ class Request {
         self::$host = filter_input(INPUT_SERVER, 'HTTP_HOST');
       }
       self::$Instance = new self($url);
-      self::$Instance->setRoute(self::$Instance->param('ROUTE'));
-      self::$Instance->setAction(self::$Instance->param('ACTION'));
+      self::$Instance->setRoute(Input::get('ROUTE'));
+      self::$Instance->setAction(Input::get('ACTION'));
     }
     return self::$Instance;
   }
@@ -146,63 +129,6 @@ class Request {
     return $this->url;
   }
 
-  /**
-   * Парсит и сохраняет все параметры в переменной self::$params
-   *
-   * @access protected
-   * @return $this
-   */
-  protected function parseParams( ) {
-    if (self::$is_cli) {
-      $argv = filter_input(INPUT_SERVER, 'argv');
-      $file = array_shift($argv);
-      $this->params['action'] = $this->params['route'] = array_shift($argv);
-      $this->params += $argv;
-    } else {
-      $this->params = (array) filter_input_array(INPUT_POST) + (array) filter_input_array(INPUT_GET);
-    }
-    return $this;
-  }
-
-  /**
-   * Получение переменной запроса
-   *
-   * @access public
-   * @param mixed $key имя переменной или индекс (string | int)
-   * @param mixed $default значение по умолчанию
-   * @return mixed значение переменной, если она существует, или значение по умолчанию
-   */
-  public function param($key = null, $default = null) {
-    if (!isset($key))
-      return $this->params;
-
-    return isset($this->params[$key]) ? $this->params[$key] : $default;
-  }
-
-  /**
-   * Извлечение параметром из запроса по мнемоническим правилам
-   *
-   * @access public
-   * @param array
-   *   набор парамтеров по правилам 'param@int'
-   *   'param:type=default' = - присвоить значение по умолчанию
-   * @return array
-   *
-   * @uses typify()
-   */
-  public function getParams(array $args) {
-    $params = [];
-    foreach ($args as $arg) {
-      preg_match('#^([a-z0-9_]+)(?:\:([a-z]+))?(?:\=(.+))?$#', $arg, $m);
-      $params[$m[1]]  = $this->param($m[1], isset($m[3]) ? $m[3] : '');
-
-      // Нужно ли типизировать
-      if (isset($m[2])) {
-        typify($params[$m[1]], $m[2]);
-      }
-    }
-    return $params;
-  }
 
   /**
    * Установка текущего роута с последующим парсингом его в действие и модуль
@@ -319,16 +245,6 @@ class Request {
   }
 
   /**
-   * CLI запрос из строки шелла или нет
-   *
-   * @access public
-   * @return bool
-   */
-  public function isCli( ) {
-    return self::$is_cli;
-  }
-
-  /**
    * Посылается запрос с использованием AJAX или нет
    *
    * @access public
@@ -336,33 +252,5 @@ class Request {
    */
   public function isAjax( ) {
     return self::$is_ajax;
-  }
-
-  /**
-   * Статическая функция для доступа к текущему ответу
-   * Если ответ не имеется, он создается
-   *
-   * @static
-   * @access public
-   * @return Response
-   */
-  public static function response( ) {
-    $Req = Request::instance( );
-    if (!$Req->Response instanceof Response) {
-      $Req->Response = Response::create( );
-    }
-    return $Req->Response;
-  }
-
-  /**
-   * Установка другого ответа для текущего запроса
-   *
-   * @access public
-   * @param Response $Response ссылка на объект ответа
-   * @return Response
-   */
-  public function setResponse(Response $Response = null) {
-    //$this->Response = $Response;
-    return $this->Response = $Response;
   }
 }
