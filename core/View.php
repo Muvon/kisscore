@@ -315,7 +315,7 @@ class View {
       $str = preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
 
     // Компиляция блоков
-    $str = static::chunkCompileBlocks($str);
+    $str = $this->chunkCompileBlocks($str);
 
     // Remove tabs and merge into single line
     $str = preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $str);
@@ -326,7 +326,7 @@ class View {
     }, $str);
 
     // Переменные: {array.index}
-    $str = $this->chunkTransformVars($str);
+    $str = static::chunkTransformVars($str);
 
     file_put_contents($file_c, $str);
     return $file_c;
