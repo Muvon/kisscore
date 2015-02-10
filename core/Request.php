@@ -37,7 +37,9 @@ class Request {
   $route_map  = [];
 
   private static
-  $Instance    = null,
+  $Instance    = null;
+
+  public static
   $method      = 'GET',
   $protocol    = 'HTTP',
   $referer     = '',
@@ -172,85 +174,5 @@ class Request {
    */
   public function getAction() {
     return $this->action ? $this->action : config('default.action');
-  }
-
-  /**
-   * Юзер агент посетителя, запрашивающего данный запрос
-   *
-   * @access public
-   * @return string
-   */
-  public function getUserAgent( ) {
-    return self::$user_agent;
-  }
-
-  /**
-   * Запрашиваемый хост в текущем запросе
-   *
-   * @access public
-   * @return string
-   */
-  public function getHost( ) {
-    return self::$host;
-  }
-
-  /**
-   * Получение IP-адреса клиента
-   *
-   * @access public
-   * @return string
-   */
-  public function getIp( ) {
-    return self::$ip;
-  }
-
-  /**
-   * Получение реального адреса клиента (если скрывается под прокси)
-   *
-   * @access public
-   * @return string
-   */
-  public function getRealIp( ) {
-    return self::$real_ip;
-  }
-
-  /**
-   * Получение реферера при посещении текущего роута
-   *
-   * @access public
-   * @return string
-   */
-  public function getReferer( ) {
-    return self::$referer;
-  }
-
-  /**
-   * Метод запроса: POST | GET
-   *
-   * @access public
-   * @return string
-   */
-  public function getMethod( ) {
-    return self::$method;
-  }
-
-  /**
-   * Протокоол взаимодействия с текущим запросом: CLI | HTTP
-   *
-   * @access public
-   * @return string
-   */
-  public function getProtocol( ) {
-    return self::$protocol;
-  }
-
-  /**
-   * Посылается запрос с использованием AJAX или нет
-   *
-   * @access public
-   * @return bool
-   */
-  public function isAjax( ) {
-    return self::$is_ajax;
   }
 }
