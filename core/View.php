@@ -338,14 +338,10 @@ class View {
    * @return View
    */
   protected function compile() {
-    assert("is_string(\$this->source_dir)");
-    assert("is_dir(\$this->source_dir)");
-    assert("is_string(\$this->compile_dir)");
-    assert("is_dir(\$this->compile_dir)");
-    assert("is_writable(\$this->compile_dir)");
+    assert("is_string(\$this->source_dir) && is_dir(\$this->source_dir)");
+    assert("is_string(\$this->compile_dir) && is_dir(\$this->compile_dir) && is_writable(\$this->compile_dir)");
     assert("is_string(\$this->route)");
-    assert("is_string(\$this->template_extension)");
-    assert("isset(\$this->template_extension[0])");
+    assert("is_string(\$this->template_extension) && isset(\$this->template_extension[0])");
 
     $file_c =  $this->compile_dir . '/view-' . md5(implode(',', $this->head) . ':' . $this->route . ':' . implode(',', $this->foot)) . '.page';
     if (App::$debug || !is_file($file_c)) {
