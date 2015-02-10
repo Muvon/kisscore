@@ -11,6 +11,8 @@
  * </code>
  */
 class View {
+  const VAR_PTRN = '\!?[a-z\_]{1}[a-z0-9\.\_]*';
+
   /**
    * @property array $data массив переменных, которые использует подключаемый шаблон
    * @property string $body обработанные и готовые данные для отдачи их клиенту
@@ -189,6 +191,73 @@ class View {
     return $this;
   }
 
+
+  protected static function chunkVar($v, $container = '$item') {
+    $ex = explode('.', $v);
+    $var = '';
+    foreach ($ex as $p) {
+      $var .= ($var ? '' : $container) . '[\'' . $p . '\']';
+    }
+    return $var;
+  }
+
+
+  protected static function chunkVarExists($v, $container = '$item') {
+    $ex = explode('.', $v);
+    $sz = sizeof($ex);
+    $var = '';
+    $i = 0;
+    foreach ($ex as $p) {
+      ++$i;
+      if ($i !== $sz) {
+        $var .= ($var ? '' : $container) . '[\'' . $p . '\']';
+      }
+    }
+    $array = ($var ?: $container);
+    return 'isset(' . $array . ') && array_key_exists(\'' . $p . '\', ' . $array . ')';
+  }
+
+  protected static function chunkParseParams($str) {
+    $str = trim($str);
+    if (!$str)
+      return '';
+
+    $ex = array_map('trim', explode(' ', $str));
+    $code = '';
+    foreach ($ex as $item) {
+      list($key, $val) = array_map('trim', explode('=', $item));
+      $code .= '<?php ' . static::chunkVar($key) . ' = ' . static::chunkVar($val) . '; ?>';
+    }
+    return $code;
+  }
+
+  protected static function chunkTransformVars($str) {
+    $filter_ptrn = implode(
+      '|' ,
+      array_map(
+        function($v) {
+          return '\:' . $v;
+        },
+        array_keys(static::$filter_funcs)
+      )
+    );
+
+    return preg_replace_callback(
+      '#\{(' . static::VAR_PTRN . ')(' . $filter_ptrn . ')?\}#ium',
+      function ($matches) {
+        $filter = 'raw';
+        if (isset($matches[2])) {
+          $filter = substr($matches[2], 1);
+        }
+
+        return '<?php if (isset(' . ($v = static::chunkVar($matches[1], '$item')) . ')) {'
+        . 'echo ' . static::$filter_funcs[$filter] . '(' . $v . ');'
+        . '} ?>';
+      },
+      $str
+    );
+  }
+
   /**
    * Компиляция примитивов шаблона
    *
@@ -206,93 +275,23 @@ class View {
 
     $str = file_get_contents($source_file);
 
-    // Получение переменной из шаблона
-    $var = function ($v, $container = '$item') {
-      $ex = explode('.', $v);
-      $var = '';
-      foreach ($ex as $p) {
-        $var .= ($var ? '' : $container) . '[\'' . $p . '\']';
-      }
-      return $var;
-    };
-
-    $var_exists = function ($v, $container = '$item') {
-      $ex = explode('.', $v);
-      $sz = sizeof($ex);
-      $var = '';
-      $i = 0;
-      foreach ($ex as $p) {
-        ++$i;
-        if ($i !== $sz) {
-          $var .= ($var ? '' : $container) . '[\'' . $p . '\']';
-        }
-      }
-      $array = ($var ?: $container);
-      return 'isset(' . $array . ') && array_key_exists(\'' . $p . '\', ' . $array . ')';
-    };
-
-    // Шаблон имени переменной
-    $var_ptrn = '\!?[a-z\_]{1}[a-z0-9\.\_]*';
-
-    $parse_params = function ($str) use ($var) {
-      $str = trim($str);
-      if (!$str)
-        return '';
-
-      $ex = array_map('trim', explode(' ', $str));
-      $code = '';
-      foreach ($ex as $item) {
-        list($key, $val) = array_map('trim', explode('=', $item));
-        $code .= '<?php ' . $var($key) . ' = ' . $var($val) . '; ?>';
-      }
-      return $code;
-    };
-
-    // Transform variables from template
-    $transform_vars = function ($str) use ($var_ptrn, $var) {
-      $filter_ptrn = implode(
-        '|' ,
-        array_map(
-          function($v) {
-            return '\:' . $v;
-          },
-          array_keys(static::$filter_funcs)
-        )
-      );
-
-      return preg_replace_callback(
-        '#\{(' . $var_ptrn . ')(' . $filter_ptrn . ')?\}#ium',
-        function ($matches) use ($var) {
-          $filter = 'raw';
-          if (isset($matches[2])) {
-            $filter = substr($matches[2], 1);
-          }
-
-          return '<?php if (isset(' . ($v = $var($matches[1], '$item')) . ')) {'
-          . 'echo ' . static::$filter_funcs[$filter] . '(' . $v . ');'
-          . '} ?>';
-        },
-        $str
-      );
-    };
-
     // Закрываем строчные блоки
-    $line_block = '#\{(' . $var_ptrn . ')\:\}(.+)$#ium';
+    $line_block = '#\{(' . static::VAR_PTRN . ')\:\}(.+)$#ium';
 
     // Могут быть вложенные
     while (preg_match($line_block, $str) > 0)
       $str = preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
 
     // Компиляция блоков
-    $compile_blocks = function ($str, $compile_blocks) use ($var_ptrn, $transform_vars, $var, $var_exists) {
+    $compile_blocks = function ($str, $compile_blocks) {
       return preg_replace_callback(
-        '#\{(' . $var_ptrn . ')\}(.+?){\/\\1}#ius',
-        function ($m) use($var, $var_exists, $transform_vars, $compile_blocks, $str) {
+        '#\{(' . static::VAR_PTRN . ')\}(.+?){\/\\1}#ius',
+        function ($m) use ($compile_blocks, $str) {
           $ret = '';
           // Oh Shit so magic :)
           $this->block_path[] = $m[1];
           $block_key = implode('.', $this->block_path);
-          $compiled  = $transform_vars($compile_blocks($m[2], $compile_blocks));
+          $compiled  = static::chunkTransformVars($compile_blocks($m[2], $compile_blocks));
           array_pop($this->block_path);
 
           // Если стоит отрицание
@@ -306,8 +305,8 @@ class View {
             $denial = true;
 
           return
-            '<?php $param = ' . $var_exists($m[1], '$item') . ' ? ' . $var($m[1], '$item') . ' : null;'
-          . ($denial ? ' if (!isset($param)) $param = !( ' . $var_exists($key, '$item') . ' ? ' . $var($key, '$item') . ' : null);' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
+            '<?php $param = ' . static::chunkVarExists($m[1], '$item') . ' ? ' . static::chunkVar($m[1], '$item') . ' : null;'
+          . ($denial ? ' if (!isset($param)) $param = !( ' . static::chunkVarExists($key, '$item') . ' ? ' . static::chunkVar($key, '$item') . ' : null);' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
           . '$this->block(\'' . $key . '\', $param, $item, function ($item) { ?>'
             . $compiled
           . '<?php }); ?>';
@@ -321,12 +320,12 @@ class View {
     $str = preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $str);
 
     // Замена подключений файлов
-    $str = preg_replace_callback('#\{\>([a-z\_0-9\/]+)(.*?)\}#ium', function ($matches) use ($parse_params) {
-      return $parse_params($matches[2]) . file_get_contents($this->compileChunk($matches[1]));
+    $str = preg_replace_callback('#\{\>([a-z\_0-9\/]+)(.*?)\}#ium', function ($matches) {
+      return static::chunkParseParams($matches[2]) . file_get_contents($this->compileChunk($matches[1]));
     }, $str);
 
     // Переменные: {array.index}
-    $str = $transform_vars($str, $var_ptrn, $var);
+    $str = static::chunkTransformVars($str);
 
     file_put_contents($file_c, $str);
     return $file_c;
