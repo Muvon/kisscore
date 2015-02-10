@@ -1,4 +1,18 @@
 <?php
+/**
+ * Class Cookie
+ * Work with cookies
+ *
+ * <code>
+ * Cookie::add('first', 'value', time() + 100);
+ * Cookie::add('onemore', 'value', time() + 100);
+ * Cookie::send(); // Be sure to send cookie before headers sent
+ * </code>
+ *
+ * <code>
+ * $first = Cookie:get('first');
+ * </code>
+ */
 class Cookie {
   protected static $cookies = [];
 
