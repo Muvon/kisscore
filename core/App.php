@@ -214,9 +214,6 @@ class App {
     // Locale settings
     setlocale(LC_ALL, 'ru_RU.UTF8');
 
-    // Timezone
-    date_default_timezone_set('Europe/Moscow');
-
     // Autoloading models
     spl_autoload_register([static::class, 'handleAutoload']);
 
