@@ -42,4 +42,23 @@ server {
 
     fastcgi_pass   unix:%RUN_DIR%/php-fpm.sock;
   }
+
+  # This location block is used to view PHP-FPM stats
+  location = /php_status {
+    allow 127.0.0.1;
+    deny all;
+
+    include        %CONFIG_DIR%/nginx_fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $fastcgi_script_name;
+    fastcgi_pass unix:%RUN_DIR%/php-fpm.sock;
+  }
+
+  # This location block is used to view nginx stats
+  location = /nginx_status {
+    allow 127.0.0.1;
+    deny all;
+
+    stub_status on;
+    access_log off;
+  }
 }

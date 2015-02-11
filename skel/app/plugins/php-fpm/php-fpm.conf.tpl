@@ -34,7 +34,7 @@ log_level = warning
 ; Default Value: 0
 emergency_restart_threshold = 0
 
-; Interval of time used by emergency_restart_interval to determine when 
+; Interval of time used by emergency_restart_interval to determine when
 ; a graceful restart will be initiated.  This can be useful to work around
 ; accidental corruptions in an accelerator's shared memory.
 ; Available Units: s(econds), m(inutes), h(ours), or d(ays)
@@ -53,7 +53,7 @@ process_control_timeout = 0
 daemonize = no
 
 ;;;;;;;;;;;;;;;;;;;;
-; Pool Definitions ; 
+; Pool Definitions ;
 ;;;;;;;;;;;;;;;;;;;;
 
 ; Multiple pools of child processes may be started with different listening
@@ -79,7 +79,7 @@ listen = %RUN_DIR%/php-fpm.sock
 ; Set listen(2) backlog. A value of '-1' means unlimited.
 ; Default Value: -1
 listen.backlog = 32000
- 
+
 ; List of ipv4 addresses of FastCGI clients which are allowed to connect.
 ; Equivalent to the FCGI_WEB_SERVER_ADDRS environment variable in the original
 ; PHP FCGI (5.2.2+). Makes sense only with a tcp listening socket. Each address
@@ -90,7 +90,7 @@ listen.allowed_clients = 127.0.0.1
 
 ; Set permissions for unix socket, if one is used. In Linux, read/write
 ; permissions must be set in order to allow connections from a web server. Many
-; BSD-derived systems allow connections regardless of permissions. 
+; BSD-derived systems allow connections regardless of permissions.
 ; Default Values: user and group are set as the running user
 ;                 mode is set to 0666
 ; listen.owner = dk
@@ -146,7 +146,7 @@ pm.min_spare_servers = 16
 ; Note: Used only when pm is set to 'dynamic'
 ; Note: Mandatory when pm is set to 'dynamic'
 pm.max_spare_servers = 64
- 
+
 ; The number of requests each child process should execute before respawning.
 ; This can be useful to work around memory leaks in 3rd party libraries. For
 ; endless request processing specify '0'. Equivalent to PHP_FCGI_MAX_REQUESTS.
@@ -181,9 +181,9 @@ pm.max_requests = 1024
 ; Note: The value must start with a leading slash (/). The value can be
 ;       anything, but it may not be a good idea to use the .php extension or it
 ;       may conflict with a real PHP file.
-; Default Value: not set 
-;pm.status_path = /status
- 
+; Default Value: not set
+pm.status_path = /php_status
+
 ; The ping URI to call the monitoring page of FPM. If this value is not set, no
 ; URI will be recognized as a ping page. This could be used to test from outside
 ; that FPM is alive and responding, or to
@@ -200,50 +200,50 @@ pm.max_requests = 1024
 ; response is formatted as text/plain with a 200 response code.
 ; Default Value: pong
 ping.response = pong
- 
+
 ; The timeout for serving a single request after which the worker process will
 ; be killed. This option should be used when the 'max_execution_time' ini option
 ; does not stop script execution for some reason. A value of '0' means 'off'.
 ; Available units: s(econds)(default), m(inutes), h(ours), or d(ays)
 ; Default Value: 0
 request_terminate_timeout = 0
- 
+
 ; The timeout for serving a single request after which a PHP backtrace will be
 ; dumped to the 'slowlog' file. A value of '0s' means 'off'.
 ; Available units: s(econds)(default), m(inutes), h(ours), or d(ays)
 ; Default Value: 0
 request_slowlog_timeout = 1s
- 
+
 ; The log file for slow requests
 ; Default Value: /var/log/php-fpm.log.slow
 slowlog =%LOG_DIR%/php-fpm.log.slow
- 
+
 ; Set open file descriptor rlimit.
 ; Default Value: system defined value
 ; rlimit_files = 65535
- 
+
 ; Set max core size rlimit.
 ; Possible Values: 'unlimited' or an integer greater or equal to 0
 ; Default Value: system defined value
 ;rlimit_core = 0
- 
+
 ; Chroot to this directory at the start. This value must be defined as an
 ; absolute path. When this value is not set, chroot is not used.
-; Note: chrooting is a great security feature and should be used whenever 
+; Note: chrooting is a great security feature and should be used whenever
 ;       possible. However, all PHP paths will be relative to the chroot
 ;       (error_log, sessions.save_path, ...).
 ; Default Value: not set
-;chroot = 
- 
+;chroot =
+
 ; Chdir to this directory at the start. This value must be an absolute path.
 ; Default Value: current directory or / when chroot
 ;chdir = /var/www
- 
+
 ; Redirect worker stdout and stderr into main error log. If not set, stdout and
 ; stderr will be redirected to /dev/null according to FastCGI specs.
 ; Default Value: no
 catch_workers_output = yes
- 
+
 ; Pass environment variables like LD_LIBRARY_PATH. All $VARIABLEs are taken from
 ; the current environment.
 ; Default Value: clean env
@@ -257,7 +257,7 @@ catch_workers_output = yes
 ; overwrite the values previously defined in the php.ini. The directives are the
 ; same as the PHP SAPI:
 ;   php_value/php_flag             - you can set classic ini defines which can
-;                                    be overwritten from PHP call 'ini_set'. 
+;                                    be overwritten from PHP call 'ini_set'.
 ;   php_admin_value/php_admin_flag - these directives won't be overwritten by
 ;                                     PHP call 'ini_set'
 ; For php_*flag, valid values are on, off, 1, 0, true, false, yes or no.
