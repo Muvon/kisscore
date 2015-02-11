@@ -30,12 +30,13 @@ class Request {
   $params       = [],
   $action  = '',
   $route   = '',
-  $url      = '';
+  $url     = '';
 
   private static
   $Instance    = null;
 
   public static
+  $time        = 0,
   $method      = 'GET',
   $protocol    = 'HTTP',
   $referer     = '',
@@ -66,6 +67,7 @@ class Request {
   public static function create($url = true) {
     assert("in_array(gettype(\$url), ['string', 'boolean'])");
 
+    self::$time = time();
     if (filter_input(INPUT_SERVER, 'argc')) {
       self::$protocol = 'CLI';
     } else {
