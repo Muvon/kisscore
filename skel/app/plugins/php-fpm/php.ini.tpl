@@ -1519,6 +1519,10 @@ assert.active = %DEBUG%
 assert.bail = 0
 assert.callback = "App::handleAssertion"
 
-opcache.validate_timestamps = 1
+opcache.revalidate_freq = 0
+opcache.validate_timestamps = %DEBUG%
 opcache.save_comments = 0
 opcache.fast_shutdown = 1
+opcache.interned_strings_buffer = 16
+opcache.memory_consumption = 192
+opcache.max_accelerated_files = 7963
