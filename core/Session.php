@@ -105,10 +105,10 @@ class Session {
    * @return mixed
    */
   public static function get($key, $default = null) {
-    if ($default && is_callable($default)) {
+    if (!static::has($key) && $default && is_callable($default)) {
       $default = $default();
       static::set($key, $default);
     }
-    return isset(static::$container[$key]) ? static::$container[$key] : $default;
+    return static::has($key) ? static::$container[$key] : $default;
   }
 }
