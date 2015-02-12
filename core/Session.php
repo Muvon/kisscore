@@ -101,10 +101,14 @@ class Session {
    * Get var with key from session array
    *
    * @param string $key
-   * @param mixed $default Return default there is no such key
+   * @param mixed $default Return default there is no such key, set on closure
    * @return mixed
    */
   public static function get($key, $default = null) {
+    if ($default && is_callable($default)) {
+      $default = $default();
+      static::set($key, $default);
+    }
     return isset(static::$container[$key]) ? static::$container[$key] : $default;
   }
 }
