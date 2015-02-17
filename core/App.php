@@ -39,6 +39,8 @@ class App {
     assert('is_string($template)');
 
     $params += [
+      '%INT_IP%'        => App::exec('/bin/hostname -i'),
+      '%EXT_IP%'        => App::exec('/bin/hostname -I'),
       '%USER%'          => getenv('USER'),
       '%PROJECT%'       => getenv('PROJECT'),
       '%PROJECT_DIR%'   => getenv('PROJECT_DIR'),
