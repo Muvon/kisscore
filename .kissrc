@@ -57,8 +57,6 @@ function kiss {
           TMP_DIR=$PROJECT_DIR/env/tmp \
           KISS_CORE=$PROJECT_DIR/app/core.php \
           HTTP_HOST=$(hostname) \
-          INT_IP=$(hostname -i) \
-          EXT_IP=$(hostname -I | cut -d' ' -f 1) \
           PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup \
           PS1=$PS1 \
           bash

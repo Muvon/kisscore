@@ -45,7 +45,7 @@ server {
 
   # This location block is used to view PHP-FPM stats
   location = /php_status {
-    allow %INT_IP%;
+    %IP_ALLOW%
     deny all;
 
     include        %CONFIG_DIR%/nginx_fastcgi_params;
@@ -55,7 +55,7 @@ server {
 
   # This location block is used to view nginx stats
   location = /nginx_status {
-    allow %INT_IP%;
+    %IP_ALLOW%
     deny all;
 
     stub_status on;

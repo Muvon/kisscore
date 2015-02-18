@@ -62,7 +62,7 @@ daemonize = no
 ; FPM can handle. Your system will tell you anyway :)
 
 ; Start a new pool named 'www'.
-[www]
+[%PROJECT%]
 
 ; The address on which to accept FastCGI requests.
 ; Valid syntaxes are:
