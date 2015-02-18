@@ -371,7 +371,6 @@ class View {
    *   и возвращает ссылку на объект
    */
   public function render() {
-    assert("is_string(\$route)");
     if ($this->body) {
       return $this;
     }
