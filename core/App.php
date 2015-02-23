@@ -2,6 +2,7 @@
 class App {
   /** @property bool $debug */
   public static $debug = true;
+  protected static $e_handlers = [];
 
   /**
    * Прекомпиляция исходного кода для работы
@@ -222,6 +223,13 @@ class App {
 
     // Handle uncatched exceptions
     set_exception_handler([static::class, 'handleException']);
+
+    // Register default Exception handler
+    if (App::$debug) {
+      static::setExceptionHandler(Exception::class, function (Exception $Exception) {
+        return static::printException($Exception);
+      });
+    }
   }
 
   /**
@@ -260,11 +268,17 @@ class App {
     return static::error($errstr);
   }
 
+
   public static function handleException(Exception $Exception) {
     static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
-    if (App::$debug) {
-      App::printException($Exception);
-    }
+
+    $exception = get_class($Exception);
+    do {
+      if (isset(static::$e_handlers[$exception])) {
+        $func = static::$e_handlers[$exception];
+        return $func($Exception);
+      }
+    } while ($exception = get_parent_class($Exception));
   }
 
   /**
@@ -277,6 +291,10 @@ class App {
     echo implode('<br/>', array_map(function ($item) { return '<li>' . $item . '</li>'; }, explode(PHP_EOL, $Exception->getTraceAsString())));
     echo '</ul></p>';
     echo '</body></html>';
+  }
+
+  public static function setExceptionHandler($exception, Callable $handler) {
+    static::$e_handlers[$exception] = $handler;
   }
 
   /**
