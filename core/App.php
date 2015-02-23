@@ -262,6 +262,21 @@ class App {
 
   public static function handleException(Exception $Exception) {
     static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
+    if (App::$debug) {
+      App::printException($Exception);
+    }
+  }
+
+  /**
+   * Print unhandled excpetion in html format
+   */
+  protected static function printException(Exception $Exception) {
+    echo '<html><head><title>Error</title></head><body>';
+    echo '<p>Unhandled exceptions <b>' . get_class($Exception) . '</b> with message "' . $Exception->getMessage() . '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() . '"</p>';
+    echo '<p><ul>';
+    echo implode('<br/>', array_map(function ($item) { return '<li>' . $item . '</li>'; }, explode(PHP_EOL, $Exception->getTraceAsString())));
+    echo '</ul></p>';
+    echo '</body></html>';
   }
 
   /**
