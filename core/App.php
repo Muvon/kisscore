@@ -187,20 +187,22 @@ class App {
    * @param string $message
    * @param array $dump
    * @param string $type error, info, wanr, notice
-   * @return void
+   * @return string идентификатор исключения
    */
   public static function log($message, array $dump = [], $type = 'error') {
     assert('is_string($message)');
     assert('is_string($type)');
     assert('in_array($type, ["info", "error", "warn", "notice"])');
-
+    $id = bin2hex($message . ':' . implode('.', array_keys($dump)) . ':' . $type);
     $log_file = getenv('LOG_DIR') . '/' . date('Ymd') . '-' . $type . '.log';
     $message = date('[Y-m-d H:i:s T]')
+             . "\t" . $id
              . "\t" . $message
              . "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t"
              . json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
     ;
     error_log($message, 3, $log_file);
+    return $id;
   }
 
   /**
@@ -270,7 +272,7 @@ class App {
 
 
   public static function handleException(Exception $Exception) {
-    static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
+    $Exception->id = static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
 
     $exception = get_class($Exception);
     do {
