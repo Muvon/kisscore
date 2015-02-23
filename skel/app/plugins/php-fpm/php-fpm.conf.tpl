@@ -1,68 +1,6 @@
-;;;;;;;;;;;;;;;;;;;;;
-; FPM Configuration ;
-;;;;;;;;;;;;;;;;;;;;;
-
-; All relative paths in this configuration file are relative to PHP's install
-; prefix.
-
-; Include one or more files. If glob(3) exists, it is used to include a bunch of
-; files from a glob(3) pattern. This directive can be used everywhere in the
-; file.
-; include=/etc/fpm.d/*.conf
-
-;;;;;;;;;;;;;;;;;;
-; Global Options ;
-;;;;;;;;;;;;;;;;;;
-
-[global]
-; Pid file
-; Default Value: none
-pid = %RUN_DIR%/php-fpm.pid
-
-; Error log file
-; Default Value: /var/log/php-fpm.log
-error_log = %LOG_DIR%/php-fpm.log
-
-; Log level
-; Possible Values: alert, error, warning, notice, debug
-; Default Value: notice
-log_level = warning
-
-; If this number of child processes exit with SIGSEGV or SIGBUS within the time
-; interval set by emergency_restart_interval then FPM will restart. A value
-; of '0' means 'Off'.
-; Default Value: 0
-emergency_restart_threshold = 0
-
-; Interval of time used by emergency_restart_interval to determine when
-; a graceful restart will be initiated.  This can be useful to work around
-; accidental corruptions in an accelerator's shared memory.
-; Available Units: s(econds), m(inutes), h(ours), or d(ays)
-; Default Unit: seconds
-; Default Value: 0
-emergency_restart_interval = 0
-
-; Time limit for child processes to wait for a reaction on signals from master.
-; Available units: s(econds), m(inutes), h(ours), or d(ays)
-; Default Unit: seconds
-; Default Value: 0
-process_control_timeout = 0
-
-; Send FPM to background. Set to 'no' to keep FPM in foreground for debugging.
-; Default Value: yes
-daemonize = no
-
-;;;;;;;;;;;;;;;;;;;;
-; Pool Definitions ;
-;;;;;;;;;;;;;;;;;;;;
-
-; Multiple pools of child processes may be started with different listening
-; ports and different management options.  The name of the pool will be
-; used in logs and stats. There is no limitation on the number of pools which
-; FPM can handle. Your system will tell you anyway :)
-
-; Start a new pool named 'www'.
+; Start a new pool named 'project-name'.
 [%PROJECT%]
+user = %USER%
 
 ; The address on which to accept FastCGI requests.
 ; Valid syntaxes are:
@@ -93,9 +31,9 @@ listen.allowed_clients = 127.0.0.1
 ; BSD-derived systems allow connections regardless of permissions.
 ; Default Values: user and group are set as the running user
 ;                 mode is set to 0666
-; listen.owner = dk
+listen.owner = %USER%
 ; listen.group = dk
-; listen.mode = 0666
+listen.mode = 0666
 
 ; Unix user/group of processes
 ; Note: The user is mandatory. If the group is not set, the default user's group
@@ -274,3 +212,24 @@ catch_workers_output = yes
 ;php_admin_value[error_log] = /var/log/fpm-php.www.log
 ;php_admin_flag[log_errors] = on
 ;php_admin_value[memory_limit] = 32M
+php_value[error_log] = %LOG_DIR%/php-errors.log
+php_value[session.save_path] = %TMP_DIR%
+
+php_value[upload_max_filesize] = %UPLOAD_MAX_FILESIZE%
+php_value[post_max_size] = %UPLOAD_MAX_FILESIZE%
+php_value[upload_tmp_dir] = %TMP_DIR%
+
+php_flag[display_errors] = %DEBUG%
+
+php_flag[assert.active] = %DEBUG%
+php_value[assert.bail] = %DEBUG%
+php_value[assert.quiet_eval] = 0
+php_value[assert.callback] = "App::handleAssertion"
+
+php_value[opcache.validate_timestamps] = %DEBUG%
+php_value[opcache.revalidate_freq] = 0
+php_value[opcache.save_comments] = 0
+php_flag[opcache.fast_shutdown] = 1
+php_value[opcache.interned_strings_buffer] = 16
+php_value[opcache.memory_consumption] = 192
+php_value[opcache.max_accelerated_files] = 7963

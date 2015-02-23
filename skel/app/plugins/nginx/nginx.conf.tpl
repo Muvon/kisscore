@@ -5,6 +5,8 @@ log_format  %PROJECT%
   '$upstream_response_time sec "$host"';
 
 server {
+  error_log %LOG_DIR%/nginx-error.log;
+
   listen   80;
   server_name  %SERVER_NAME%;
   client_max_body_size %UPLOAD_MAX_FILESIZE%;
@@ -23,6 +25,7 @@ server {
 
   location @app {
     access_log  %LOG_DIR%/nginx-access.log %PROJECT% buffer=32k;
+
     expires off;
 
     include        %CONFIG_DIR%/nginx_fastcgi_params;

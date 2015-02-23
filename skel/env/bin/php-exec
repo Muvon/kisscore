@@ -1,6 +1,13 @@
 #!/bin/bash
 php=$(which php)
-$php -c $CONFIG_DIR/php.ini <<EOF
+config=$($php --ini | head -n 1)
+config=${config##* }
+
+OPTS=''
+if [[ -f $config ]]; then
+  OPTS='-c '$config
+fi
+$php $OPTS <<EOF
 <?php
   include getenv('KISS_CORE');
 

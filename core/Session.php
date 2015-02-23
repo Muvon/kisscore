@@ -57,7 +57,6 @@ class Session {
    * @return void
    */
   public static function add($key, $value) {
-    assert("!array_key_exists(\$key, \$this->container)");
     if (!static::has($key)) {
       static::set($key, is_callable($value) ? $value() : $value);
     }

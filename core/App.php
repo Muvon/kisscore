@@ -192,7 +192,6 @@ class App {
   public static function log($message, array $dump = [], $type = 'error') {
     assert('is_string($message)');
     assert('is_string($type)');
-    assert('in_array($type, ["info", "error", "warn", "notice"])');
     $id = bin2hex($message . ':' . implode('.', array_keys($dump)) . ':' . $type);
     $log_file = getenv('LOG_DIR') . '/' . date('Ymd') . '-' . $type . '.log';
     $message = date('[Y-m-d H:i:s T]')
@@ -280,7 +279,7 @@ class App {
         $func = static::$e_handlers[$exception];
         return $func($Exception);
       }
-    } while ($exception = get_parent_class($Exception));
+    } while (false !== $exception = get_parent_class($exception));
   }
 
   /**
