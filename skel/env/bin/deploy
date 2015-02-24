@@ -1,4 +1,5 @@
 #!/bin/bash
+user='web'
 host_file=$CONFIG_DIR/hosts
 if [[ ! -f $host_file ]]; then
   echo 'Create hosts "'$host_file'" file with hostnames to deploy on'
@@ -16,8 +17,8 @@ for server in $servers; do
   (
   echo 'Deploying on server '$server
 
-  scp $HOME/.kissrc prod@$server:/home/prod
-  ssh -T prod@$server <<"EOF"
+  scp $HOME/.kissrc $user@$server:/home/$user
+  ssh -T $user@$server <<"EOF"
     /bin/cat $HOME/.bashrc | /bin/grep -v '#.kissrc$' > $HOME/.bashrc.tmp
     echo "source $HOME/.kissrc #.kissrc" >> $HOME/.bashrc.tmp
     /bin/mv $HOME/.bashrc.tmp $HOME/.bashrc
@@ -25,20 +26,20 @@ for server in $servers; do
 EOF
 
   # Check for already created folder on server
-  ssh -T prod@$server '[[ ! -d /home/prod/'$PROJECT' ]]'
+  ssh -T $user@$server '[[ ! -d /home/'$user'/'$PROJECT' ]]'
   if [[ $? == "0" ]]; then
-    ssh -T prod@$server 'mkdir -p /home/prod/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
-    ssh -T prod@$server 'mkdir -p /home/prod/'$PROJECT'/app'
-    rsync -aiz env/etc/ prod@$server:/home/prod/$PROJECT/env/etc
+    ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
+    ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/app'
+    rsync -aiz env/etc/ $user@$server:/home/$user/$PROJECT/env/etc
   fi
 
   # sync onlye changed files
   rsync -aiz --exclude=env/{etc,log,var,run,tmp,backup} --exclude=sphinx* \
     --exclude=.git* --exclude=html/f* \
-    --exclude=connect-db . prod@$server:/home/prod/$PROJECT
+    --exclude=connect-db . $user@$server:/home/$user/$PROJECT
 
   # Compile PROJECT on server
-  ssh -T prod@$server <<EOF
+  ssh -T $user@$server <<EOF
     kiss $PROJECT
     init
     [[ \$(/bin/ls \$TMP_DIR) ]] && /bin/rm \$TMP_DIR/*
