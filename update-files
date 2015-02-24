@@ -1,0 +1,22 @@
+#!/bin/bash
+if [[ "$1" == "" ]]; then
+  echo 'Enter name of project to update files. Example: '$0' app'
+  exit 1
+fi
+
+if [[ ! -e "$HOME/$1" ]]; then
+  echo 'Cant find project dir '$HOME'/'$1'. Use ./make-app '$1
+  exit 1
+fi
+
+# Bin files
+/bin/cp -f ./skel/env/bin/* $HOME/$1/env/bin
+
+# Plugin changes
+/bin/cp -fr ./skel/app/plugins/* $HOME/$1/app/plugins
+
+# Finaly core
+./install-core $1
+
+# Done!
+echo 'Core files for project '$1' were updated'
