@@ -56,13 +56,4 @@ server {
     fastcgi_param SCRIPT_FILENAME $fastcgi_script_name;
     fastcgi_pass unix:%RUN_DIR%/php-fpm.sock;
   }
-
-  # This location block is used to view nginx stats
-  location = /nginx_status {
-    %IP_ALLOW%
-    deny all;
-
-    stub_status on;
-    access_log off;
-  }
 }
