@@ -1,14 +1,22 @@
 #!/bin/bash
+if [[ -z $1 ]]; then
+  echo 'Usage: '$0' [all|production|test|...]' && exit 255
+fi
 user='web'
 host_file=$CONFIG_DIR/hosts
 if [[ ! -f $host_file ]]; then
   echo 'Create hosts "'$host_file'" file with hostnames to deploy on'
   exit 1
 fi
-servers=$(cat $host_file)
+
+if [[ "$1" == "all" ]]; then
+  servers=$(cat $host_file)
+else
+  servers=$(cat $host_file | grep $1)
+fi
 
 if [[ -z $servers ]]; then
-  echo 'There are no servers for deploy in hosts file'
+  echo 'There are no servers for deploy "'$1'" in hosts file'
   exit 1
 fi
 
@@ -18,13 +26,14 @@ fi
 # Deploy on each server
 for server in $servers; do
   (
-  echo 'Deploying on server '$server
   environment=${server#*:}
   if [[ "$environment" == "$server" || -z "$environment" ]]; then
     environment='production'
   fi
   server=${server%:*}
-  scp $HOME/.kissrc $user@$server:/home/$user
+
+  echo 'Deploying on server '$server':'$environment
+  scp $PROJECT/.kissrc $user@$server:/home/$user
   ssh -T $user@$server <<"EOF"
     /bin/cat $HOME/.bashrc | /bin/grep -v '#.kissrc$' > $HOME/.bashrc.tmp
     echo "source $HOME/.kissrc #.kissrc" >> $HOME/.bashrc.tmp
