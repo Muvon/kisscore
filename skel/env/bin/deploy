@@ -49,10 +49,6 @@ EOF
   ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
   ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/rev/'$revision
 
-  # sync only changed files
-  rsync -aiz --exclude=app* --exclude=env/{etc,log,var,run,tmp,backup} --exclude=sphinx* \
-    --exclude=.git* --exclude=html/f* . $user@$server:/home/$user/$PROJECT
-
   # Create revision
   rsync -aiz app/* $user@$server:/home/$user/$PROJECT/rev/$revision
 

@@ -65,7 +65,7 @@ function config($param) {
 
   // Создаем специальный массив для доступа к элементам через namespace.param
   if (!$config) {
-    foreach (parse_ini_file(getenv('CONFIG_DIR') . '/app.ini', true) as $key => $item) {
+    foreach (parse_ini_file(getenv('CONFIG_DIR') . '/config.ini', true) as $key => $item) {
       $config[$key] = $item;
       foreach ($item as $key2 => $item2) {
         $config[$key . '.' . $key2] = $item2;

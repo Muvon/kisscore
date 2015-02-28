@@ -17,7 +17,7 @@ class App {
   }
 
   public static function reconfigure() {
-    static::configure(getenv('PROJECT_DIR') . '/app.ini.tpl');
+    static::configure(getenv('APP_DIR') . '/config.ini.tpl');
     static::generateConfigs();
   }
 
