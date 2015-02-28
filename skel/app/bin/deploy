@@ -46,10 +46,10 @@ for server in $servers; do
 EOF
 
   # Create dir if they do not exist
-  ssh -T $user@$server "mkdir -p /home/$user/$PROJECT/rev/$revision"
+  ssh -T $user@$server "mkdir -p /home/$user/$PROJECT/rev/$revision && [[ -L /home/$user/$PROJECT/app ]] && cp -r /home/$user/$PROJECT/app/* /home/$user/$PROJECT/rev/$revision"
 
   # Create revision
-  rsync -aiz app/* $user@$server:/home/$user/$PROJECT/rev/$revision
+  rsync -aiz --delete-before app/* $user@$server:/home/$user/$PROJECT/rev/$revision
 
   # Compile PROJECT on server
   ssh -T $user@$server <<EOF
