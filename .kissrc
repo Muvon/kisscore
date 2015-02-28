@@ -50,6 +50,7 @@ function kiss {
           HTML_DIR=$PROJECT_DIR/html \
           CONFIG_DIR=$PROJECT_DIR/env/etc \
           ENV_DIR=$PROJECT_DIR/env \
+          PROJECT_ENV=$([[ -f $PROJECT_DIR/env/etc/environment ]] && cat $PROJECT_DIR/env/etc/environment || echo '') \
           BIN_DIR=$PROJECT_DIR/env/bin \
           RUN_DIR=$PROJECT_DIR/env/run \
           LOG_DIR=$PROJECT_DIR/env/log \
@@ -71,6 +72,7 @@ function kiss {
             HTML_DIR=$PROJECT_DIR/html \
             CONFIG_DIR=$PROJECT_DIR/env/etc \
             ENV_DIR=$PROJECT_DIR/env \
+            PROJECT_ENV=$([[ -f $PROJECT_DIR/env/etc/environment ]] && cat $PROJECT_DIR/env/etc/environment || echo '') \
             BIN_DIR=$PROJECT_DIR/env/bin \
             RUN_DIR=$PROJECT_DIR/env/run \
             LOG_DIR=$PROJECT_DIR/env/log \

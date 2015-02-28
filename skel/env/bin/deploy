@@ -12,11 +12,18 @@ if [[ -z $servers ]]; then
   exit 1
 fi
 
+# Revision @TODO next
+# revision=$(`which date` +%Y%m%d.%H%M%S)
+
 # Deploy on each server
 for server in $servers; do
   (
   echo 'Deploying on server '$server
-
+  environment=${server#*:}
+  if [[ "$environment" == "$server" || -z "$environment" ]]; then
+    environment='production'
+  fi
+  server=${server%:*}
   scp $HOME/.kissrc $user@$server:/home/$user
   ssh -T $user@$server <<"EOF"
     /bin/cat $HOME/.bashrc | /bin/grep -v '#.kissrc$' > $HOME/.bashrc.tmp
@@ -30,17 +37,17 @@ EOF
   if [[ $? == "0" ]]; then
     ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
     ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/app'
-    rsync -aiz env/etc/ $user@$server:/home/$user/$PROJECT/env/etc
   fi
 
   # sync onlye changed files
   rsync -aiz --exclude=env/{etc,log,var,run,tmp,backup} --exclude=sphinx* \
-    --exclude=.git* --exclude=html/f* \
-    --exclude=connect-db . $user@$server:/home/$user/$PROJECT
+    --exclude=.git* --exclude=html/f* . $user@$server:/home/$user/$PROJECT
 
   # Compile PROJECT on server
   ssh -T $user@$server <<EOF
     kiss $PROJECT
+    echo $environment > \$CONFIG_DIR/environment
+    export PROJECT_ENV=$environment
     init
     [[ \$(/bin/ls \$TMP_DIR) ]] && /bin/rm \$TMP_DIR/*
     php-exec 'opcache_reset()' > /dev/null

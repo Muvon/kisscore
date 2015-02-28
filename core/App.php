@@ -43,6 +43,7 @@ class App {
       '%USER%'          => getenv('USER'),
       '%PROJECT%'       => getenv('PROJECT'),
       '%PROJECT_DIR%'   => getenv('PROJECT_DIR'),
+      '%PROJECT_ENV%'   => getenv('PROJECT_ENV'),
       '%APP_DIR%'       => getenv('APP_DIR'),
       '%HTML_DIR%'      => getenv('HTML_DIR'),
       '%CONFIG_DIR%'    => getenv('CONFIG_DIR'),
