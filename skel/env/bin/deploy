@@ -20,8 +20,12 @@ if [[ -z $servers ]]; then
   exit 1
 fi
 
-# Revision @TODO next
-# revision=$(`which date` +%Y%m%d.%H%M%S)
+# Revision
+commit=$(git log -n 1 | grep commit | cut -d' ' -f2 2>/dev/null)
+revision=$(`which date` +%y%m%d%H%M)
+if [[ ! -z $commit ]]; then
+  revision=revision.${commit:0:7}
+fi
 
 # Deploy on each server
 for server in $servers; do
@@ -33,7 +37,7 @@ for server in $servers; do
   server=${server%:*}
 
   echo 'Deploying on server '$server':'$environment
-  scp $PROJECT/.kissrc $user@$server:/home/$user
+  scp $PROJECT_DIR/.kissrc $user@$server:/home/$user
   ssh -T $user@$server <<"EOF"
     /bin/cat $HOME/.bashrc | /bin/grep -v '#.kissrc$' > $HOME/.bashrc.tmp
     echo "source $HOME/.kissrc #.kissrc" >> $HOME/.bashrc.tmp
@@ -41,19 +45,22 @@ for server in $servers; do
     source $HOME/.bashrc
 EOF
 
-  # Check for already created folder on server
-  ssh -T $user@$server '[[ ! -d /home/'$user'/'$PROJECT' ]]'
-  if [[ $? == "0" ]]; then
-    ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
-    ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/app'
-  fi
+  # Create dir if they do not exist
+  ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
+  ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/rev/'$revision
 
-  # sync onlye changed files
-  rsync -aiz --exclude=env/{etc,log,var,run,tmp,backup} --exclude=sphinx* \
+  # sync only changed files
+  rsync -aiz --exclude=app* --exclude=env/{etc,log,var,run,tmp,backup} --exclude=sphinx* \
     --exclude=.git* --exclude=html/f* . $user@$server:/home/$user/$PROJECT
+
+  # Create revision
+  rsync -aiz app/* $user@$server:/home/$user/$PROJECT/rev/$revision
 
   # Compile PROJECT on server
   ssh -T $user@$server <<EOF
+    [[ -L /home/$user/$PROJECT/app ]] && rm -f /home/$user/$PROJECT/app
+    ln -s /home/$user/$PROJECT/rev/$revision /home/$user/$PROJECT/app
+
     kiss $PROJECT
     echo $environment > \$CONFIG_DIR/environment
     export PROJECT_ENV=$environment
