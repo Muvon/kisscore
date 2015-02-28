@@ -1,5 +1,1 @@
-env/run**
-env/var**
-env/log**
-env/backup**
-env/tmp**
+env**
