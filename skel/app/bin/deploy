@@ -46,8 +46,7 @@ for server in $servers; do
 EOF
 
   # Create dir if they do not exist
-  ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/env/{etc,log,var,run,bin,tmp,backup}'
-  ssh -T $user@$server 'mkdir -p /home/'$user'/'$PROJECT'/rev/'$revision
+  ssh -T $user@$server "mkdir -p /home/$user/$PROJECT/rev/$revision"
 
   # Create revision
   rsync -aiz app/* $user@$server:/home/$user/$PROJECT/rev/$revision
@@ -56,6 +55,11 @@ EOF
   ssh -T $user@$server <<EOF
     [[ -L /home/$user/$PROJECT/app ]] && rm -f /home/$user/$PROJECT/app
     ln -s /home/$user/$PROJECT/rev/$revision /home/$user/$PROJECT/app
+
+    mkdir -p /home/$user/$PROJECT/env/{etc,log,var,run,tmp,backup}
+
+    [[ ! -L /home/$user/$PROJECT/html ]] && ln -s /home/$user/$PROJECT/app/static /home/$user/$PROJECT/html
+    [[ ! -L /home/$user/$PROJECT/env/bin ]] && ln -s /home/$user/$PROJECT/app/bin /home/$user/$PROJECT/env/bin
 
     kiss $PROJECT
     echo $environment > \$CONFIG_DIR/environment
