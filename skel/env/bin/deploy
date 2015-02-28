@@ -24,7 +24,7 @@ fi
 commit=$(git log -n 1 | grep commit | cut -d' ' -f2 2>/dev/null)
 revision=$(`which date` +%y%m%d%H%M)
 if [[ ! -z $commit ]]; then
-  revision=revision.${commit:0:7}
+  revision=$revision.${commit:0:7}
 fi
 
 # Deploy on each server
