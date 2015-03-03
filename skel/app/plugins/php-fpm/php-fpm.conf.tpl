@@ -16,7 +16,7 @@ listen = %RUN_DIR%/php-fpm.sock
 
 ; Set listen(2) backlog. A value of '-1' means unlimited.
 ; Default Value: -1
-listen.backlog = 32000
+listen.backlog = -1
 
 ; List of ipv4 addresses of FastCGI clients which are allowed to connect.
 ; Equivalent to the FCGI_WEB_SERVER_ADDRS environment variable in the original
@@ -212,7 +212,8 @@ catch_workers_output = yes
 ;php_admin_value[error_log] = /var/log/fpm-php.www.log
 ;php_admin_flag[log_errors] = on
 ;php_admin_value[memory_limit] = 32M
-php_value[error_log] = %LOG_DIR%/php-errors.log
+php_admin_flag[log_errors] = on
+php_value[error_log] = %LOG_DIR%/php-fpm.errors.log
 php_value[session.save_path] = %TMP_DIR%
 
 php_value[upload_max_filesize] = %UPLOAD_MAX_FILESIZE%
