@@ -220,10 +220,10 @@ php_value[upload_max_filesize] = %UPLOAD_MAX_FILESIZE%
 php_value[post_max_size] = %UPLOAD_MAX_FILESIZE%
 php_value[upload_tmp_dir] = %TMP_DIR%
 
-php_flag[display_errors] = %DEBUG%
+php_value[display_errors] = %DEBUG%
 
-php_flag[assert.active] = %DEBUG%
-php_value[assert.bail] = 0
+php_value[assert.active] = %DEBUG%
+php_value[assert.bail] = 0666
 php_value[assert.quiet_eval] = 0
 php_value[assert.callback] = "App::handleAssertion"
 
