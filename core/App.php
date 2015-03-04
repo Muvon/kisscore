@@ -1,7 +1,7 @@
 <?php
 class App {
   /** @property bool $debug */
-  public static $debug = true;
+  public static $debug;
   protected static $e_handlers = [];
 
   /**
@@ -212,6 +212,10 @@ class App {
   public static function start(array $config = []) {
     foreach ($config as $param => $value) {
       static::$$param = $value;
+    }
+
+    if (!isset(static::$debug)) {
+      static::$debug = getenv('PROJECT_ENV') === 'dev';
     }
 
     // Locale settings
