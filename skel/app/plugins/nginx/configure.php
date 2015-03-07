@@ -5,7 +5,7 @@ $ips = implode(
     function ($item) {
       return 'allow ' . $item . ';';
     },
-    split(' ', App::exec('$(which hostname) -I'))
+    explode(' ', App::exec('$(which hostname) -I'))
   )
 );
 App::configure(__DIR__, [
