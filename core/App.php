@@ -155,7 +155,6 @@ class App {
       }
       $rewrites[] = "rewrite '(*UTF8)^/$route/?$' '$uri';";
     }
-    // @TODO fix configs prepares
     file_put_contents(config('common.nginx_route_file'), implode(PHP_EOL, $rewrites));
   }
 
