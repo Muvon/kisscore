@@ -114,7 +114,6 @@ class App {
     $action_dir = getenv('APP_DIR') . '/actions';
     $files = explode(PHP_EOL, trim(`find -L $action_dir -name '*.php'`));
     foreach ($files as $file) {
-      $action = substr(basename($file), 0, -4);
       $content = file_get_contents($file);
       if (preg_match_all('/^\s*\*\s*\@param\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
         foreach ($m[0] as $k => $matches) {

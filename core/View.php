@@ -261,11 +261,9 @@ class View {
   protected function chunkCompileBlocks($str) {
     return preg_replace_callback(
       '#\{(' . static::VAR_PTRN . ')\}(.+?){\/\\1}#ius',
-      function ($m) use ($str) {
-        $ret = '';
+      function ($m) {
         // Oh Shit so magic :)
         $this->block_path[] = $m[1];
-        $block_key = implode('.', $this->block_path);
         $compiled  = static::chunkTransformVars(static::chunkCompileBlocks($m[2]));
         array_pop($this->block_path);
 

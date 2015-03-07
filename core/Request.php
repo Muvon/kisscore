@@ -8,13 +8,11 @@
  */
 class Request {
   /**
-   * @property Response $Response класс ответа для данного запроса
    * @property array $params все параметры, переданные в текущем запросе
    *
    * @property string $route имя действия, которое должно выполнится в выполняемом запросе
    * @property string $url адрес обрабатываемого запроса
    *
-   * @property Request $instance хэндлер объекта текущего запроса
    * @property string $method вызываемый метод на данном запросе (GET | POST)
    * @property string $protocol протокол соединения, например HTTP, CLI и т.п.
    * @property string $referer реферер, если имеется
@@ -26,14 +24,10 @@ class Request {
    */
 
   private
-  $Response     = null,
   $params       = [],
   $action  = '',
   $route   = '',
   $url     = '';
-
-  private static
-  $Instance    = null;
 
   public static
   $time        = 0,
