@@ -84,7 +84,7 @@ class App {
         $map[$class] = $file;
       }
     }
-    static::writeJson(config('common.autoload_map_file'), $map);
+    static::writeJSON(config('common.autoload_map_file'), $map);
   }
 
   /**
@@ -106,7 +106,7 @@ class App {
         }
       }
     }
-    static::writeJson(config('common.uri_map_file'), $map);
+    static::writeJSON(config('common.uri_map_file'), $map);
   }
 
   protected static function generateParamMap() {
@@ -125,11 +125,11 @@ class App {
         }
       }
     }
-    static::writeJson(config('common.param_map_file'), $map);
+    static::writeJSON(config('common.param_map_file'), $map);
   }
 
   protected static function generateNginxRouteMap() {
-    $routes = static::getJson(config('common.uri_map_file'));
+    $routes = static::getJSON(config('common.uri_map_file'));
     uasort($routes, function ($a, $b) {
       return (sizeof($a) > sizeof($b)) ? 1 : -1;
     });
@@ -159,7 +159,7 @@ class App {
   }
 
   public static function getImportVarsArgs($file) {
-    $params = static::getJson(config('common.param_map_file'));
+    $params = static::getJSON(config('common.param_map_file'));
     $args = [];
     if (isset($params[$file])) {
       foreach ($params[$file] as $param) {
@@ -169,11 +169,11 @@ class App {
     return $args;
   }
 
-  public static function writeJson($file, $data) {
+  public static function writeJSON($file, $data) {
     return file_put_contents($file, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
   }
 
-  public static function getJson($file) {
+  public static function getJSON($file) {
     if (!is_file($file)) {
       throw new Exception('Cant find file ' . $file . '. Be sure you started init script to compile application');
     }
@@ -311,7 +311,7 @@ class App {
 
     // Load map
     if (!$map) {
-      $map = static::getJson(config('common.autoload_map_file'));
+      $map = static::getJSON(config('common.autoload_map_file'));
     }
 
     // Find and include file
