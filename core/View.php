@@ -17,14 +17,13 @@ class View {
    * @property array $data массив переменных, которые использует подключаемый шаблон
    * @property string $body обработанные и готовые данные для отдачи их клиенту
    */
-  protected
-  $data          = [],
-  $route         = '',
-  $body          = '',
-  $source_dir    = null,
-  $compile_dir   = null;
+  protected $data = [];
+  protected $route = '';
+  protected $body = '';
+  protected $source_dir = null;
+  protected $compile_dir = null;
 
-  protected static $filter_funcs  = [
+  protected static $filter_funcs = [
     'html' => 'htmlspecialchars',
     'raw'  => '',
   ];
