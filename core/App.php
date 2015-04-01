@@ -193,11 +193,12 @@ class App {
     assert('is_string($type)');
     $id = bin2hex($message . ':' . implode('.', array_keys($dump)) . ':' . $type);
     $log_file = getenv('LOG_DIR') . '/' . date('Ymd') . '-' . $type . '.log';
-    $message = date('[Y-m-d H:i:s T]')
-             . "\t" . $id
-             . "\t" . $message
-             . "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t"
-             . json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
+    $message =
+      date('[Y-m-d H:i:s T]')
+      . "\t" . $id
+      . "\t" . $message
+      . "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t"
+      . json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
     ;
     error_log($message, 3, $log_file);
     return $id;
