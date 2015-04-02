@@ -1,6 +1,7 @@
 #!/bin/bash
+unset kiss ssh_random_string allocate_port run_checks app_config init deploy install_plugin php_exec
 case $- in
-    *i*) export bash_interactive=1;;
+  *i*) export bash_interactive=1;;
 esac
 
 if [[ "$PROJECT" ]]; then
@@ -98,7 +99,7 @@ function kiss {
 # block, params
 function app_config {
   if [[ -z $1 || -z $2 ]]; then
-    echo 'Usage: '$0' block params'
+    echo 'Usage: app_config block params'
     return
   fi
 
@@ -132,8 +133,8 @@ function ssh_random_string {
 # Allocate port for service
 function allocate_port {
   if [[ -z $1 ]]; then
-    echo 'Usage: '$0' name'
-    exit 1
+    echo 'Usage: allocate_port name'
+    return
   fi
   [[ ! -f ~/ports ]] && touch ~/ports
 
@@ -175,4 +176,212 @@ function run_checks {
   exit $exit_code
 }
 
-export -f kiss ssh_random_string allocate_port run_checks app_config
+
+function init {
+  echo 'Initialization started'
+
+  echo '+Configure and compile project'
+  php_exec 'App::compile()'
+  echo '...done'
+
+  echo '+Reloading services'
+  [[ -x /etc/init.d/nginx ]] && sudo /etc/init.d/nginx reload || sudo /usr/bin/systemctl reload nginx.service
+  [[ -x /etc/init.d/php-fpm ]] && sudo /etc/init.d/php-fpm reload || sudo /usr/bin/systemctl reload php-fpm.service
+  echo '...done'
+
+  echo '+Running init-app script'
+  [[ -x $BIN_DIR/init-app ]] && $BIN_DIR/init-app | xargs -l echo '  '
+  echo '...done'
+}
+
+function php_exec {
+  php=$(which php)
+  config=$($php --ini | head -n 1)
+  config=${config##* }
+
+  OPTS=''
+  if [[ -f $config ]]; then
+    OPTS='-c '$config
+  fi
+  $php $OPTS <<EOF
+<?php
+    include getenv('KISS_CORE');
+
+    // Получаем ответ   и выполняем запрос
+    try {
+      App::start();
+      $1;
+      App::stop();
+    } catch (Exception \$E) {
+      echo 'Error: ' . \$E->getMessage() . PHP_EOL . 'More info: tail -f $LOG_DIR/' . date('Ymd') . '-error.log';
+    }
+EOF
+  echo
+}
+
+function install_plugin {
+  if [[ -z $1 ]]; then
+    echo -e 'Usage: install_plugin plugin1 plugin2 plugin3'
+    echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
+    echo -e '- \e[35;1mPLUGIN_UPDATE\e[0;0m=1              Update or skip during install. Default: 0'
+    return
+  fi
+  if [[ -z $PLUGIN_DIR ]]; then
+    PLUGIN_DIR=$PROJECT_DIR/plugins
+  fi
+
+  if [[ ! -d $PLUGIN_DIR ]]; then
+    echo 'No plugin dir specified or plugin dir does not exist. Define plugin dir. Use export PLUGIN_DIR=/path/to/plugin'
+    return
+  fi
+
+  for plugin in $@; do
+    plugin_dir=$PLUGIN_DIR/$plugin
+    if [[ ! -d $plugin_dir ]]; then
+      echo 'Cant find plugin "'$plugin'" in plugin dir "'$PLUGIN_DIR'"'
+      return
+    fi
+  done
+
+  rebuild=0
+  for plugin in $@; do
+    _install_plugin $plugin
+  done
+
+  if (( $rebuild )); then
+    echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
+    kiss $PROJECT << "EOF"
+      init
+EOF
+  fi
+}
+
+# internal method to call from install_plugin function
+function _install_plugin {
+  plugin=$1
+  echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
+  plugin_dir=$PLUGIN_DIR/$plugin
+
+  # Check requirements
+  if [[ -x $plugin_dir/check ]]; then
+    check_log=$TMP_DIR/plugin-checks-$plugin
+    $plugin_dir/check > $check_log 2>&1
+    if [[ $? -ne 0 ]]; then
+      echo 'Run checks failed, skipping...'
+      /bin/cat $check_log && /bin/rm $check_log
+      continue
+    fi
+    /bin/rm $check_log
+  fi
+
+  install_to=$APP_DIR/plugins/$plugin
+  if [[ -z $PLUGIN_UPDATE && -d $install_to ]]; then
+    echo 'Plugin already installed, skipping. Use PLUGIN_UPDATE=1 for update'
+    continue
+  fi
+
+  if [[ -d $install_to ]]; then
+    /bin/tar -czf $install_to/$(/bin/date +%Y%m%d-%H%M%S).backup.tar.gz --exclude=*.backup.tar.gz $install_to/*
+    /usr/bin/find $install_to -type f -not -name '*.backup.tar.gz' | xargs /bin/rm
+  fi
+
+  /bin/mkdir -p $install_to
+  /bin/cp -favr $plugin_dir/* $install_to
+
+  [[ -x $install_to/setup ]] && $install_to/setup
+  echo '...done'
+
+  if [[ -f $install_to/require ]]; then
+    for dep in `cat $install_to/require`; do
+      $0 $dep
+    done
+  fi
+  rebuild=1
+}
+
+function deploy {
+  if [[ -z $1 ]]; then
+    echo 'Usage: deploy [all|production|test|...]' && return
+  fi
+  user='web'
+  host_file=$CONFIG_DIR/hosts
+  if [[ ! -f $host_file ]]; then
+    echo 'Create hosts "'$host_file'" file with hostnames to deploy on'
+    return
+  fi
+
+  if [[ "$1" == "all" ]]; then
+    servers=$(cat $host_file)
+  else
+    servers=$(cat $host_file | grep $1)
+  fi
+
+  if [[ -z $servers ]]; then
+    echo 'There are no servers for deploy "'$1'" in hosts file'
+    return
+  fi
+
+  # Revision
+  commit=$(git log -n 1 | grep commit | cut -d' ' -f2 2>/dev/null)
+  revision=$(`which date` +%y%m%d%H%M)
+  if [[ ! -z $commit ]]; then
+    revision=$revision.${commit:0:7}
+  fi
+
+  # Deploy on each server
+  for server in $servers; do
+    echo $server
+    (
+    environment=${server#*:}
+    if [[ "$environment" == "$server" || -z "$environment" ]]; then
+      environment='production'
+    fi
+    server=${server%:*}
+
+    echo 'Deploying on server '$server':'$environment
+    scp $HOME/.kissrc $user@$server:/home/$user
+    ssh -T $user@$server <<"EOF"
+      /bin/cat $HOME/.bashrc | /bin/grep -v '#.kissrc$' > $HOME/.bashrc.tmp
+      echo "source $HOME/.kissrc #.kissrc" >> $HOME/.bashrc.tmp
+      /bin/mv $HOME/.bashrc.tmp $HOME/.bashrc
+      source $HOME/.bashrc
+EOF
+
+    # Create dir if they do not exist
+    ssh -T $user@$server "mkdir -p /home/$user/$PROJECT/rev/$revision && [[ -L /home/$user/$PROJECT/app ]] && cp -r /home/$user/$PROJECT/app/* /home/$user/$PROJECT/rev/$revision"
+
+    # Create revision
+    rsync -aiz --delete-before app/* $user@$server:/home/$user/$PROJECT/rev/$revision
+
+    # Compile PROJECT on server
+    ssh -T $user@$server <<EOF
+      [[ -L /home/$user/$PROJECT/app ]] && rm -f /home/$user/$PROJECT/app
+      ln -s /home/$user/$PROJECT/rev/$revision /home/$user/$PROJECT/app
+
+      mkdir -p /home/$user/$PROJECT/env/{etc,log,var,run,tmp,backup}
+
+      [[ ! -L /home/$user/$PROJECT/html ]] && ln -s /home/$user/$PROJECT/app/static /home/$user/$PROJECT/html
+      [[ ! -L /home/$user/$PROJECT/env/bin ]] && ln -s /home/$user/$PROJECT/app/bin /home/$user/$PROJECT/env/bin
+
+      kiss $PROJECT
+      echo $environment > \$CONFIG_DIR/environment
+      export PROJECT_ENV=$environment
+      init
+      [[ \$(/bin/ls \$TMP_DIR) ]] && /bin/rm \$TMP_DIR/*
+      php_exec 'opcache_reset()' > /dev/null
+EOF
+    # All is done
+    echo 'Deployed on server '$server
+    ) > $TMP_DIR/deploy.$server 2>&1 &
+  done
+  wait $(jobs -rp) 2> /dev/null
+  echo
+
+  # Display result of jobs
+  for file in $(ls $TMP_DIR/deploy.*); do
+    cat $file
+    rm $file
+  done
+}
+
+export -f kiss ssh_random_string allocate_port run_checks app_config init deploy install_plugin php_exec
