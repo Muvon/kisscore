@@ -348,20 +348,20 @@ function deploy {
 EOF
 
     # Create dir if they do not exist
-    ssh -T $user@$server "mkdir -p /home/$user/$PROJECT/rev/$revision && [[ -L /home/$user/$PROJECT/app ]] && cp -r /home/$user/$PROJECT/app/* /home/$user/$PROJECT/rev/$revision"
+    ssh -T $user@$server "mkdir -p /home/$user/$PROJECT/rev/$revision && test -L /home/$user/$PROJECT/app && cp -r $_/* /home/$user/$PROJECT/rev/$revision"
 
     # Create revision
     rsync -aiz --delete-before app/* $user@$server:/home/$user/$PROJECT/rev/$revision
 
     # Compile PROJECT on server
     ssh -T $user@$server <<EOF
-      [[ -L /home/$user/$PROJECT/app ]] && rm -f /home/$user/$PROJECT/app
+      test -L /home/$user/$PROJECT/app && rm -f $_
       ln -s /home/$user/$PROJECT/rev/$revision /home/$user/$PROJECT/app
 
       mkdir -p /home/$user/$PROJECT/env/{etc,log,var,run,tmp,backup}
 
-      [[ ! -L /home/$user/$PROJECT/html ]] && ln -s /home/$user/$PROJECT/app/static /home/$user/$PROJECT/html
-      [[ ! -L /home/$user/$PROJECT/env/bin ]] && ln -s /home/$user/$PROJECT/app/bin /home/$user/$PROJECT/env/bin
+      test ! -L /home/$user/$PROJECT/html && ln -s /home/$user/$PROJECT/app/static $_
+      test ! -L /home/$user/$PROJECT/env/bin && ln -s /home/$user/$PROJECT/app/bin $_
 
       kiss $PROJECT
       echo $environment > \$CONFIG_DIR/environment
@@ -382,6 +382,10 @@ EOF
     cat $file
     rm $file
   done
+
+  echo 'Executing deploy-done script...'
+  test -x $BIN_DIR/deploy-done && $_
+  echo 'Execut deploy-done script done'
 }
 
 export -f kiss ssh_random_string allocate_port run_checks app_config init deploy install_plugin php_exec
