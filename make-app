@@ -1,24 +1,14 @@
 #!/bin/bash
+[[ -z "$1" ]] && echo 'Enter name of project to create. Example: ./make-app app' && exit 255
+
 `dirname $0`/install-env
 . ~/.kissrc
-if [[ "$1" == "" ]]; then
-  echo 'Enter name of project to create. Example: ./make-app app'
-  exit 1
-fi
-
 project_dir=$HOME/$1
-if [[ -e $project_dir ]]; then
-  echo 'Project dir '$project_dir' already exist'
-  exit 1
-fi
+[[ -e $project_dir ]] && echo 'Project dir '$project_dir' already exist' && exit 255
 
 # Start doing good staff
 echo -e '\e[1;35mCheck software\e[0m'
-
-if [[ "$?" != "0" ]]; then
-  echo "...failed"
-  exit 1
-fi
+[[ "$?" != "0" ]] &&  echo "...failed" && exit 255
 echo '...done'
 
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'

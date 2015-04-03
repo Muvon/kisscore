@@ -1,13 +1,7 @@
 #!/bin/bash
-if [[ "$1" == "" ]]; then
-  echo 'Enter name of project to create. Example: ./install-core app'
-  exit 1
-fi
+[[ -z "$1" ]] && echo 'Enter name of project to create. Example: ./install-core app' && exit 255
+[[ ! -e "$HOME/$1" ]] && echo 'Cant find project dir '$HOME'/'$1'. Use ./make-app '$1 && exit 255
 
-if [[ ! -e "$HOME/$1" ]]; then
-  echo 'Cant find project dir '$HOME'/'$1'. Use ./make-app '$1
-  exit 1
-fi
 core_file=$HOME/$1/app/core.php
 echo '<?php' > $core_file
 for file in `ls core`; do
