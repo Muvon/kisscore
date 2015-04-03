@@ -1,16 +1,9 @@
 #!/bin/bash
-if [[ "$1" == "" ]]; then
-  echo 'Enter name of project to update files. Example: '$0' app'
-  exit 1
-fi
-
-if [[ ! -e "$HOME/$1" ]]; then
-  echo 'Cant find project dir '$HOME'/'$1'. Use ./make-app '$1
-  exit 1
-fi
+[[ -z "$1" ]] && echo 'Enter name of project to update files. Example: '$0' app' && exit 255
+[[ ! -e "$HOME/$1" ]] && echo 'Cant find project dir '$HOME'/'$1'. Use ./make-app '$1 && exit 255
 
 # Bin files
-/bin/cp -f ./skel/env/bin/* $HOME/$1/env/bin
+# /bin/cp -f ./skel/app/bin/* $HOME/$1/app/bin
 
 # Plugin changes
 /bin/cp -fr ./skel/app/plugins/* $HOME/$1/app/plugins
