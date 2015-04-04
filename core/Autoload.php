@@ -59,7 +59,7 @@ class Autoload {
    */
   public static function register($prefix, $dir, $prepend = false) {
     assert('is_string($prefix)');
-    assert('is_string($dir) && is_dir($dir)');
+    assert("is_string(\$dir) && is_dir(\$dir) /* Dir $dir does not exist */");
     assert('is_bool($prepend)');
 
     $prefix = trim($prefix, '\\') . '\\';
@@ -69,6 +69,11 @@ class Autoload {
       static::$prefixes[$prefix] = [];
     }
 
-    call_user_func_array($prepend ? 'array_unshift' : 'array_push', [static::$prefixes[$prefix], $dir]);
+    if ($prepend) {
+      array_unshift(static::$prefixes[$prefix], $dir);
+    } else {
+      static::$prefixes[$prefix][] = $dir;
+    }
+
   }
 }
