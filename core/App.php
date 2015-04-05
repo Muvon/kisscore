@@ -10,7 +10,6 @@ class App {
    */
   public static function compile() {
     static::reconfigure();
-    static::generateAutoloadMap();
     static::generateURIMap();
     static::generateParamMap();
     static::generateNginxRouteMap();
@@ -62,29 +61,6 @@ class App {
     foreach(is_dir($template) ? glob($template . '/*.tpl') : [$template] as $file) {
       file_put_contents(getenv('CONFIG_DIR') . '/' . basename($file, '.tpl'), strtr(file_get_contents($file), $params));
     }
-  }
-
-  /**
-   * Генерация карты для автолоада классов
-   * @return void
-   */
-  protected static function generateAutoloadMap() {
-    $map = [];
-    $app_dir = getenv('APP_DIR');
-    $files = explode(PHP_EOL, trim(`find -L $app_dir -name '*.php'`));
-
-    foreach($files as $file) {
-      $class = substr(basename($file), 0, -4);
-
-      $content = file_get_contents($file);
-      if (preg_match("/(class|interface|trait) +$class/", $content)) {
-        if (preg_match("/\n *namespace +\\\\?([a-zA-Z0-9_\\\\]+)/", $content, $matches)) {
-            $class = $matches[1] . '\\' . $class;
-        }
-        $map[$class] = $file;
-      }
-    }
-    static::writeJSON(config('common.autoload_map_file'), $map);
   }
 
   /**
@@ -220,8 +196,10 @@ class App {
     // Locale settings
     setlocale(LC_ALL, 'ru_RU.UTF8');
 
-    // Autoloading models
-    spl_autoload_register([static::class, 'handleAutoload']);
+    Autoload::register('App', getenv('APP_DIR') . '/src');
+    Autoload::register('Plugin', getenv('APP_DIR') . '/plugins');
+    Autoload::register('Lib', getenv('APP_DIR') . '/lib');
+    Autoload::register('Vendor', getenv('APP_DIR') . '/vendor');
 
     // Error handler
     set_error_handler([static::class, 'handleError'], E_ALL);
@@ -300,25 +278,6 @@ class App {
 
   public static function setExceptionHandler($exception, Callable $handler) {
     static::$e_handlers[$exception] = $handler;
-  }
-
-  /**
-   * Обработка автозагрузки класса
-   * @param string $name Имя класса
-   * @return void
-   */
-  public static function handleAutoload($name) {
-    static $map = [];
-
-    // Load map
-    if (!$map) {
-      $map = static::getJSON(config('common.autoload_map_file'));
-    }
-
-    // Find and include file
-    if (isset($map[$name])) {
-      include $map[$name];
-    }
   }
 
   /**
