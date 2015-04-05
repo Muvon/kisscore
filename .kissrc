@@ -229,7 +229,7 @@ function install_plugin {
     return
   fi
   if [[ -z $PLUGIN_DIR ]]; then
-    PLUGIN_DIR=$PROJECT_DIR/plugins
+    PLUGIN_DIR=$PROJECT_DIR/plugin
   fi
 
   if [[ ! -d $PLUGIN_DIR ]]; then
@@ -276,7 +276,7 @@ function _install_plugin {
     /bin/rm $check_log
   fi
 
-  install_to=$APP_DIR/plugins/$plugin
+  install_to=$APP_DIR/plugin/$plugin
   if [[ -z $PLUGIN_UPDATE && -d $install_to ]]; then
     echo 'Plugin already installed, skipping. Use PLUGIN_UPDATE=1 for update'
     continue

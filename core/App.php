@@ -25,7 +25,7 @@ class App {
       return include $file;
     };
 
-    foreach (glob(getenv('APP_DIR') . '/plugins/*/configure.php') as $file) {
+    foreach (glob(getenv('APP_DIR') . '/plugin/*/configure.php') as $file) {
       $configure($file);
     }
   }
@@ -197,7 +197,7 @@ class App {
     setlocale(LC_ALL, 'ru_RU.UTF8');
 
     Autoload::register('App', getenv('APP_DIR') . '/src');
-    Autoload::register('Plugin', getenv('APP_DIR') . '/plugins');
+    Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
     Autoload::register('Lib', getenv('APP_DIR') . '/lib');
     Autoload::register('Vendor', getenv('APP_DIR') . '/vendor');
 
