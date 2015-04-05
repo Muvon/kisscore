@@ -1,19 +1,18 @@
 <?php
-/**
- * !ATTENTION! Currently NOT USED
- */
 class Autoload {
+  protected static $inited = false;
   protected static $prefixes = [];
 
-  public static function init() {
+  protected static function init() {
     spl_autoload_register([static::class, 'load']);
+    static::$inited = true;
   }
 
   /**
    * @param string $class Class to be loaded
    * @return bool
    */
-  public static function load($class) {
+  protected static function load($class) {
     assert('is_string($class)');
 
     $prefix = $class;
@@ -61,6 +60,10 @@ class Autoload {
     assert('is_string($prefix)');
     assert("is_string(\$dir) && is_dir(\$dir) /* Dir $dir does not exist */");
     assert('is_bool($prepend)');
+    
+    if (!static::$inited) {
+      static::init();
+    }
 
     $prefix = trim($prefix, '\\') . '\\';
     $dir = rtrim($dir, '/') . '/';
