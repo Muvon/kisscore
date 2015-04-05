@@ -195,6 +195,7 @@ function init {
 }
 
 function php_exec {
+  [[ -z "$1" ]] && echo 'Usage: php_exec [code | php_file]' && return
   php=$(which php)
   config=$($php --ini | head -n 1)
   config=${config##* }
@@ -203,6 +204,7 @@ function php_exec {
   if [[ -f $config ]]; then
     OPTS='-c '$config
   fi
+  code=$(test -f "$1" && echo "include '$1'" || echo "$1");
   $php $OPTS <<EOF
 <?php
     include getenv('KISS_CORE');
@@ -210,7 +212,7 @@ function php_exec {
     // Получаем ответ   и выполняем запрос
     try {
       App::start();
-      $1;
+      $code;
       App::stop();
     } catch (Exception \$E) {
       echo 'Error: ' . \$E->getMessage() . PHP_EOL . 'More info: tail -f $LOG_DIR/' . date('Ymd') . '-error.log';
