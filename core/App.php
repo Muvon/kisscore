@@ -208,11 +208,11 @@ class App {
         return static::printException($Exception);
       });
     }
-    
+
     Autoload::register('App', getenv('APP_DIR') . '/src');
     Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
     Autoload::register('Lib', getenv('APP_DIR') . '/lib');
-    Autoload::register('Vendor', getenv('APP_DIR') . '/vendor');
+    Autoload::register('', getenv('APP_DIR') . '/vendor');
   }
 
   /**
