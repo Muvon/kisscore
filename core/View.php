@@ -54,6 +54,15 @@ class View {
     $this->compile_dir = config('view.compile_dir');
   }
 
+  public function configure(array $config) {
+    foreach ($config as $prop => $val) {
+      if (property_exists($this, $prop)) {
+        $this->$prop = $val;
+      }
+    }
+    return $this;
+  }
+
   /**
    * @param string $template
    * @return View
