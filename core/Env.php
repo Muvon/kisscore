@@ -1,5 +1,24 @@
 <?php
 class Env {
+  protected static $params = [
+    'USER',
+    'PROJECT',
+    'PROJECT_DIR',
+    'PROJECT_ENV',
+    'APP_DIR',
+    'HTML_DIR',
+    'CONFIG_DIR',
+    'ENV_DIR',
+    'BIN_DIR',
+    'RUN_DIR',
+    'LOG_DIR',
+    'VAR_DIR',
+    'TMP_DIR',
+    'KISS_CORE',
+    'HTTP_HOST',
+    'CONFIG_TEMPALTE_DIR',
+  ];
+
   public static function init() {
     static::configure(getenv('APP_DIR') . '/config.ini.tpl');
     static::generateConfigs();
@@ -9,24 +28,14 @@ class Env {
   }
 
   public static function configure($template, array $params = []) {
+    // Add default params
+    foreach (static::$params as $param) {
+      $params['%' . $param . '%'] = getenv($param);
+    }
+
+    // Add extra params
     $params += [
-      '%USER%'          => getenv('USER'),
-      '%PROJECT%'       => getenv('PROJECT'),
-      '%PROJECT_DIR%'   => getenv('PROJECT_DIR'),
-      '%PROJECT_ENV%'   => getenv('PROJECT_ENV'),
-      '%APP_DIR%'       => getenv('APP_DIR'),
-      '%HTML_DIR%'      => getenv('HTML_DIR'),
-      '%CONFIG_DIR%'    => getenv('CONFIG_DIR'),
-      '%ENV_DIR%'       => getenv('ENV_DIR'),
-      '%BIN_DIR%'       => getenv('BIN_DIR'),
-      '%RUN_DIR%'       => getenv('RUN_DIR'),
-      '%LOG_DIR%'       => getenv('LOG_DIR'),
-      '%VAR_DIR%'       => getenv('VAR_DIR'),
-      '%TMP_DIR%'       => getenv('TMP_DIR'),
-      '%KISS_CORE%'     => getenv('KISS_CORE'),
-      '%HTTP_HOST%'     => getenv('HTTP_HOST'),
-      '%CONFIG_TEMPLATE_DIR%' => getenv('CONFIG_TEMPLATE_DIR'),
-      '%DEBUG%'         => (int) App::$debug,
+      '%DEBUG%' => (int) App::$debug,
     ];
 
     foreach(is_dir($template) ? glob($template . '/*.tpl') : [$template] as $file) {
