@@ -305,6 +305,9 @@ class View {
    *   Имя скомпилированного файла
    */
   protected function compileChunk($route) {
+    assert("is_string(\$this->source_dir) && is_dir(\$this->source_dir)");
+    assert("is_string(\$this->template_extension) && isset(\$this->template_extension[0])");
+
     $file_c = $this->compile_dir . '/view-' . md5($route) . '.chunk';
     if (!App::$debug && is_file($file_c))
       return $file_c;
@@ -317,8 +320,9 @@ class View {
     $line_block = '#\{(' . static::VAR_PTRN . ')\:\}(.+)$#ium';
 
     // Могут быть вложенные
-    while (preg_match($line_block, $str) > 0)
+    while (preg_match($line_block, $str) > 0) {
       $str = preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
+    }
 
     // Компиляция блоков
     $str = $this->chunkCompileBlocks($str);
@@ -344,19 +348,12 @@ class View {
    * @return View
    */
   protected function compile() {
-    assert("is_string(\$this->source_dir) && is_dir(\$this->source_dir)");
-    assert("is_string(\$this->compile_dir) && is_dir(\$this->compile_dir) && is_writable(\$this->compile_dir)");
     assert("is_string(\$this->route)");
-    assert("is_string(\$this->template_extension) && isset(\$this->template_extension[0])");
 
-    $file_c =  $this->compile_dir . '/view-' . md5(implode(',', $this->head) . ':' . $this->route . ':' . implode(',', $this->foot)) . '.page';
+    $file_c = $this->getCompiledFile();
     if (App::$debug || !is_file($file_c)) {
       $content = [];
-      foreach ($this->head as $template) {
-        $content[] = file_get_contents($this->compileChunk($template));
-      }
-      $content[] = file_get_contents($this->compileChunk($this->route));
-      foreach ($this->foot as $template) {
+      foreach (array_merge($this->head, [$this->route], $this->foot) as $template) {
         $content[] = file_get_contents($this->compileChunk($template));
       }
 
@@ -366,6 +363,11 @@ class View {
     }
     include $file_c;
     return $this;
+  }
+
+  protected function getCompiledFile() {
+    assert("is_string(\$this->compile_dir) && is_dir(\$this->compile_dir) && is_writable(\$this->compile_dir)");
+    return $this->compile_dir . '/view-' . md5(implode(',', $this->head) . ':' . $this->route . ':' . implode(',', $this->foot)) . '.page';
   }
 
   /**
