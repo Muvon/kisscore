@@ -181,7 +181,7 @@ function init {
   echo 'Initialization started'
 
   echo '+Configure and compile project'
-  php_exec 'App::compile()'
+  php_exec 'Env::init()'
   echo '...done'
 
   echo '+Reloading services'
