@@ -178,6 +178,7 @@ function run_checks {
 
 
 function init {
+  [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
   echo 'Initialization started'
 
   echo '+Configure and compile project'
@@ -195,6 +196,7 @@ function init {
 }
 
 function php_exec {
+  [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
   [[ -z "$1" ]] && echo 'Usage: php_exec [code | php_file]' && return
   php=$(which php)
   config=$($php --ini | head -n 1)
@@ -222,7 +224,8 @@ EOF
 }
 
 function install_plugin {
-  if [[ -z $1 ]]; then
+  [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
+  if [[ -z "$1" ]]; then
     echo -e 'Usage: install_plugin plugin1 plugin2 plugin3'
     echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
     echo -e '- \e[35;1mPLUGIN_UPDATE\e[0;0m=1              Update or skip during install. Default: 0'
@@ -302,7 +305,8 @@ function _install_plugin {
 }
 
 function deploy {
-  if [[ -z $1 ]]; then
+  [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
+  if [[ -z "$1" ]]; then
     echo 'Usage: deploy [all|production|test|...]' && return
   fi
   user='web'
