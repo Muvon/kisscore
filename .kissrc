@@ -353,7 +353,7 @@ EOF
     ssh -T $user@$server "mkdir -p /home/$user/$PROJECT/rev/$revision && test -L /home/$user/$PROJECT/app && cp -r \$_/* /home/$user/$PROJECT/rev/$revision"
 
     # Create revision
-    rsync -aiz --delete-before $APP_DIR/* $user@$server:/home/$user/$PROJECT/rev/$revision/
+    rsync -aiz --delete-before $APP_DIR/ $user@$server:/home/$user/$PROJECT/rev/$revision/
 
     # Compile PROJECT on server
     ssh -T $user@$server <<EOF
