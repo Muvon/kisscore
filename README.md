@@ -1,4 +1,5 @@
 # KISS Core
+[![Code Climate](https://codeclimate.com/github/dmitrykuzmenkov/kisscore/badges/gpa.svg)](https://codeclimate.com/github/dmitrykuzmenkov/kisscore)
 
 ## What is it?
 
