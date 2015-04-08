@@ -18,7 +18,7 @@ class View {
    * @property string $body обработанные и готовые данные для отдачи их клиенту
    */
   protected $data = [];
-  protected $route = '';
+  protected $routes = [];
   protected $body = '';
   protected $source_dir = null;
   protected $compile_dir = null;
@@ -35,18 +35,12 @@ class View {
   protected $block_path = [];
 
   /**
-   * @var array $head
-   * @var array $foot
-   */
-  protected $head = [], $foot = [];
-
-  /**
    * Финальный приватный конструктор, через него создания вида закрыто
    *
    * @see self::create
    */
   final protected function __construct() {
-    $this->route = config('default.action');
+    $this->routes = [config('default.action')];
 
     // Setup default settings
     $this->template_extension = config('view.template_extension');
@@ -67,16 +61,8 @@ class View {
    * @param string $template
    * @return View
    */
-  public function addHead($template) {
-    $this->head[] = $template;
-    return $this;
-  }
-
-  /**
-   * @return View
-   */
-  public function resetHead() {
-    $this->head = [];
+  public function prepend($template) {
+    array_unshift($this->routes, $template);
     return $this;
   }
 
@@ -84,16 +70,8 @@ class View {
    * @param string $template
    * @return View
    */
-  public function addFoot($template) {
-    $this->foot[] = $template;
-    return $this;
-  }
-
-  /**
-   * @return View
-   */
-  public function resetFoot() {
-    $this->foot = [];
+  public function append($template) {
+    $this->routes[] = $template;
     return $this;
   }
 
@@ -102,12 +80,12 @@ class View {
    *
    * @static
    * @access public
-   * @param string $route строка вида модуль/шаблон, имя шаблона обычно приравнивается выполняемому действию
+   * @param string $route Список всех роутов в нужной последовательности для сборки
    * @return View
    */
-  public static function create($route) {
+  public static function create(...$routes) {
     $View = new static;
-    $View->route = $route;
+    $View->routes = $routes;
     return $View;
   }
 
@@ -279,11 +257,13 @@ class View {
         $denial = false;
         $key    = $m[1];
 
-        if (0 === strpos($m[1], '!'))
+        if (0 === strpos($m[1], '!')) {
           $key = substr($m[1], 1);
+        }
 
-        if (strlen($m[1]) !== strlen($key))
+        if (strlen($m[1]) !== strlen($key)) {
           $denial = true;
+        }
 
         return
           '<?php $param = ' . static::chunkVarExists($m[1], '$item') . ' ? ' . static::chunkVar($m[1], '$item') . ' : null;'
@@ -344,12 +324,10 @@ class View {
    * @return View
    */
   protected function compile() {
-    assert("is_string(\$this->route)");
-
     $file_c = $this->getCompiledFile();
     if (App::$debug || !is_file($file_c)) {
       $content = [];
-      foreach (array_merge($this->head, [$this->route], $this->foot) as $template) {
+      foreach ($this->routes as $template) {
         $content[] = file_get_contents($this->compileChunk($template));
       }
 
@@ -370,7 +348,7 @@ class View {
 
   protected function getCompiledFile() {
     assert("is_string(\$this->compile_dir) && is_dir(\$this->compile_dir) && is_writable(\$this->compile_dir)");
-    return $this->compile_dir . '/view-' . md5(implode(',', $this->head) . ':' . $this->route . ':' . implode(',', $this->foot)) . '.page';
+    return $this->compile_dir . '/view-' . md5(implode(':', $this->routes)) . '.page';
   }
 
   /**
