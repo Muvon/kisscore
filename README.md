@@ -113,6 +113,20 @@ And you are in project with special var and PATH configured
 There are special plugins to use DB, Cache and other cool staff in KISSCore.
 You can find plugins and help on github here: https://github.com/dmitrykuzmenkov/kisscore-plugins
 
+## Actions
+All actions are in app/actions folder. You should just create any file, for example test.php and put code in it.
+```php
+<?php
+/**
+ * @route test
+ * @param string $hello
+ */
+return View::fromString('Hello');
+?>
+```
+
+Reinit your app and open in project http://myproj/test that will execute this action.
+
 ## Triggers
 
 There are special functionality to trigger some event, catch it and do something. It works like hooks. 
