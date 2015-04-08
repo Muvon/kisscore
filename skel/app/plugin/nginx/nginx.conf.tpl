@@ -36,6 +36,7 @@ server {
     fastcgi_param  APP_DIR          %APP_DIR%;
     fastcgi_param  ENV_DIR          %ENV_DIR%;
     fastcgi_param  CONFIG_DIR       %CONFIG_DIR%;
+    fastcgi_param  PROJECT          %PROJECT%;
     fastcgi_param  PROJECT_ENV      %PROJECT_ENV%;
     fastcgi_param  VAR_DIR          %VAR_DIR%;
     fastcgi_param  LOG_DIR          %LOG_DIR%;

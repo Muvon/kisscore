@@ -173,7 +173,10 @@ class App {
 
   public static function exec($cmd) {
     $project = getenv('PROJECT');
-    $cmd = addcslashes($cmd, '"');
-    return trim(`bash -c "source ~/.kissrc; kiss $project; $cmd"`);
+    return trim(`bash <<"EOF"
+      source ~/.kissrc
+      kiss $project
+      $cmd
+EOF`);
   }
 }
