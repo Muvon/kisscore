@@ -179,4 +179,20 @@ class App {
       $cmd
 EOF`);
   }
+
+  /**
+   * Daemon that runs automatic reinit of app on code change
+   */
+  public static function develop() {
+    $sum_file = getenv('TMP_DIR') . '/sha1sum';
+    App::exec("touch $sum_file");
+    while (true) {
+      $sum = App::exec('ls -lR --time-style=full-iso $APP_DIR | sha1sum');
+      if ($sum !== file_get_contents($sum_file)) {
+        file_put_contents($sum_file, $sum);
+        App::exec('init');
+      }
+      sleep(1);
+    }
+  }
 }
