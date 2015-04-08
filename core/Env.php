@@ -25,6 +25,7 @@ class Env {
     static::generateURIMap();
     static::generateParamMap();
     static::generateNginxRouteMap();
+    static::generateTriggerMap();
   }
 
   public static function configure($template, array $params = []) {
@@ -59,15 +60,14 @@ class Env {
   protected static function generateURIMap() {
     $map = [];
     $action_dir = getenv('APP_DIR') . '/actions';
-    $files = explode(PHP_EOL, trim(`find -L $action_dir -name '*.php'`));
+    $files = ($res = trim(`find -L $action_dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
     foreach ($files as $file) {
-      $action = substr(basename($file), 0, -4);
       $content = file_get_contents($file);
       if (preg_match_all('/^\s*\*\s*\@route\s+([^\:]+?)(\:(.+))?$/ium', $content, $m)) {
         foreach ($m[0] as $k => $matches) {
           $pattern = trim($m[1][$k]);
           $params  = isset($m[2][$k]) && $m[2][$k] ? array_map('trim', explode(',', substr($m[2][$k], 1))) : [];
-          array_unshift($params, $action);
+          array_unshift($params, basename($file, '.php'));
           $map[$pattern] = $params;
         }
       }
@@ -76,22 +76,28 @@ class Env {
   }
 
   protected static function generateParamMap() {
-    $map = [];
-    $action_dir = getenv('APP_DIR') . '/actions';
-    $files = explode(PHP_EOL, trim(`find -L $action_dir -name '*.php'`));
-    foreach ($files as $file) {
-      $content = file_get_contents($file);
-      if (preg_match_all('/^\s*\*\s*\@param\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
-        foreach ($m[0] as $k => $matches) {
-          $map[$file][] = [
-            'name'    => $param = substr(strtok($m[2][$k], ' '), 1),
-            'type'    => $m[1][$k],
-            'default' => trim(substr($m[2][$k], strlen($param) + 1)) ?: null,
-          ];
+    $map_files = [
+      'actions'  => config('common.param_map_file'),
+      'triggers' => config('common.trigger_param_file'),
+    ];
+    foreach ($map_files as $folder => $map_file) {
+      $map = [];
+      $dir = getenv('APP_DIR') . '/' . $folder;
+      $files = ($res = trim(`find -L $dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
+      foreach ($files as $file) {
+        $content = file_get_contents($file);
+        if (preg_match_all('/^\s*\*\s*\@param\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
+          foreach ($m[0] as $k => $matches) {
+            $map[$file][] = [
+              'name'    => $param = substr(strtok($m[2][$k], ' '), 1),
+              'type'    => $m[1][$k],
+              'default' => trim(substr($m[2][$k], strlen($param) + 1)) ?: null,
+            ];
+          }
         }
       }
+      App::writeJSON($map_file, $map);
     }
-    App::writeJSON(config('common.param_map_file'), $map);
   }
 
   protected static function generateNginxRouteMap() {
@@ -122,5 +128,23 @@ class Env {
       $rewrites[] = "rewrite '(*UTF8)^/$route/?$' '$uri';";
     }
     file_put_contents(config('common.nginx_route_file'), implode(PHP_EOL, $rewrites));
+  }
+
+  protected static function generateTriggerMap() {
+    $map = [];
+    $trigger_dir = getenv('APP_DIR') . '/triggers';
+    $files = ($res = trim(`find -L $trigger_dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
+    foreach ($files as $file) {
+      $content = file_get_contents($file);
+      if (preg_match_all('/^\s*\*\s*\@event\s+([^\:]+?)(\:(.+))?$/ium', $content, $m)) {
+        foreach ($m[0] as $k => $matches) {
+          $pattern = trim($m[1][$k]);
+          $params  = isset($m[2][$k]) && $m[2][$k] ? array_map('trim', explode(',', substr($m[2][$k], 1))) : [];
+          array_unshift($params, $file);
+          $map[$pattern] = $params;
+        }
+      }
+    }
+    App::writeJSON(config('common.trigger_map_file'), $map);
   }
 }

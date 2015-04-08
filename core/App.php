@@ -4,8 +4,8 @@ class App {
   public static $debug;
   protected static $e_handlers = [];
 
-  public static function getImportVarsArgs($file) {
-    $params = static::getJSON(config('common.param_map_file'));
+  public static function getImportVarsArgs($file, $map_file = null) {
+    $params = static::getJSON($map_file ?: config('common.param_map_file'));
     $args = [];
     if (isset($params[$file])) {
       foreach ($params[$file] as $param) {

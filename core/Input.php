@@ -45,21 +45,35 @@ class Input {
         : (isset($args[1]) ? $args[1] : null);
     }
 
-    // Exctract typifie var by mnemonic rules as array
     if (is_array($args[0])) {
-      $params = [];
-      foreach ($args[0] as $arg) {
-        preg_match('#^([a-z0-9_]+)(?:\:([a-z]+))?(?:\=(.+))?$#', $arg, $m);
-        $params[$m[1]]  = static::get($m[1], isset($m[3]) ? $m[3] : '');
-
-        // Нужно ли типизировать
-        if (isset($m[2])) {
-          typify($params[$m[1]], $m[2]);
-        }
-      }
-      return $params;
+      return static::extractTypified($args[0], function ($key, $default = null) {
+        return static::get($key, $default);
+      });
     }
+    // Exctract typifie var by mnemonic rules as array
+
 
     trigger_error('Error while fetch key from input');
+  }
+
+  /**
+   * Извлекает и типизирует параметры из массива args с помощью функции $fetcher, которая 
+   * принимает на вход ключ из массива args и значение по умолчанию, если его там нет
+   *
+   * @param array $args
+   * @param Closure $fetcher ($key, $default)
+   */
+  public static function extractTypified(array $args, Closure $fetcher) {
+    $params = [];
+    foreach ($args as $arg) {
+      preg_match('#^([a-z0-9_]+)(?:\:([a-z]+))?(?:\=(.+))?$#', $arg, $m);
+      $params[$m[1]]  = $fetcher($m[1], isset($m[3]) ? $m[3] : '');
+
+      // Нужно ли типизировать
+      if (isset($m[2])) {
+        typify($params[$m[1]], $m[2]);
+      }
+    }
+    return $params;
   }
 }

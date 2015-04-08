@@ -75,3 +75,33 @@ function typify(&$var, $type) {
   }
   return;
 }
+
+/**
+ * Triggered events
+ *
+ * @param string $event
+ * @param array $payload Дополнительные данные для манипуляции
+ * @return mixed
+ */
+function trigger_event($event, array $payload = []) {
+  assert('is_string($event)');
+
+  static $map;
+  if (!isset($map)) {
+    $map = App::getJSON(config('common.trigger_map_file'));
+  }
+
+  if (isset($map[$event])) {
+    array_walk($map[$event], function ($_file) use ($payload) {
+      extract(
+        Input::extractTypified(
+          App::getImportVarsArgs($_file, config('common.trigger_param_file')),
+          function ($key, $default = null) use ($payload) {
+            return isset($payload[$key]) ? $payload[$key] : $default;
+          }
+        )
+      );
+      include $_file;
+    });
+  }
+}
