@@ -57,6 +57,14 @@ kiss myproj
 ```
 
 And you are in project with special var and PATH configured
+
+## Update core in existing application
+You also can update compiled KISSCore file in your application.
+Just run install-core and enjoy!
+```bash
+./install-core myproj
+```
+
 ## Folder structure
 ### Root folders structure
 | Folder | Description                                                                            |
@@ -152,12 +160,13 @@ To run project using KISS Core you need
 2. PHP 5.6+ with php-fpm (http://php.net)
 3. Nginx (http://nginx.org)
 
-And also linux knowledge ;)
+And also some linux knowledge ;)
 
 You also can check requirements on your system using this bash command in kisscore folder:
 ```bash
 ./check
 ```
+
 ## How to extend?
 Just use lib dir into your application folder.
 You can put there any external module and use it into your project,
