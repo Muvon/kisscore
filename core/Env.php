@@ -136,12 +136,13 @@ class Env {
     $files = ($res = trim(`find -L $trigger_dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
     foreach ($files as $file) {
       $content = file_get_contents($file);
-      if (preg_match_all('/^\s*\*\s*\@event\s+([^\:]+?)(\:(.+))?$/ium', $content, $m)) {
+      if (preg_match_all('/^\s*\*\s*\@event\s+([^\$]+?)$/ium', $content, $m)) {
         foreach ($m[0] as $k => $matches) {
           $pattern = trim($m[1][$k]);
-          $params  = isset($m[2][$k]) && $m[2][$k] ? array_map('trim', explode(',', substr($m[2][$k], 1))) : [];
-          array_unshift($params, $file);
-          $map[$pattern] = $params;
+          if (!isset($map[$pattern])) {
+            $map[$pattern] = [];
+          }
+          $map[$pattern] = array_merge($map[$pattern], [$file]);
         }
       }
     }
