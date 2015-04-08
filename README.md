@@ -23,18 +23,7 @@ git clone git@github.com:dmitrykuzmenkov/kisscore.git
 ```
 
 ### New application
-You can create application with single command in KISS Core dir:
-```bash
-./make-app myproj
-```
-
-That will create your application in folder myproj under home dir and start php-fpm in project dir.
-
-Setup domain for local test:
-```bash
-sudo echo '127.0.0.1 myproj.lo' >> /etc/hosts
-```
-Now update your php-fpm and nginx global config to include projects files.
+First you should update your php-fpm and nginx global config to include projects files.
 Add the following lines to php-fpm config:
 ```bash
 include = /home/*/*/env/etc/php-fpm.conf
@@ -43,6 +32,19 @@ include = /home/*/*/env/etc/php-fpm.conf
 And the following lines for nginx config:
 ```bash
 include /home/*/*/env/etc/nginx.conf;
+```
+
+Now you can create application with single command in KISS Core dir:
+```bash
+./make-app myproj
+```
+
+That will create your application in folder myproj under home dir, prepare all it environment in local machine and restart php-fpm and nginx.
+So be sure that you correctly configured your php-fpm and nginx on your server like I wrote before.
+
+Setup domain for local test:
+```bash
+sudo echo '127.0.0.1 myproj.lo' >> /etc/hosts
 ```
 
 Restart services nginx and php-fpm and enjoy in you browser opening your project http://myproj.lo
@@ -55,6 +57,42 @@ kiss myproj
 ```
 
 And you are in project with special var and PATH configured
+## Folder structure
+### Root folders structure
+KISSCore generates next folder structure in your root folder of your project:
+| Folder | Description                                                                            |
+|--------|----------------------------------------------------------------------------------------|
+| app    | Main project folder with source code, libraries, static and KISSCore                   |
+| env    | Environment folder with tmp files, generated maps, configs and other special env stuff |
+| html   | Symlink to static folder in app dir.It is nginx root for web clients.                  |
+
+### app skeleton
+| Folder         | Description                                                    | Namespace                     |
+|----------------|----------------------------------------------------------------|-------------------------------|
+| actions        | Action dir, it contains of action files that includes on route |                               |
+| bin            | Special bash scripts and bin files                             |                               |
+| config.ini.tpl | Main template config of application                            |                               |
+| core.php       | Core file with merged KISSCore classes and functions           |                               |
+| frontend.php   | That files handle all nginx dynamic requests (front point)     |                               |
+| lib            | Library sources that does not depend on KISSCore               | Lib                           |
+| main.php       | Thats is type of front controller, but just a simple flat file |                               |
+| plugin         | Plugins made special for KISSCore under Plugin namespace       | Plugin                        |
+| src            | All your source code, structured as you want                   | App                           |
+| static         | Root nginx dir for static files                                |                               |
+| triggers       | Special triggers. It contains flat files with some annotation  |                               |
+| vendor         | Thrird party libraries namespaced with PSR-4                   | All other not included before |
+| views          | Templates for rendering from action                            |                               |
+
+### env skeleton
+| Folder | Description                                                              |
+|--------|--------------------------------------------------------------------------|
+| bin    | Symlink to app/bin                                                       |
+| etc    | Generated configs that uses by application and services                  |
+| files  | Static files. You can use it just a like storage                         |
+| log    | All logs go here                                                         |
+| run    | Pid files with running processes, some special files that depends on run |
+| tmp    | It contains temporary files                                              |
+| var    | Some application data, configured maps and so on                         |
 
 ## Environment variables
 - $PROJECT - Your project name
@@ -68,12 +106,30 @@ And you are in project with special var and PATH configured
 - $CONFIG_DIR - configuration files
 - $BIN_DIR - for special bin files and scripts
 - $HTML_DIR - public directory for static files
-
+- $KISS_CORE - path to core.php file with KISSCore classes
+- $HTTP_HOST - http_host of the machine
 
 ## Plugins
 
 There are special plugins to use DB, Cache and other cool staff in KISSCore.
 You can find plugins and help on github here: https://github.com/dmitrykuzmenkov/kisscore-plugins
+
+## Triggers
+
+There are special functionality to trigger some event, catch it and do something. It works like hooks. 
+First you call trigger_event('test', ['var' => 'test']) in any place of your code. Then you create special trigger file in app/triggers folder.
+Annotate trigger with special comments, for example:
+```php
+<?php
+/**
+ * @trigger test
+ * @param string $var
+ */
+ echo $var;
+?>
+```
+
+Prepare environment with init call and thats finally done. You now can trigger_event and see the result of var you passed in data of event.
 
 ## Dependency
 
