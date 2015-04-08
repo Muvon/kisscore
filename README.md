@@ -59,7 +59,6 @@ kiss myproj
 And you are in project with special var and PATH configured
 ## Folder structure
 ### Root folders structure
-KISSCore generates next folder structure in your root folder of your project:
 | Folder | Description                                                                            |
 |--------|----------------------------------------------------------------------------------------|
 | app    | Main project folder with source code, libraries, static and KISSCore                   |
