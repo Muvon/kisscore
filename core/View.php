@@ -305,16 +305,12 @@ class View {
    *   Имя скомпилированного файла
    */
   protected function compileChunk($route) {
-    assert("is_string(\$this->source_dir) && is_dir(\$this->source_dir)");
-    assert("is_string(\$this->template_extension) && isset(\$this->template_extension[0])");
-
     $file_c = $this->compile_dir . '/view-' . md5($route) . '.chunk';
-    if (!App::$debug && is_file($file_c))
+    if (!App::$debug && is_file($file_c)) {
       return $file_c;
+    }
 
-    $source_file = $this->source_dir . '/' . strtok($route, '/') . '.' . $this->template_extension;
-
-    $str = file_get_contents($source_file);
+    $str = file_get_contents($this->getSourceFile($route));
 
     // Закрываем строчные блоки
     $line_block = '#\{(' . static::VAR_PTRN . ')\:\}(.+)$#ium';
@@ -363,6 +359,13 @@ class View {
     }
     include $file_c;
     return $this;
+  }
+
+  protected function getSourceFile($route) {
+    assert("is_string(\$this->source_dir) && is_dir(\$this->source_dir)");
+    assert("is_string(\$this->template_extension) && isset(\$this->template_extension[0])");
+
+    return $this->source_dir . '/' . strtok($route, '/') . '.' . $this->template_extension;
   }
 
   protected function getCompiledFile() {
