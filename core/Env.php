@@ -16,7 +16,6 @@ class Env {
     'TMP_DIR',
     'KISS_CORE',
     'HTTP_HOST',
-    'CONFIG_TEMPALTE_DIR',
   ];
 
   public static function init() {

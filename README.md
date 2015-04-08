@@ -106,7 +106,7 @@ And you are in project with special var and PATH configured
 - $BIN_DIR - for special bin files and scripts
 - $HTML_DIR - public directory for static files
 - $KISS_CORE - path to core.php file with KISSCore classes
-- $HTTP_HOST - http_host of the machine
+- $HTTP_HOST - hostname of the machine
 
 ## Plugins
 
