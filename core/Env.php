@@ -59,9 +59,7 @@ class Env {
    */
   protected static function generateURIMap() {
     $map = [];
-    $action_dir = getenv('APP_DIR') . '/actions';
-    $files = ($res = trim(`find -L $action_dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
-    foreach ($files as $file) {
+    foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
       $content = file_get_contents($file);
       if (preg_match_all('/^\s*\*\s*\@route\s+([^\:]+?)(\:(.+))?$/ium', $content, $m)) {
         foreach ($m[0] as $k => $matches) {
@@ -82,9 +80,7 @@ class Env {
     ];
     foreach ($map_files as $folder => $map_file) {
       $map = [];
-      $dir = getenv('APP_DIR') . '/' . $folder;
-      $files = ($res = trim(`find -L $dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
-      foreach ($files as $file) {
+      foreach (static::getPHPFiles(getenv('APP_DIR') . '/' . $folder) as $file) {
         $content = file_get_contents($file);
         if (preg_match_all('/^\s*\*\s*\@param\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
           foreach ($m[0] as $k => $matches) {
@@ -132,9 +128,7 @@ class Env {
 
   protected static function generateTriggerMap() {
     $map = [];
-    $trigger_dir = getenv('APP_DIR') . '/triggers';
-    $files = ($res = trim(`find -L $trigger_dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
-    foreach ($files as $file) {
+    foreach (static::getPHPFiles(getenv('APP_DIR') . '/triggers') as $file) {
       $content = file_get_contents($file);
       if (preg_match_all('/^\s*\*\s*\@event\s+([^\$]+?)$/ium', $content, $m)) {
         foreach ($m[0] as $k => $matches) {
@@ -147,5 +141,9 @@ class Env {
       }
     }
     App::writeJSON(config('common.trigger_map_file'), $map);
+  }
+
+  protected static function getPHPFiles($dir) {
+    return ($res = trim(`find -L $dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
   }
 }
