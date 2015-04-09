@@ -105,3 +105,7 @@ function trigger_event($event, array $payload = []) {
     });
   }
 }
+
+function get_class_name($class) {
+  return (new ReflectionClass($class))->getShortName();
+}
