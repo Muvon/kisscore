@@ -343,7 +343,7 @@ class View {
     assert("is_string(\$this->source_dir) && is_dir(\$this->source_dir)");
     assert("is_string(\$this->template_extension) && isset(\$this->template_extension[0])");
 
-    return $this->source_dir . '/' . strtok($route, '/') . '.' . $this->template_extension;
+    return $this->source_dir . '/' . $route . '.' . $this->template_extension;
   }
 
   protected function getCompiledFile() {
