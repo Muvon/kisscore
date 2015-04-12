@@ -298,7 +298,7 @@ function _install_plugin {
 
   if [[ -f $install_to/require ]]; then
     for dep in `cat $install_to/require`; do
-      $0 $dep
+      _install_plugin "$dep"
     done
   fi
   rebuild=1
