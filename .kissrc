@@ -286,7 +286,8 @@ function _install_plugin {
   fi
 
   if [[ -d $install_to ]]; then
-    /bin/tar -czf $install_to/$(/bin/date +%Y%m%d-%H%M%S).backup.tar.gz --exclude=*.backup.tar.gz $install_to/*
+    echo 'Found old installation. Backuping...'
+    /bin/tar -czf $install_to/$(/bin/date +%Y%m%d-%H%M%S).backup.tar.gz --exclude=*.backup.tar.gz $install_to/
     /usr/bin/find $install_to -type f -not -name '*.backup.tar.gz' | xargs /bin/rm
   fi
 
