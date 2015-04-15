@@ -191,7 +191,7 @@ function init {
   echo '...done'
 
   echo '+Running init-app script'
-  [[ -x $BIN_DIR/init-app ]] && $BIN_DIR/init-app | xargs -l echo '  '
+  [[ -x $BIN_DIR/init-app ]] && $BIN_DIR/init-app | xargs -0 -l echo '  '
   echo '...done'
 }
 
