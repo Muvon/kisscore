@@ -17,7 +17,7 @@ domain = '%PROJECT%.lo'
 [common:test]
 domain = '%PROJECT%.dev'
 
-[common:productin]
+[common:production]
 domain = '%PROJECT%.ru'
 
 [default]
