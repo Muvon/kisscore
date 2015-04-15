@@ -12,6 +12,9 @@ server {
   client_max_body_size %UPLOAD_MAX_FILESIZE%;
   include %NGINX_ROUTE_FILE%;
 
+  auth_basic %AUTH%;
+  auth_basic_user_file %CONFIG_DIR%/.htpasswd;
+
   root %HTML_DIR%;
   location = / {
     if ($request_method !~ ^(GET|HEAD|POST)$ ) {

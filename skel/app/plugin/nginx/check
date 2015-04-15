@@ -1,4 +1,5 @@
 #!/bin/bash
 declare -A checks
 checks['nginx']='nginx -v'
+checks['openssl']='which openssl'
 run_checks

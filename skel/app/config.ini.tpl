@@ -30,3 +30,12 @@ template_extension  = 'tpl'
 
 [session]
 name          = 'KISS'
+
+[nginx]
+auth_name = 'test'
+auth_pass = 'test'
+; auth_basic nginx param: off, Restricted
+auth = 'off'
+
+[nginx:test]
+auth = 'Restricted'
