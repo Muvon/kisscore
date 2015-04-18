@@ -73,11 +73,10 @@ class App {
     set_exception_handler([static::class, 'handleException']);
 
     // Register default Exception handler
-    if (App::$debug) {
-      static::setExceptionHandler(Exception::class, function (Exception $Exception) {
-        return static::printException($Exception);
-      });
-    }
+    static::setExceptionHandler(Exception::class, function (Exception $Exception) {
+      $string = App::$debug ? static::getHtmlException($Exception) : 'Something went wrong';
+      return Response::create(500)->send((string) View::fromString($string));
+    });
 
     Autoload::register('App', getenv('APP_DIR') . '/src');
     Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
@@ -135,15 +134,19 @@ class App {
   }
 
   /**
-   * Print unhandled excpetion in html format
+   * Get html page for display exception in debug mode
    */
-  protected static function printException(Exception $Exception) {
-    echo '<html><head><title>Error</title></head><body>';
-    echo '<p>Unhandled exceptions <b>' . get_class($Exception) . '</b> with message "' . $Exception->getMessage() . '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() . '"</p>';
-    echo '<p><ul>';
-    echo implode('<br/>', array_map(function ($item) { return '<li>' . $item . '</li>'; }, explode(PHP_EOL, $Exception->getTraceAsString())));
-    echo '</ul></p>';
-    echo '</body></html>';
+  protected static function getHtmlException(Exception $Exception) {
+    return '<html><head><title>Error</title></head><body>'
+     . '<p>Unhandled exceptions <b>' 
+     . get_class($Exception) . '</b> with message "' . $Exception->getMessage() 
+     . '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() 
+     . '"</p>'
+     . '<p><ul>'
+     . implode('<br/>', array_map(function ($item) { return '<li>' . $item . '</li>'; }, explode(PHP_EOL, $Exception->getTraceAsString())))
+     . '</ul></p>'
+     . '</body></html>'
+    ;
   }
 
   public static function setExceptionHandler($exception, Callable $handler) {
