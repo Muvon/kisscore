@@ -277,6 +277,25 @@ class View {
   }
 
   /**
+   * Optimize output of compiled chunk if needed
+   * @param string $str
+   * @return string
+   */
+  protected function chunkMinify($str) {
+    // Remove tabs and merge into single line
+    if (config('view.merge_lines')) {
+      $str = preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $str);
+    }
+
+    // Remove comments
+    if (config('view.strip_comments')) {
+      $str = preg_replace('/\<\!\-\-.+?\-\-\>/is', '', $str);
+    }
+
+    return $str;
+  }
+
+  /**
    * Компиляция примитивов шаблона
    *
    * @param string $route
@@ -303,8 +322,7 @@ class View {
     // Компиляция блоков
     $str = $this->chunkCompileBlocks($str);
 
-    // Remove tabs and merge into single line
-    $str = preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $str);
+    $str = $this->chunkMinify($str);
 
     // Замена подключений файлов
     $str = preg_replace_callback('#\{\>([a-z\_0-9\/]+)(.*?)\}#ium', function ($matches) {
