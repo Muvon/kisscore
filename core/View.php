@@ -25,6 +25,8 @@ class View {
 
   protected static $filter_funcs = [
     'html' => 'htmlspecialchars',
+    'url'  => 'rawurlencode',
+    'json' => 'json_encode',
     'raw'  => '',
   ];
 
