@@ -36,6 +36,9 @@ class Session {
     static::$container = &$_SESSION;
   }
 
+  /**
+   * Regenrate new session ID
+   */
   public static function regenerate() {
     session_regenerate_id();
   }
@@ -50,10 +53,9 @@ class Session {
   }
 
   /**
-   * Добавление данных в сессию, если ранее добавлено ничего не было
-   *
+   * Add new session var if it not exists
    * @param string $key
-   * @param mailparse_determine_best_xfer_encoding(fp) $value
+   * @param mixed $value Can be callable function, so it executes and pushes
    * @return void
    */
   public static function add($key, $value) {
@@ -64,7 +66,6 @@ class Session {
 
   /**
    * Set new var into session
-   *
    * @param string $key
    * @param mixed $value
    * @return void
@@ -76,7 +77,6 @@ class Session {
 
   /**
    * Remove the key from session array
-   *
    * @param string $key
    * @return bool
    */
@@ -91,6 +91,7 @@ class Session {
 
   /**
    * Alias for self::remove
+   * @see self::remove
    */
   public static function delete($key) {
     return static::remove($key);
@@ -98,7 +99,6 @@ class Session {
 
   /**
    * Get var with key from session array
-   *
    * @param string $key
    * @param mixed $default Return default there is no such key, set on closure
    * @return mixed

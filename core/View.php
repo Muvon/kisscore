@@ -219,6 +219,10 @@ class View {
     return $code;
   }
 
+  /**
+   * @param string $str
+   * @return string
+   */
   protected static function chunkTransformVars($str) {
     $filter_ptrn = implode(
       '|' ,
@@ -246,6 +250,10 @@ class View {
     );
   }
 
+  /**
+   * @param string $str
+   * @return string
+   */
   protected function chunkCompileBlocks($str) {
     return preg_replace_callback(
       '#\{(' . static::VAR_PTRN . ')\}(.+?){\/\\1}#ius',

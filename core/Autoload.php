@@ -3,6 +3,9 @@ class Autoload {
   protected static $inited = false;
   protected static $prefixes = [];
 
+  /**
+   * Init autoload mecahnism
+   */
   protected static function init() {
     spl_autoload_register([static::class, 'load']);
     static::$inited = true;
@@ -52,9 +55,10 @@ class Autoload {
   }
 
   /**
+   * Register new namespace and folder to be loaded from
    * @param string $prefix
    * @param string $dir
-   * @param bool $prepend
+   * @param bool $prepend Priority for this 
    */
   public static function register($prefix, $dir, $prepend = false) {
     assert('is_string($prefix)');

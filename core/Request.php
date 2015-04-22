@@ -88,6 +88,10 @@ class Request {
     ;
   }
 
+  /**
+   * Parse IPS to prepare request
+   * @return void
+   */
   protected static function parseRealIp() {
     self::$real_ip = self::$ip;
     if (self::$xff) {
@@ -96,10 +100,21 @@ class Request {
     }
   }
 
+  /**
+   * Get current handled url for this request
+   * @return string
+   */
   public function getUrl() {
     return $this->url;
   }
 
+  /**
+   * Get part of url as path. /some/path for url /some/path?fuck=yea
+   * @param string
+   */
+  public function getUrlPath() {
+    return parse_url($this->url, PHP_URL_PATH);
+  }
 
   /**
    * Установка текущего роута с последующим парсингом его в действие и модуль
@@ -114,8 +129,7 @@ class Request {
   }
 
   /**
-   * Получение текущего роута
-   *
+   * Current route
    * @access public
    * @return string
    */
@@ -124,8 +138,7 @@ class Request {
   }
 
   /**
-   * Установка текущего роута с последующим парсингом его в действие и модуль
-   *
+   * Set action that's processing now
    * @access public
    * @param string $route
    * @return $this
@@ -136,8 +149,7 @@ class Request {
   }
 
   /**
-   * Получение текущего роута
-   *
+   * Get current action
    * @access public
    * @return string
    */

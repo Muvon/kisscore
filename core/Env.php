@@ -18,6 +18,11 @@ class Env {
     'HTTP_HOST',
   ];
 
+  /**
+   * Initialization of Application
+   *
+   * @return void
+   */
   public static function init() {
     static::configure(getenv('APP_DIR') . '/config.ini.tpl');
     static::generateConfigs();
@@ -27,6 +32,13 @@ class Env {
     static::generateTriggerMap();
   }
 
+  /**
+   * Configure all config tempaltes in dir $template or special $template file
+   * 
+   * @param string $template
+   * @param array $params
+   * @return void
+   */
   public static function configure($template, array $params = []) {
     // Add default params
     foreach (static::$params as $param) {
@@ -43,6 +55,10 @@ class Env {
     }
   }
 
+  /**
+   * Generate all configs for configurable plugins. It includes all plugin/_/configure.php files
+   * @return void
+   */
   protected static function generateConfigs() {
     $configure = function ($file) {
       return include $file;
@@ -54,7 +70,7 @@ class Env {
   }
 
   /**
-   * Генерация карты для обработки входящих запросов по URI
+   * Generate nginx URI map for route request to special file
    */
   protected static function generateURIMap() {
     $map = [];
@@ -72,6 +88,9 @@ class Env {
     App::writeJSON(config('common.uri_map_file'), $map);
   }
 
+  /**
+   * Generate parameters map from annotations in actions and triggers files
+   */
   protected static function generateParamMap() {
     $map_files = [
       'actions'  => config('common.param_map_file'),
@@ -95,6 +114,9 @@ class Env {
     }
   }
 
+  /**
+   * Generate rewrite rules for nginx to route requests to action files
+   */
   protected static function generateNginxRouteMap() {
     $routes = App::getJSON(config('common.uri_map_file'));
     uasort($routes, function ($a, $b) {
@@ -125,6 +147,9 @@ class Env {
     file_put_contents(config('common.nginx_route_file'), implode(PHP_EOL, $rewrites));
   }
 
+  /**
+   * Generate trigger map to be called on some event
+   */
   protected static function generateTriggerMap() {
     $map = [];
     foreach (static::getPHPFiles(getenv('APP_DIR') . '/triggers') as $file) {
@@ -142,6 +167,11 @@ class Env {
     App::writeJSON(config('common.trigger_map_file'), $map);
   }
 
+  /**
+   * Helper for getting list of all php files in dir
+   * @param string $dir
+   * @return array
+   */
   protected static function getPHPFiles($dir) {
     return ($res = trim(`find -L $dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
   }

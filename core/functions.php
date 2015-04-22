@@ -1,7 +1,7 @@
 <?php
 /**
- * Функция для получения конфигурационных параметров из файла
- * @param  string $param Параметр в виде раздел.параметр
+ * Config workout for whole app
+ * @param  string $param Param using dot for separate packages
  * @return mixed
  */
 function config($param) {
@@ -27,12 +27,11 @@ function config($param) {
 }
 
 /**
- * Функция типизации переменных
- *
+ * Typify var to special type
  * @package Core
- * @param string $var
- * @param string $type [int|integer, uint|uinteger, float, ufloat, bool, array, string]
- * @return null Типизация происходит по ссылке
+ * @param string $var Reference to the var that should be typified
+ * @param string $type [int|integer, uint|uinteger, double|float, udboule|ufloat, bool|boolean, array, string]
+ * @return void
  *
  * <code>
  * $var = '1'; // string(1) "1"
@@ -78,7 +77,6 @@ function typify(&$var, $type) {
 
 /**
  * Triggered events
- *
  * @param string $event
  * @param array $payload Дополнительные данные для манипуляции
  * @return mixed
@@ -106,6 +104,11 @@ function trigger_event($event, array $payload = []) {
   }
 }
 
+/**
+ * Get short name for full qualified class name
+ * @param string $class The name of class with namespaces
+ * @return string
+ */
 function get_class_name($class) {
   return (new ReflectionClass($class))->getShortName();
 }

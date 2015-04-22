@@ -66,32 +66,27 @@ class Response {
   ];
 
   /**
-   * Инициализация объекта ответа по HTTP коду-возврата в случае HTTP запроса
-   *
-   * @final
-   * @access protected
-   * @param int $status статус ответа при необходимости
+   * Init of new response
+   * @param int $status HTTP Status of response
+   * @return void
    */
   final protected function __construct($status = 200) {
     assert("is_int(\$status)", 'Status must be integer');
     $this->status($status);
   }
   /**
-   * Создание нового ответа
-   *
-   * @static
-   * @access public
-   * @param int $status статус ответа при необходимости
-   * @return Response
+   * Create new response
+   * @param int $status HTTP status of response
+   * @return $this
    */
   public static function create($status = 200) {
     return new static($status);
   }
 
   /**
-   * @access public
-   * @param int $status новый статус ответа
-   * @return Response
+   * Change HTTP status of response
+   * @param int $status New HTTP status to be set
+   * @return $this
    */
   public function status($status) {
     assert('in_array($status, array_keys(self::$messages))');
@@ -102,8 +97,7 @@ class Response {
   }
 
   /**
-  * Получение данных для вывода клиенту
-  *
+  * Get response body 
   * @access public
   * @return string данные ответа клиенту
   */
@@ -112,9 +106,7 @@ class Response {
   }
 
   /**
-   * Отправка тела ответа
-   *
-   * @access public
+   * Send body to output
    * @return $this
    */
   public function sendBody() {
@@ -123,9 +115,7 @@ class Response {
   }
 
   /**
-   * Метод отпрваки заголовков и тела ответа
-   *
-   * @access public
+   * Send all staff to output: headers, body and so on
    * @return $this
    */
   public function send($content = '') {
@@ -133,9 +123,7 @@ class Response {
   }
 
   /**
-  * Выполнение редиректа на определенный URL
-  *
-  * @access public
+  * Relocate user to url
   * @param string $url полный HTTP-адрес страницы для редиректа
   * @param int $code код редиректа (301 | 302)
   * @return void
@@ -156,9 +144,7 @@ class Response {
   }
 
   /**
-  * Очистка всех уже ранее добавленных заголовков в массив
-  *
-  * @access public
+  * Reset headers stack
   * @return Response
   */
   public function flushHeaders( ) {
@@ -167,13 +153,9 @@ class Response {
   }
 
   /**
-  * Добавление заголовка в пул заголовков для вывода
-  *
-  * @access public
+  * Push header to stack to be sent
   * @param string $header
-  *   имя заголовка, например, Location
   * @param string $value
-  *   значение заголовка, для Location это просто адрес редиректа
   * @return Response
   */
   public function header($header, $value) {
@@ -185,9 +167,7 @@ class Response {
   }
 
   /**
-   * Отправка подготовленных заголовков клиенут
-   *
-   * @access public
+   * Send stacked headers to output
    * @return Response
    */
   protected function sendHeaders() {
@@ -207,11 +187,9 @@ class Response {
   }
 
   /**
-  * Установка содержимого для ответа
-  *
+  * Set boy data to response
   * @access public
   * @param string $body
-  *   данные для передачи в виде ответа клиенту
   * @return $this
   */
   public function setBody($body) {

@@ -4,6 +4,12 @@ class App {
   public static $debug;
   protected static $e_handlers = [];
 
+  /**
+   * Fetch annotated variables from $file using $map_file
+   * @param string $file File that was annotated with import params (action or something else)
+   * @param strign $map_file File with map of args or empty to use default
+   * @return array
+   */
   public static function getImportVarsArgs($file, $map_file = null) {
     $params = static::getJSON($map_file ?: config('common.param_map_file'));
     $args = [];
@@ -15,10 +21,20 @@ class App {
     return $args;
   }
 
+  /**
+   * Write json data into file
+   * @param string $file File path to json 
+   * @param mixed $data Data to put in json file
+   */
   public static function writeJSON($file, $data) {
     return file_put_contents($file, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
   }
 
+  /**
+   * Get json data from file
+   * @param string $file
+   * @return mixed
+   */
   public static function getJSON($file) {
     if (!is_file($file)) {
       throw new Exception('Cant find file ' . $file . '. Be sure you started init script to compile application');
@@ -120,7 +136,10 @@ class App {
     return static::error($errstr);
   }
 
-
+  /**
+   * Handle exception. Call handlers and do some staff
+   * @param Exception $Exception
+   */
   public static function handleException(Exception $Exception) {
     $Exception->id = static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
 
@@ -135,6 +154,8 @@ class App {
 
   /**
    * Get html page for display exception in debug mode
+   * @param Exception $Exception
+   * @return string
    */
   protected static function getHtmlException(Exception $Exception) {
     return '<html><head><title>Error</title></head><body>'
@@ -149,6 +170,11 @@ class App {
     ;
   }
 
+  /**
+   * Assign handler for special exception that will be called when exception raises
+   * @param string $exception
+   * @param Callable $handler
+   */
   public static function setExceptionHandler($exception, Callable $handler) {
     static::$e_handlers[$exception] = $handler;
   }
@@ -165,15 +191,20 @@ class App {
   }
 
   /**
-   * Генерация ошибки приложения (прерывание выполнения)
-   * @param string $error
-   * @param string $class Имя класса, например, Exception::class
+   * Generate error to stop next steps using special exception class name
+   * @param string $error Message that describes error
+   * @param string $class Exception class name to be raised
    * @throws \Exception
    */
   public static function error($error, $class = 'Exception') {
     throw new $class($error);
   }
 
+  /**
+   * Execute shell command in KISS core environment
+   * @param string $cmd Command to be executed
+   * @return string Result of execution
+   */
   public static function exec($cmd) {
     $project = getenv('PROJECT');
     return trim(`bash <<"EOF"
