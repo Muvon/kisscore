@@ -186,8 +186,8 @@ function init {
   echo '...done'
 
   echo '+Reloading services'
-  [[ -x /etc/init.d/nginx ]] && sudo /etc/init.d/nginx reload || sudo /usr/bin/systemctl reload nginx.service
-  [[ -x /etc/init.d/php-fpm ]] && sudo /etc/init.d/php-fpm reload || sudo /usr/bin/systemctl reload php-fpm.service
+  sudo /usr/bin/systemctl reload nginx.service
+  sudo /usr/bin/systemctl reload php-fpm.service
   echo '...done'
 
   echo '+Running init-app script'

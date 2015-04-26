@@ -9,5 +9,6 @@ checks['nano']='which nano'
 checks['crontab']='which crontab'
 checks['sed']='which sed'
 checks['tr']='which tr'
+checks['systemctl']='which systemctl'
 
 run_checks
