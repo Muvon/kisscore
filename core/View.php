@@ -251,6 +251,22 @@ class View {
   }
 
   /**
+   * Transform one line blocks to closed blocks
+   * @param string $str
+   * @return string
+   */
+  protected function chunkCloseBlocks($str) {
+    $line_block = '#\{(' . static::VAR_PTRN . ')\:\}(.+)$#ium';
+
+    // Могут быть вложенные
+    while (preg_match($line_block, $str) > 0) {
+      $str = preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
+    }
+
+    return $str;
+  }
+
+  /**
    * @param string $str
    * @return string
    */
@@ -321,13 +337,7 @@ class View {
 
     $str = file_get_contents($this->getSourceFile($route));
 
-    // Закрываем строчные блоки
-    $line_block = '#\{(' . static::VAR_PTRN . ')\:\}(.+)$#ium';
-
-    // Могут быть вложенные
-    while (preg_match($line_block, $str) > 0) {
-      $str = preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
-    }
+    $str = $this->chunkCloseBlocks($str);
 
     // Компиляция блоков
     $str = $this->chunkCompileBlocks($str);
