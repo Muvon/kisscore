@@ -156,7 +156,7 @@ Prepare environment with init call and thats finally done. You now can trigger_e
 
 To run project using KISS Core you need
 
-1. Linux (Ubuntu, Centos, Debian and so on)
+1. Linux with systemd (Ubuntu, Centos, Debian and so on)
 2. PHP 5.6+ with php-fpm (http://php.net)
 3. Nginx (http://nginx.org)
 
