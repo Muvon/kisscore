@@ -181,9 +181,8 @@ class View {
 
 
   protected static function chunkVar($v, $container = '$item') {
-    $ex = explode('.', $v);
     $var = '';
-    foreach ($ex as $p) {
+    foreach (explode('.', $v) as $p) {
       $var .= ($var ? '' : $container) . '[\'' . $p . '\']';
     }
     return $var;
@@ -191,11 +190,11 @@ class View {
 
 
   protected static function chunkVarExists($v, $container = '$item') {
-    $ex = explode('.', $v);
-    $sz = sizeof($ex);
+    $parts = explode('.', $v);
+    $sz = sizeof($parts);
     $var = '';
     $i = 0;
-    foreach ($ex as $p) {
+    foreach ($parts as $p) {
       ++$i;
       if ($i !== $sz) {
         $var .= ($var ? '' : $container) . '[\'' . $p . '\']';
@@ -210,9 +209,8 @@ class View {
     if (!$str)
       return '';
 
-    $ex = array_map('trim', explode(' ', $str));
     $code = '';
-    foreach ($ex as $item) {
+    foreach (array_map('trim', explode(' ', $str)) as $item) {
       list($key, $val) = array_map('trim', explode('=', $item));
       $code .= '<?php ' . static::chunkVar($key) . ' = ' . static::chunkVar($val) . '; ?>';
     }
