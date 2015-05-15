@@ -24,7 +24,7 @@ class Env {
    * @return void
    */
   public static function init() {
-    static::configure(getenv('APP_DIR') . '/config.json.tpl');
+    static::configure(getenv('APP_DIR') . '/config.ini.tpl');
     static::compileConfig();
     static::generateConfigs();
     static::generateURIMap();
@@ -63,8 +63,14 @@ class Env {
     $env = getenv('PROJECT_ENV');
 
     // Prepare production config replacement
-    foreach (App::getJSON(getenv('CONFIG_DIR') . '/config.json') as $group => $block) {
-      $config[$group] = isset($block[$env]) ? array_merge($block['*'], $block[$env]) : $block['*'];
+    foreach (parse_ini_file(getenv('CONFIG_DIR') . '/config.ini', true) as $group => $block) {
+      if (false !== strpos($group, ':') && explode(':', $group)[1] === $env) {
+        $origin = strtok($group, ':');
+        $config[$origin] = array_merge($config[$origin], $block);
+        $group = $origin;
+      } else {
+        $config[$group] = $block;
+      }
 
       // Make dot.notation for group access
       foreach ($config[$group] as $key => &$val) {

@@ -1,5 +1,5 @@
 #!/bin/bash
-unset kiss ssh_random_string allocate_port run_checks app_config init deploy install_plugin php_exec
+unset kiss ssh_random_string allocate_port run_checks init deploy install_plugin php_exec
 case $- in
   *i*) export bash_interactive=1;;
 esac
@@ -111,7 +111,7 @@ function app_config {
   echo "
 [$1]
 $2
-" >> $PROJECT_DIR/config.json.tpl
+" >> $PROJECT_DIR/config.ini.tpl
 }
 
 # Random password generator
