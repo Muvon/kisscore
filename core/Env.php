@@ -24,7 +24,8 @@ class Env {
    * @return void
    */
   public static function init() {
-    static::configure(getenv('APP_DIR') . '/config.ini.tpl');
+    static::configure(getenv('APP_DIR') . '/config.json.tpl');
+    static::compileConfig();
     static::generateConfigs();
     static::generateURIMap();
     static::generateParamMap();
@@ -53,6 +54,35 @@ class Env {
     foreach(is_dir($template) ? glob($template . '/*.tpl') : [$template] as $file) {
       file_put_contents(getenv('CONFIG_DIR') . '/' . basename($file, '.tpl'), strtr(file_get_contents($file), $params));
     }
+  }
+
+  /**
+   * Compile config.json into fast php array to include it ready to use optimized config
+   */
+  protected static function compileConfig() {
+    $env = getenv('PROJECT_ENV');
+
+    // Prepare production config replacement
+    foreach (App::getJSON(getenv('CONFIG_DIR') . '/config.json') as $group => $block) {
+      $config[$group] = isset($block[$env]) ? array_merge($block['*'], $block[$env]) : $block['*'];
+
+      // Make dot.notation for group access
+      foreach ($config[$group] as $key => &$val) {
+        $config[$group . '.' . $key] = &$val;
+      }
+    }
+
+    // Iterate to make dot.notation.direct.access
+    $Iterator = new RecursiveIteratorIterator(new RecursiveArrayIterator($config));
+    foreach ($Iterator as $leaf_value) {
+      $keys = [];
+      foreach (range(0, $Iterator->getDepth()) as $depth) {
+        $keys[] = $Iterator->getSubIterator($depth)->key();
+      }
+      $config[join('.', $keys)] = $leaf_value;
+    }
+
+    file_put_contents(getenv('CONFIG_DIR') . '/config.php', '<?php return ' . var_export($config, true) . ';');
   }
 
   /**
