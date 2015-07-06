@@ -111,7 +111,7 @@ function app_config {
   echo "
 [$1]
 $2
-" >> $PROJECT_DIR/config.ini.tpl
+" >> $APP_DIR/config.ini.tpl
 }
 
 # Random password generator
