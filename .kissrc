@@ -14,7 +14,7 @@ else
   export ps1_backup="$PS1";
 fi
 
-function kiss {
+kiss() {
   if [[ "$PROJECT" ]]; then
     cd $HOME/$PROJECT
   else
@@ -32,44 +32,22 @@ function kiss {
             export PS1="$ps1_backup"
           fi
         fi
-    else
-      name=`basename $1`
-      if [[ -d "$HOME/$name" ]]; then
-        if [[ "$bash_interactive" ]]; then
-          if [[ "$PROJECT" == "$name" ]]; then
-              echo Error: already in $PROJECT...
-              return
-          fi
+      else
+        name=`basename $1`
+        if [[ -d "$HOME/$name" ]]; then
+          if [[ "$bash_interactive" ]]; then
+            if [[ "$PROJECT" == "$name" ]]; then
+                echo Error: already in $PROJECT...
+                return
+            fi
 
-          oldpath=`pwd`
-          cd $HOME/$name
-          ci_pid=$!
+            oldpath=`pwd`
+            cd $HOME/$name
+            ci_pid=$!
 
-          PROJECT=$name \
-          PROJECT_DIR=$HOME/$PROJECT \
-          APP_DIR=$PROJECT_DIR/app \
-          HTML_DIR=$PROJECT_DIR/html \
-          CONFIG_DIR=$PROJECT_DIR/env/etc \
-          ENV_DIR=$PROJECT_DIR/env \
-          PROJECT_ENV=$([[ -f $PROJECT_DIR/env/etc/environment ]] && cat $PROJECT_DIR/env/etc/environment || echo 'dev') \
-          BIN_DIR=$PROJECT_DIR/env/bin \
-          RUN_DIR=$PROJECT_DIR/env/run \
-          LOG_DIR=$PROJECT_DIR/env/log \
-          VAR_DIR=$PROJECT_DIR/env/var \
-          TMP_DIR=$PROJECT_DIR/env/tmp \
-          KISS_CORE=$PROJECT_DIR/app/core.php \
-          HTTP_HOST=$(hostname) \
-          PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup \
-          PS1=$PS1 \
-          bash
-
-          [[ ! -z $ci_pid ]] && kill $ci_pid
-          cd $oldpath
-        else
-
-          export PROJECT=$name
-          export PROJECT_DIR=$HOME/$PROJECT
-          export APP_DIR=$PROJECT_DIR/app \
+            PROJECT=$name \
+            PROJECT_DIR=$HOME/$PROJECT \
+            APP_DIR=$PROJECT_DIR/app \
             HTML_DIR=$PROJECT_DIR/html \
             CONFIG_DIR=$PROJECT_DIR/env/etc \
             ENV_DIR=$PROJECT_DIR/env \
@@ -81,23 +59,44 @@ function kiss {
             TMP_DIR=$PROJECT_DIR/env/tmp \
             KISS_CORE=$PROJECT_DIR/app/core.php \
             HTTP_HOST=$(hostname) \
-            PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup
-          cd ~/$PROJECT 
-        fi
-      else
-        echo Error: project $name not found...
-      fi
-    fi
+            PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup \
+            PS1=$PS1 \
+            bash
 
+            [[ ! -z $ci_pid ]] && kill $ci_pid
+            cd $oldpath
+          else
+
+            export PROJECT=$name
+            export PROJECT_DIR=$HOME/$PROJECT
+            export APP_DIR=$PROJECT_DIR/app \
+              HTML_DIR=$PROJECT_DIR/html \
+              CONFIG_DIR=$PROJECT_DIR/env/etc \
+              ENV_DIR=$PROJECT_DIR/env \
+              PROJECT_ENV=$([[ -f $PROJECT_DIR/env/etc/environment ]] && cat $PROJECT_DIR/env/etc/environment || echo 'dev') \
+              BIN_DIR=$PROJECT_DIR/env/bin \
+              RUN_DIR=$PROJECT_DIR/env/run \
+              LOG_DIR=$PROJECT_DIR/env/log \
+              VAR_DIR=$PROJECT_DIR/env/var \
+              TMP_DIR=$PROJECT_DIR/env/tmp \
+              KISS_CORE=$PROJECT_DIR/app/core.php \
+              HTTP_HOST=$(hostname) \
+              PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup
+            cd ~/$PROJECT
+          fi
+        else
+          echo "Error: project $name not found..."
+        fi
+      fi
     else
-      echo Error: project is not selected
+      echo "Error: project is not selected" 1
     fi
   fi
 }
 
 # App ini template configurator
 # block, params
-function app_config {
+app_config() {
   if [[ -z $1 || -z $2 ]]; then
     echo 'Usage: app_config block params'
     return
@@ -116,7 +115,7 @@ $2
 
 # Random password generator
 # symbols, length
-function ssh_random_string {
+ssh_random_string() {
   symbols='A-Za-z0-9'
   if [[ -z $1 ]]; then
     symbols=$1
@@ -131,7 +130,7 @@ function ssh_random_string {
 }
 
 # Allocate port for service
-function allocate_port {
+allocate_port() {
   if [[ -z $1 ]]; then
     echo 'Usage: allocate_port name'
     return
@@ -147,7 +146,7 @@ function allocate_port {
     fi
   done
   port=$(( $max + 1 ))
-  
+
   line=$(cat ~/ports | grep -E ^$PROJECT:$1\:[0-9]+$)
   if [[ -z $line ]]; then
     echo "$PROJECT:$1:$port" >> ~/ports
@@ -160,7 +159,7 @@ function allocate_port {
 }
 
 # Run checks using array checks
-function run_checks {
+run_checks() {
   exit_code=0
   declare -A results
 
@@ -177,7 +176,7 @@ function run_checks {
 }
 
 
-function init {
+init() {
   [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
   echo 'Initialization started'
 
@@ -195,7 +194,7 @@ function init {
   echo '...done'
 }
 
-function php_exec {
+php_exec() {
   [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
   [[ -z "$1" ]] && echo 'Usage: php_exec [code | php_file]' && return
   php=$(which php)
@@ -223,7 +222,7 @@ EOF
   echo
 }
 
-function install_plugin {
+install_plugin() {
   [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
   if [[ -z "$1" ]]; then
     echo -e 'Usage: install_plugin plugin1 plugin2 plugin3'
@@ -262,7 +261,7 @@ EOF
 }
 
 # internal method to call from install_plugin function
-function _install_plugin {
+_install_plugin() {
   plugin=$1
   echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
   plugin_dir=$PLUGIN_DIR/$plugin
@@ -305,7 +304,7 @@ function _install_plugin {
   rebuild=1
 }
 
-function deploy {
+deploy() {
   [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
   if [[ -z "$1" ]]; then
     echo 'Usage: deploy [all|production|test|...]' && return
