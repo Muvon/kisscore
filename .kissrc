@@ -19,35 +19,43 @@ kiss() {
     cd $HOME/$PROJECT
   else
     if [[ "$1" ]]; then
-      if [[ "$2" ]]; then
-        rev="$2"
-      fi
-
-      if [[ -z "$1" ]]; then
-        if [[ "$PROJECT" ]]; then
-          if [[ "$bash_interactive" ]]; then
-            exit
-          else
-            export PATH=$path_backup
-            export PS1="$ps1_backup"
+      name=`basename $1`
+      if [[ -d "$HOME/$name" ]]; then
+        if [[ "$bash_interactive" ]]; then
+          if [[ "$PROJECT" == "$name" ]]; then
+              echo Error: already in $PROJECT...
+              return
           fi
-        fi
-      else
-        name=`basename $1`
-        if [[ -d "$HOME/$name" ]]; then
-          if [[ "$bash_interactive" ]]; then
-            if [[ "$PROJECT" == "$name" ]]; then
-                echo Error: already in $PROJECT...
-                return
-            fi
 
-            oldpath=`pwd`
-            cd $HOME/$name
-            ci_pid=$!
+          oldpath=`pwd`
+          cd $HOME/$name
+          ci_pid=$!
 
-            PROJECT=$name \
-            PROJECT_DIR=$HOME/$PROJECT \
-            APP_DIR=$PROJECT_DIR/app \
+          PROJECT=$name \
+          PROJECT_DIR=$HOME/$PROJECT \
+          APP_DIR=$PROJECT_DIR/app \
+          HTML_DIR=$PROJECT_DIR/html \
+          CONFIG_DIR=$PROJECT_DIR/env/etc \
+          ENV_DIR=$PROJECT_DIR/env \
+          PROJECT_ENV=$([[ -f $PROJECT_DIR/env/etc/environment ]] && cat $PROJECT_DIR/env/etc/environment || echo 'dev') \
+          BIN_DIR=$PROJECT_DIR/env/bin \
+          RUN_DIR=$PROJECT_DIR/env/run \
+          LOG_DIR=$PROJECT_DIR/env/log \
+          VAR_DIR=$PROJECT_DIR/env/var \
+          TMP_DIR=$PROJECT_DIR/env/tmp \
+          KISS_CORE=$PROJECT_DIR/app/core.php \
+          HTTP_HOST=$(hostname) \
+          PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup \
+          PS1=$PS1 \
+          bash
+
+          [[ ! -z $ci_pid ]] && kill $ci_pid
+          cd $oldpath
+        else
+
+          export PROJECT=$name
+          export PROJECT_DIR=$HOME/$PROJECT
+          export APP_DIR=$PROJECT_DIR/app \
             HTML_DIR=$PROJECT_DIR/html \
             CONFIG_DIR=$PROJECT_DIR/env/etc \
             ENV_DIR=$PROJECT_DIR/env \
@@ -59,37 +67,14 @@ kiss() {
             TMP_DIR=$PROJECT_DIR/env/tmp \
             KISS_CORE=$PROJECT_DIR/app/core.php \
             HTTP_HOST=$(hostname) \
-            PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup \
-            PS1=$PS1 \
-            bash
-
-            [[ ! -z $ci_pid ]] && kill $ci_pid
-            cd $oldpath
-          else
-
-            export PROJECT=$name
-            export PROJECT_DIR=$HOME/$PROJECT
-            export APP_DIR=$PROJECT_DIR/app \
-              HTML_DIR=$PROJECT_DIR/html \
-              CONFIG_DIR=$PROJECT_DIR/env/etc \
-              ENV_DIR=$PROJECT_DIR/env \
-              PROJECT_ENV=$([[ -f $PROJECT_DIR/env/etc/environment ]] && cat $PROJECT_DIR/env/etc/environment || echo 'dev') \
-              BIN_DIR=$PROJECT_DIR/env/bin \
-              RUN_DIR=$PROJECT_DIR/env/run \
-              LOG_DIR=$PROJECT_DIR/env/log \
-              VAR_DIR=$PROJECT_DIR/env/var \
-              TMP_DIR=$PROJECT_DIR/env/tmp \
-              KISS_CORE=$PROJECT_DIR/app/core.php \
-              HTTP_HOST=$(hostname) \
-              PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup
-            cd ~/$PROJECT
-          fi
-        else
-          echo "Error: project $name not found..."
+            PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup
+          cd ~/$PROJECT
         fi
+      else
+        echo "The project $name was not found."
       fi
     else
-      echo "Error: project is not selected" 1
+      echo "Usage: kiss PROJECT"
     fi
   fi
 }
