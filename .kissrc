@@ -294,7 +294,6 @@ deploy() {
   if [[ -z "$1" ]]; then
     echo 'Usage: deploy [all|production|test|...]' && return
   fi
-  user='web'
   host_file=$CONFIG_DIR/hosts
   if [[ ! -f $host_file ]]; then
     echo 'Create hosts file "'$host_file'" with hostnames to deploy on'
@@ -330,29 +329,29 @@ deploy() {
     server=${server%:*}
 
     echo 'Deploying on server '$server':'$environment
-    scp $HOME/.kissrc $user@$server:/home/$user
-    ssh -T $user@$server <<"EOF"
-      /bin/cat $HOME/.bashrc | /bin/grep -v '#.kissrc$' > $HOME/.bashrc.tmp
-      echo "source $HOME/.kissrc #.kissrc" >> $HOME/.bashrc.tmp
-      /bin/mv $HOME/.bashrc.tmp $HOME/.bashrc
-      source $HOME/.bashrc
+    scp $HOME/.kissrc $server:~
+    ssh -T $server <<"EOF"
+      /bin/cat ~/.bashrc | /bin/grep -v '#.kissrc$' > ~/.bashrc.tmp
+      echo "source ~/.kissrc #.kissrc" >> ~/.bashrc.tmp
+      /bin/mv ~/.bashrc.tmp ~/.bashrc
+      source ~/.bashrc
 EOF
 
     # Create dir if they do not exist
-    ssh -T $user@$server "mkdir -p /home/$user/$PROJECT/rev/$revision && test -L /home/$user/$PROJECT/app && cp -r \$_/* /home/$user/$PROJECT/rev/$revision"
+    ssh -T $server "mkdir -p ~/$PROJECT/rev/$revision && test -L ~/$PROJECT/app && cp -r \$_/* ~/$PROJECT/rev/$revision"
 
     # Create revision
-    rsync -aiz --delete-before $APP_DIR/ $user@$server:/home/$user/$PROJECT/rev/$revision/
+    rsync -aiz --delete-before $APP_DIR/ $server:~/$PROJECT/rev/$revision/
 
     # Compile PROJECT on server
-    ssh -T $user@$server <<EOF
-      test -L /home/$user/$PROJECT/app && rm -f \$_
-      ln -s /home/$user/$PROJECT/rev/$revision /home/$user/$PROJECT/app
+    ssh -T $server <<EOF
+      test -L ~/$PROJECT/app && rm -f \$_
+      ln -s ~/$PROJECT/rev/$revision ~/$PROJECT/app
 
-      mkdir -p /home/$user/$PROJECT/env/{etc,log,var,run,tmp,backup}
+      mkdir -p ~/$PROJECT/env/{etc,log,var,run,tmp,backup}
 
-      test ! -L /home/$user/$PROJECT/html && ln -s /home/$user/$PROJECT/app/static \$_
-      test ! -L /home/$user/$PROJECT/env/bin && ln -s /home/$user/$PROJECT/app/bin \$_
+      test ! -L ~/$PROJECT/html && ln -s ~/$PROJECT/app/static \$_
+      test ! -L ~/$PROJECT/env/bin && ln -s ~/$PROJECT/app/bin \$_
 
       kiss $PROJECT
       echo $environment > \$CONFIG_DIR/environment
