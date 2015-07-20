@@ -297,7 +297,7 @@ deploy() {
   user='web'
   host_file=$CONFIG_DIR/hosts
   if [[ ! -f $host_file ]]; then
-    echo 'Create hosts "'$host_file'" file with hostnames to deploy on'
+    echo 'Create hosts file "'$host_file'" with hostnames to deploy on'
     return
   fi
 
