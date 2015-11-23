@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 [[ -z "$1" ]] && echo 'Enter name of project to create. Example: ./install-core app' && exit 255
 [[ ! -e "$HOME/$1" ]] && echo 'Cant find project dir '$HOME'/'$1'. Use ./make-app '$1 && exit 255
 

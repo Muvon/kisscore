@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 [[ -z "$1" ]] && echo 'Enter name of project to create. Example: ./make-app app' && exit 255
 
 project_dir=$HOME/$1

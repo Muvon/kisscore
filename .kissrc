@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 unset kiss ssh_random_string allocate_port run_checks init deploy install_plugin php_exec
 case $- in
   *i*) export bash_interactive=1;;

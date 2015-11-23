@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo -e '\e[1;35mInstall kiss bash env\e[0m'
 /bin/cp -avr `dirname $0`/.kissrc $HOME/.kissrc
 cat $HOME/.bashrc | grep -v '#.kissrc$' > $HOME/.bashrc.tmp
