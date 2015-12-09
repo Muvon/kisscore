@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+if [[ -z $1 || -z $2 ]]; then
+  echo 'Usage: app_config block params'
+  return
+fi
+
+if [[ -z $PROJECT ]]; then
+  echo 'Not in project. Run kiss PROJECT';
+  return
+fi
+
+echo "
+[$1]
+$2
+" >> $APP_DIR/config.ini.tpl

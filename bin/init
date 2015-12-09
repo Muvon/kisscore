@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+[[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
+echo 'Initialization started'
+
+echo '+Configure and compile project'
+php_exec 'Env::init()'
+echo '...done'
+
+echo '+Reloading services'
+sudo systemctl reload nginx.service
+sudo systemctl reload php-fpm.service
+echo '...done'
+
+echo '+Running init-app script'
+[[ -x $BIN_DIR/init-app ]] && $BIN_DIR/init-app | xargs -0 -l echo '  '
+echo '...done'
