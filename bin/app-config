@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 if [[ -z $1 || -z $2 ]]; then
-  echo 'Usage: app_config block params'
+  echo 'Usage: app-config block params'
   return
 fi
 

@@ -3,7 +3,7 @@
 echo 'Initialization started'
 
 echo '+Configure and compile project'
-php_exec 'Env::init()'
+php-exec 'Env::init()'
 echo '...done'
 
 echo '+Reloading services'

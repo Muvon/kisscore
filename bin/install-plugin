@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
 if [[ -z "$1" ]]; then
-  echo -e 'Usage: install_plugin plugin1 plugin2 plugin3'
+  echo -e 'Usage: install-plugin plugin1 plugin2 plugin3'
   echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
   echo -e '- \e[35;1mPLUGIN_UPDATE\e[0;0m=1              Update or skip during install. Default: 0'
   return

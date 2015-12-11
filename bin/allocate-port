@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 if [[ -z $1 ]]; then
-  echo 'Usage: allocate_port name'
+  echo 'Usage: allocate-port name'
   return
 fi
 [[ ! -f ~/ports ]] && touch ~/ports

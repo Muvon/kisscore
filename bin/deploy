@@ -67,7 +67,7 @@ EOF
     export PROJECT_ENV=$environment
     init
     [[ \$(/bin/ls \$TMP_DIR) ]] && /bin/rm \$TMP_DIR/*
-    php_exec 'opcache_reset()' > /dev/null
+    php-exec 'opcache_reset()' > /dev/null
 EOF
   # All is done
   echo 'Deployed on server '$server

@@ -22,7 +22,7 @@ echo '...done'
 echo -e '\e[1;35mConfigure etc templates\e[0m'
 app_dir=$project_dir'/app'
 epoch=$(date +%s)'000'
-secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
+secret_key=$(ssh-random-string 'A-Za-z0-9' 64)
 # Replace global static variables for init project
 cat skel/app/config.ini.tpl \
   | sed "s|%KISS_EPOCH%|$epoch|g" \
