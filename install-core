@@ -7,7 +7,7 @@ echo '<?php' > $core_file
 echo -e '\e[1;35mInstall kiss core to '$1'\e[0m'
 for file in core/*; do
   echo 'Add file '$file;
-  tail -n +2 core/$file >> $core_file
+  tail -n +2 $file >> $core_file
   echo >> $core_file
 done
 echo 'Write into '$core_file
