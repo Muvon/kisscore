@@ -52,7 +52,7 @@ else
           KISS_CORE=$PROJECT_DIR/app/core.php \
           HTTP_HOST=$(hostname) \
           PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup
-        cd ~/$PROJECT
+        cd $PROJECT_DIR
       fi
     else
       echo "The project $name was not found."
