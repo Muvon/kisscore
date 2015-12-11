@@ -15,7 +15,7 @@ echo '...done'
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
 mkdir $project_dir
 cp -avr skel/* $project_dir
-mkdir -p $project_dir/env/{tmp,var,run,log,backup}
+mkdir -p $project_dir/env/{tmp,var,run,log,etc,backup}
 mkdir -p $project_dir/app/{bin,vendor,src,lib,triggers,scripts,tests}
 echo '...done'
 
