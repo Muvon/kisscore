@@ -20,12 +20,7 @@ mkdir -p $project_dir/app/{bin,vendor,src,lib,triggers,scripts,tests}
 echo '...done'
 
 echo -e '\e[1;35mConfigure etc templates\e[0m'
-env_dir=$project_dir'/env'
 app_dir=$project_dir'/app'
-tmp_dir=$env_dir'/tmp'
-var_dir=$env_dir'/var'
-run_dir=$env_dir'/run'
-etc_dir=$env_dir'/etc'
 epoch=$(date +%s)'000'
 secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 # Replace global static variables for init project
