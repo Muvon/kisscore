@@ -7,8 +7,8 @@ php_exec 'Env::init()'
 echo '...done'
 
 echo '+Reloading services'
-sudo systemctl reload nginx.service
-sudo systemctl reload php-fpm.service
+sudo $(which nginx) -s reload 2> /dev/null || echo 'There is no nginx running'
+sudo pkill -o -USR2 php-fpm 2> /dev/null || echo 'There is no php-fpm running'
 echo '...done'
 
 echo '+Running init-app script'
