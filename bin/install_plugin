@@ -15,25 +15,8 @@ if [[ ! -d $PLUGIN_DIR ]]; then
   return
 fi
 
-for plugin in $@; do
-  plugin_dir=$PLUGIN_DIR/$plugin
-  if [[ ! -d $plugin_dir ]]; then
-    echo 'Cant find plugin "'$plugin'" in plugin dir "'$PLUGIN_DIR'"'
-    return
-  fi
-done
 
-rebuild=0
-for plugin in $@; do
-  _install_plugin $plugin
-done
 
-if (( $rebuild )); then
-  echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
-  kiss $PROJECT << "EOF"
-    init
-EOF
-fi
 
 # internal method to call from install_plugin function
 _install_plugin() {
@@ -78,3 +61,23 @@ _install_plugin() {
   fi
   rebuild=1
 }
+
+for plugin in $@; do
+  plugin_dir=$PLUGIN_DIR/$plugin
+  if [[ ! -d $plugin_dir ]]; then
+    echo 'Cant find plugin "'$plugin'" in plugin dir "'$PLUGIN_DIR'"'
+    return
+  fi
+done
+
+rebuild=0
+for plugin in $@; do
+  _install_plugin $plugin
+done
+
+if (( $rebuild )); then
+  echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
+  kiss $PROJECT << "EOF"
+    init
+EOF
+fi
