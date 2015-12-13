@@ -2,4 +2,4 @@
 declare -A checks
 checks['php']='php -r "(float) PHP_VERSION >= 5.6 ?: exit(1);"'
 checks['php-fpm']='php-fpm -v'
-run_checks
+run-checks
