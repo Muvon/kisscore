@@ -23,7 +23,7 @@ class App {
 
   /**
    * Write json data into file
-   * @param string $file File path to json 
+   * @param string $file File path to json
    * @param mixed $data Data to put in json file
    */
   public static function writeJSON($file, $data) {
@@ -159,9 +159,9 @@ class App {
    */
   protected static function getHtmlException(Exception $Exception) {
     return '<html><head><title>Error</title></head><body>'
-     . '<p>Unhandled exceptions <b>' 
-     . get_class($Exception) . '</b> with message "' . $Exception->getMessage() 
-     . '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() 
+     . '<p>Unhandled exceptions <b>'
+     . get_class($Exception) . '</b> with message "' . $Exception->getMessage()
+     . '" in file "' . $Exception->getFile() . ':' . $Exception->getLine()
      . '"</p>'
      . '<p><ul>'
      . implode('<br/>', array_map(function ($item) { return '<li>' . $item . '</li>'; }, explode(PHP_EOL, $Exception->getTraceAsString())))

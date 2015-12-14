@@ -6,7 +6,7 @@
  */
 function config($param) {
   assert('is_string($param)');
-  
+
   static $config = [];
   if (!$config) {
     $config = include getenv('CONFIG_DIR') . '/config.php';

@@ -97,7 +97,7 @@ class Response {
   }
 
   /**
-  * Get response body 
+  * Get response body
   * @access public
   * @return string данные ответа клиенту
   */

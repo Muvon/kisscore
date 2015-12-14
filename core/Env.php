@@ -35,7 +35,7 @@ class Env {
 
   /**
    * Configure all config tempaltes in dir $template or special $template file
-   * 
+   *
    * @param string $template
    * @param array $params
    * @return void

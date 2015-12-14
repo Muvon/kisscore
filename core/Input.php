@@ -40,8 +40,8 @@ class Input {
 
     // String key?
     if (is_string($args[0])) {
-      return isset(static::$params[$args[0]]) 
-        ? static::$params[$args[0]] 
+      return isset(static::$params[$args[0]])
+        ? static::$params[$args[0]]
         : (isset($args[1]) ? $args[1] : null);
     }
 
@@ -57,7 +57,7 @@ class Input {
   }
 
   /**
-   * Извлекает и типизирует параметры из массива args с помощью функции $fetcher, которая 
+   * Извлекает и типизирует параметры из массива args с помощью функции $fetcher, которая
    * принимает на вход ключ из массива args и значение по умолчанию, если его там нет
    *
    * @param array $args

@@ -30,7 +30,7 @@ class Autoload {
     }
 
     return false;
-  } 
+  }
 
   /**
    * @param string $prefix
@@ -58,13 +58,13 @@ class Autoload {
    * Register new namespace and folder to be loaded from
    * @param string $prefix
    * @param string $dir
-   * @param bool $prepend Priority for this 
+   * @param bool $prepend Priority for this
    */
   public static function register($prefix, $dir, $prepend = false) {
     assert('is_string($prefix)');
     assert("is_string(\$dir) && is_dir(\$dir) /* Dir $dir does not exist */");
     assert('is_bool($prepend)');
-    
+
     if (!static::$inited) {
       static::init();
     }
