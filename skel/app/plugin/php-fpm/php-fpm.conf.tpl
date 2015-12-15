@@ -1,7 +1,5 @@
 ; Start a new pool named 'project-name'.
 [%PROJECT%]
-user = %USER%
-
 ; The address on which to accept FastCGI requests.
 ; Valid syntaxes are:
 ;   'ip.add.re.ss:port'    - to listen on a TCP socket to a specific address on
@@ -40,6 +38,7 @@ listen.mode = 0666
 ;       will be used.
 ; user = dk
 ; group = dk
+user = %USER%
 
 ; Choose how the process manager will control the number of child processes.
 ; Possible Values:
