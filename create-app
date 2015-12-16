@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[[ -z "$1" ]] && echo 'Enter name of project to create. Example: ./make-app app' && exit 255
+[[ -z "$1" ]] && echo 'Enter name of project to create. Example: ./create-app app' && exit 255
 
 project_dir=$HOME/$1
 [[ -e "$project_dir" ]] && echo 'Project dir '$project_dir' already exist' && exit 255

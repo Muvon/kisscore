@@ -36,7 +36,7 @@ include /home/*/*/env/etc/nginx.conf;
 
 Now you can create application with single command in KISS Core dir:
 ```bash
-./make-app myproj
+./create-app myproj
 ```
 
 That will create your application in folder myproj under home dir, prepare all it environment in local machine and restart php-fpm and nginx.
@@ -137,7 +137,7 @@ Reinit your app and open in project http://myproj/test that will execute this ac
 
 ## Triggers
 
-There are special functionality to trigger some event, catch it and do something. It works like hooks. 
+There are special functionality to trigger some event, catch it and do something. It works like hooks.
 First you call trigger_event('test', ['var' => 'test']) in any place of your code. Then you create special trigger file in app/triggers folder.
 Annotate trigger with special comments, for example:
 ```php

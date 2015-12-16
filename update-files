@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 [[ -z "$1" ]] && echo 'Enter name of project to update files. Example: '$0' app' && exit 255
-[[ ! -e "$HOME/$1" ]] && echo 'Cant find project dir '$HOME'/'$1'. Use ./make-app '$1 && exit 255
+[[ ! -e "$HOME/$1" ]] && echo 'Cant find project dir '$HOME'/'$1'. Use ./create-app '$1 && exit 255
 
 # Bin files
 # /bin/cp -f ./skel/app/bin/* $HOME/$1/app/bin
