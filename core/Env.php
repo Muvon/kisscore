@@ -100,7 +100,7 @@ class Env {
       return include $file;
     };
 
-    foreach (glob(getenv('APP_DIR') . '/plugin/*/configure.php') as $file) {
+    foreach (glob(getenv('APP_DIR') . '/config/*/configure.php') as $file) {
       $configure($file);
     }
   }

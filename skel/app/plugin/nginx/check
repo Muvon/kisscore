@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-declare -A checks
-checks['nginx']='nginx -v'
-checks['openssl']='which openssl'
-run-checks
