@@ -24,7 +24,7 @@ class Env {
    * @return void
    */
   public static function init() {
-    static::configure(getenv('APP_DIR') . '/config.ini.tpl');
+    static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
     static::compileConfig();
     static::generateConfigs();
     static::generateURIMap();
@@ -63,7 +63,7 @@ class Env {
     $env = getenv('PROJECT_ENV');
 
     // Prepare production config replacement
-    foreach (parse_ini_file(getenv('CONFIG_DIR') . '/config.ini', true) as $group => $block) {
+    foreach (parse_ini_file(getenv('CONFIG_DIR') . '/app.ini', true) as $group => $block) {
       if (false !== strpos($group, ':') && explode(':', $group)[1] === $env) {
         $origin = strtok($group, ':');
         $config[$origin] = array_merge($config[$origin], $block);
