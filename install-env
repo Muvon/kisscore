@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
+kc_dir=$(cd "$(dirname $0)" && pwd)
+
 echo -e '\e[1;35mInstall kiss bash env\e[0m'
 test -d $HOME/.bin || mkdir -p $_
-/bin/cp -avr `dirname $0`/bin/* $HOME/.bin
-/bin/cp -avr `dirname $0`/.kissrc $HOME/.kissrc
+/bin/cp -avr $kc_dir/bin/. $HOME/.bin
+/bin/cp -avr $kc_dir/.kissrc $HOME/.kissrc
 cat $HOME/.bashrc | grep -v '#.kissrc$' > $HOME/.bashrc.tmp
 echo 'source '$HOME'/.kissrc #.kissrc' >> $HOME/.bashrc.tmp
 /bin/mv $HOME/.bashrc.tmp $HOME/.bashrc

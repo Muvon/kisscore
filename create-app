@@ -4,8 +4,10 @@
 project_dir=$HOME/$1
 [[ -e "$project_dir" ]] && echo 'Project dir '$project_dir' already exist' && exit 255
 
-`dirname $0`/install-env
-. ~/.kissrc
+kc_dir=$(cd "$(dirname $0)" && pwd)
+. $kc_dir/.kissrc
+
+$kc_dir/install-env
 
 # Start doing good staff
 echo -e '\e[1;35mCheck software\e[0m'
@@ -14,7 +16,7 @@ echo '...done'
 
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
 mkdir $project_dir
-cp -avr skel/. $project_dir
+cp -avr $kc_dir/skel/. $project_dir
 mkdir -p $project_dir/env/{tmp,var,run,log,etc,backup}
 mkdir -p $project_dir/app/{bin,vendor,src,lib,triggers,scripts,tests,plugin}
 echo '...done'
@@ -24,14 +26,14 @@ app_dir=$project_dir'/app'
 epoch=$(date +%s)'000'
 secret_key=$(ssh-random-string 'A-Za-z0-9' 64)
 # Replace global static variables for init project
-cat skel/app/config.ini.tpl \
+cat $kc_dir/skel/app/config.ini.tpl \
   | sed "s|%KISS_EPOCH%|$epoch|g" \
   | sed "s|%KISS_SECRET_KEY%|$secret_key|g" \
   > $app_dir/config.ini.tpl
 echo '...done'
 
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'
-./install-core $1
+$kc_dir/install-core $1
 echo '...done'
 
 echo -e '\e[1;35mInitializing new application\e[0m'

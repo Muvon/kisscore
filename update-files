@@ -2,14 +2,15 @@
 [[ -z "$1" ]] && echo 'Enter name of project to update files. Example: '$0' app' && exit 255
 [[ ! -e "$HOME/$1" ]] && echo 'Cant find project dir '$HOME'/'$1'. Use ./create-app '$1 && exit 255
 
+kc_dir=$(cd "$(dirname $0)" && pwd)
 # Bin files
 # /bin/cp -f ./skel/app/bin/* $HOME/$1/app/bin
 
 # Plugin changes
-/bin/cp -fr ./skel/app/plugins/* $HOME/$1/app/plugins
+/bin/cp -fr $kc_dir/skel/app/plugins/. $HOME/$1/app/plugins
 
 # Finaly core
-./install-core $1
+$kc_dir/install-core "$1"
 
 # Done!
 echo 'Core files for project '$1' were updated'
