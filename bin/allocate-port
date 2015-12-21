@@ -3,11 +3,11 @@ if [[ -z $1 ]]; then
   echo 'Usage: allocate-port name'
   exit 1
 fi
-[[ ! -f ~/ports ]] && touch ~/ports
+port_file=$HOME/ports
+test ! -f $port_file && touch $_
 
-start=33000
 max=33000
-for line in `cat ~/ports`; do
+for line in `cat $port_file`; do
   port=${line##*:}
   if (( $max < $port )); then
     max=$port
@@ -15,11 +15,11 @@ for line in `cat ~/ports`; do
 done
 port=$(( $max + 1 ))
 
-line=$(cat ~/ports | grep -E ^$PROJECT:$1\:[0-9]+$)
+line=$(cat $port_file | grep -E "^$PROJECT:$1\:[0-9]+$")
 if [[ -z $line ]]; then
-  echo "$PROJECT:$1:$port" >> ~/ports
-  cat ~/ports | sort -h > ~/ports.tmp
-  mv ~/ports.tmp ~/ports
+  echo "$PROJECT:$1:$port" >> $port_file
+  cat $port_file | sort -h > $_
+  mv $port_file.tmp $port_file
 else
   port=${line##*:}
 fi
