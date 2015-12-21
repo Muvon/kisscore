@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 if [[ -z $1 || -z $2 ]]; then
   echo 'Usage: app-config block params'
-  return
+  exit 1
 fi
 
 if [[ -z $PROJECT ]]; then
   echo 'Not in project. Run kiss PROJECT';
-  return
+  exit 1
 fi
 
 echo "

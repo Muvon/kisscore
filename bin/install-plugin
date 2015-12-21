@@ -4,7 +4,7 @@ if [[ -z "$1" ]]; then
   echo -e 'Usage: install-plugin plugin1 plugin2 plugin3'
   echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
   echo -e '- \e[35;1mPLUGIN_UPDATE\e[0;0m=1              Update or skip during install. Default: 0'
-  return
+  exit 1
 fi
 if [[ -z $PLUGIN_DIR ]]; then
   PLUGIN_DIR=$PROJECT_DIR/plugin
@@ -12,10 +12,8 @@ fi
 
 if [[ ! -d $PLUGIN_DIR ]]; then
   echo 'No plugin dir specified or plugin dir does not exist. Define plugin dir. Use export PLUGIN_DIR=/path/to/plugin'
-  return
+  exit 1
 fi
-
-
 
 
 # internal method to call from install_plugin function
@@ -31,7 +29,7 @@ _install_plugin() {
     if [[ $? -ne 0 ]]; then
       echo 'Run checks failed, skipping...'
       /bin/cat $check_log && /bin/rm $check_log
-      continue
+      return
     fi
     /bin/rm $check_log
   fi
@@ -39,7 +37,7 @@ _install_plugin() {
   install_to=$APP_DIR/plugin/$plugin
   if [[ -z $PLUGIN_UPDATE && -d $install_to ]]; then
     echo 'Plugin already installed, skipping. Use PLUGIN_UPDATE=1 for update'
-    continue
+    return
   fi
 
   if [[ -d $install_to ]]; then
@@ -62,16 +60,16 @@ _install_plugin() {
   rebuild=1
 }
 
-for plugin in $@; do
+for plugin in "$@"; do
   plugin_dir=$PLUGIN_DIR/$plugin
   if [[ ! -d $plugin_dir ]]; then
     echo 'Cant find plugin "'$plugin'" in plugin dir "'$PLUGIN_DIR'"'
-    return
+    exit 1
   fi
 done
 
 rebuild=0
-for plugin in $@; do
+for plugin in "$@"; do
   _install_plugin $plugin
 done
 

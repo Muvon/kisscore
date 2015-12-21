@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
+[[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && exit 1
 echo 'Initialization started'
 
 echo '+Configure and compile project'

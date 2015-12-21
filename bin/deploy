@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-[[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
+[[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && exit 1
 if [[ -z "$1" ]]; then
-  echo 'Usage: deploy [all|production|test|...]' && return
+  echo 'Usage: deploy [all|production|test|...]' && exit 1
 fi
 host_file=$CONFIG_DIR/hosts
 if [[ ! -f $host_file ]]; then
   echo 'Create hosts file "'$host_file'" with hostnames to deploy on'
-  return
+  exit 1
 fi
 
 if [[ "$1" == "all" ]]; then
@@ -17,7 +17,7 @@ fi
 
 if [[ -z $servers ]]; then
   echo 'There are no servers for deploy "'$1'" in hosts file'
-  return
+  exit 1
 fi
 
 # Revision
