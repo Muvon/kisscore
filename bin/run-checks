@@ -4,7 +4,12 @@ declare -A results
 
 for k in "${!checks[@]}"; do
   ${checks[$k]} &> /dev/null
-  [[ "$?" != "0" ]] && results["$k"]='\e[1;31mFail' && exit_code=1 || results["$k"]='\e[1;32mSuccess'
+  if [[ "$?" != "0" ]]; then
+    results["$k"]='\e[1;31mFail'
+    exit_code=1
+  else
+    results["$k"]='\e[1;32mSuccess'
+  fi
 done
 
 for k in "${!results[@]}"; do
