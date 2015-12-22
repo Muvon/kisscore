@@ -13,13 +13,17 @@ else
     exit 1
   fi
 
+  # Declare common used variables
+  HTTP_HOST=$(hostname)
+  PROJECT_ENV=$(test -f $PROJECT_DIR/env/etc/environment && cat $_ || echo 'dev')
+
   if [[ "$bash_interactive" ]]; then
     if [[ "$PROJECT" == "$name" ]]; then
       echo "Error: already in $PROJECT..."
       exit 1
     fi
 
-    oldpath=`pwd`
+    oldpath=$(pwd)
     cd $HOME/$name
     ci_pid=$!
 
@@ -29,14 +33,14 @@ else
     HTML_DIR=$PROJECT_DIR/html \
     CONFIG_DIR=$PROJECT_DIR/env/etc \
     ENV_DIR=$PROJECT_DIR/env \
-    PROJECT_ENV=$([[ -f $PROJECT_DIR/env/etc/environment ]] && cat $PROJECT_DIR/env/etc/environment || echo 'dev') \
+    PROJECT_ENV=$PROJECT_ENV \
     BIN_DIR=$PROJECT_DIR/env/bin \
     RUN_DIR=$PROJECT_DIR/env/run \
     LOG_DIR=$PROJECT_DIR/env/log \
     VAR_DIR=$PROJECT_DIR/env/var \
     TMP_DIR=$PROJECT_DIR/env/tmp \
     KISS_CORE=$PROJECT_DIR/app/core.php \
-    HTTP_HOST=$(hostname) \
+    HTTP_HOST=$HTTP_HOST \
     PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup \
     PS1=$PS1 \
     bash
@@ -51,14 +55,14 @@ else
       HTML_DIR=$PROJECT_DIR/html \
       CONFIG_DIR=$PROJECT_DIR/env/etc \
       ENV_DIR=$PROJECT_DIR/env \
-      PROJECT_ENV=$([[ -f $PROJECT_DIR/env/etc/environment ]] && cat $PROJECT_DIR/env/etc/environment || echo 'dev') \
+      PROJECT_ENV=$PROJECT_ENV \
       BIN_DIR=$PROJECT_DIR/env/bin \
       RUN_DIR=$PROJECT_DIR/env/run \
       LOG_DIR=$PROJECT_DIR/env/log \
       VAR_DIR=$PROJECT_DIR/env/var \
       TMP_DIR=$PROJECT_DIR/env/tmp \
       KISS_CORE=$PROJECT_DIR/app/core.php \
-      HTTP_HOST=$(hostname) \
+      HTTP_HOST=$HTTP_HOST \
       PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$path_backup
     cd $PROJECT_DIR
   fi
