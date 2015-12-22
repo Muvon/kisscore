@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+echo '+Reloading services'
+sudo $(which nginx) -s reload 2> /dev/null || echo 'Nginx is not running...skipping reload'
+sudo pkill -o -USR2 php-fpm 2> /dev/null || echo 'PHP-FPM is not running...skipping reload'
+echo '...done'
+
+# Here goes your init code to prepare all stuff
