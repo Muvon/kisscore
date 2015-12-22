@@ -77,9 +77,8 @@ wait $(jobs -rp) 2> /dev/null
 echo
 
 # Display result of jobs
-for file in $(ls $TMP_DIR/deploy.*); do
-  cat $file
-  rm $file
+for file in $TMP_DIR/deploy.*; do
+  cat $file && rm $_
 done
 
 echo 'Executing deploy-done script...'
