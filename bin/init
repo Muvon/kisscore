@@ -6,6 +6,11 @@ echo '+Configure and compile project'
 php-exec 'Env::init()'
 echo '...done'
 
-echo '+Running custom init-app script'
-[[ -x $BIN_DIR/init-app ]] && $BIN_DIR/init-app | xargs -l echo '  '
+echo '+Reloading services'
+sudo $(which nginx) -s reload 2> /dev/null || echo 'Nginx is not running...skipping reload'
+sudo pkill -o -USR2 php-fpm 2> /dev/null || echo 'PHP-FPM is not running...skipping reload'
+echo '...done'
+
+echo '+Running init-app script'
+[[ -x $BIN_DIR/init-app ]] && $BIN_DIR/init-app | xargs -0 -l echo '  '
 echo '...done'
