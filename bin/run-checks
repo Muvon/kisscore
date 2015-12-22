@@ -2,7 +2,7 @@
 exit_code=0
 
 for cmd in "$@"; do
-  $cmd &> /dev/null
+  eval $cmd &> /dev/null
   if [[ "$?" != "0" ]]; then
     echo -e "$cmd - \e[1;31mFail\e[0;0m"
     exit_code=1
