@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 exit_code=0
+declare -A checks
 declare -A results
 
 for k in "${!checks[@]}"; do
