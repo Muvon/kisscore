@@ -2,10 +2,7 @@
 declare -a checks=(
   'which tar'
   'which xargs'
-  'which realpath'
-  'which nohup'
   'which nano'
-  'which crontab'
   'which sed'
   'which tr'
 )
