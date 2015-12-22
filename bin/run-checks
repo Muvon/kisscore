@@ -1,20 +1,14 @@
 #!/usr/bin/env bash
 exit_code=0
-declare -A checks
-declare -A results
 
-for k in "${!checks[@]}"; do
-  ${checks[$k]} &> /dev/null
+for cmd in "$@"; do
+  $cmd &> /dev/null
   if [[ "$?" != "0" ]]; then
-    results["$k"]='\e[1;31mFail'
+    echo -e "$cmd - \e[1;31mFail\e[0;0m"
     exit_code=1
   else
-    results["$k"]='\e[1;32mSuccess'
+    echo -e "$cmd - \e[1;32mSuccess\e[0;0m"
   fi
-done
-
-for k in "${!results[@]}"; do
-  echo -e "\e[1;34m$k\e[0m - ${results[$k]}\e[0m"
 done
 
 exit $exit_code

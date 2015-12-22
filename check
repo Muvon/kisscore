@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
-declare -A checks
+declare -a checks=(
+  'which tar'
+  'which xargs'
+  'which realpath'
+  'which nohup'
+  'which nano'
+  'which crontab'
+  'which sed'
+  'which tr'
+)
 
-checks['tar']='which tar'
-checks['xargs']='which xargs'
-checks['realpath']='which realpath'
-checks['nohup']='which nohup'
-checks['nano']='which nano'
-checks['crontab']='which crontab'
-checks['sed']='which sed'
-checks['tr']='which tr'
-checks['systemctl']='which systemctl'
-
-run-checks
+run-checks "${checks[@]}"
