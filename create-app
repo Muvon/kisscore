@@ -28,10 +28,10 @@ app_dir=$project_dir'/app'
 epoch=$(date +%s)'000'
 secret_key=$(ssh-random-string 'A-Za-z0-9' 64)
 # Replace global static variables for init project
-cat $kc_dir/skel/app/config.ini.tpl \
+cat $kc_dir/skel/app/config/app.ini.tpl \
   | sed "s|%KISS_EPOCH%|$epoch|g" \
   | sed "s|%KISS_SECRET_KEY%|$secret_key|g" \
-  > $app_dir/config.ini.tpl
+  > $app_dir/config/app.ini.tpl
 echo '...done'
 
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'

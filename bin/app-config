@@ -12,4 +12,4 @@ fi
 echo "
 [$1]
 $2
-" >> $APP_DIR/config.ini.tpl
+" >> $APP_DIR/config/app.ini.tpl

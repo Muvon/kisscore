@@ -78,7 +78,7 @@ Just run install-core and enjoy!
 |----------------|----------------------------------------------------------------|-------------------------------|
 | actions        | Action dir, it contains of action files that includes on route |                               |
 | bin            | Special bash scripts and bin files                             |                               |
-| config.ini.tpl | Main template config of application                            |                               |
+| config         | Config folder with all configs templates and main: app.ini.tpl |                               |
 | core.php       | Core file with merged KISSCore classes and functions           |                               |
 | frontend.php   | That files handle all nginx dynamic requests (front point)     |                               |
 | lib            | Library sources that does not depend on KISSCore               | Lib                           |
