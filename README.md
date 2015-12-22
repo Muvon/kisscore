@@ -130,7 +130,6 @@ All actions are in app/actions folder. You should just create any file, for exam
  * @param string $hello
  */
 return View::fromString('Hello');
-?>
 ```
 
 Reinit your app and open in project http://myproj/test that will execute this action.
@@ -147,18 +146,22 @@ Annotate trigger with special comments, for example:
  * @param string $var
  */
  echo $var;
-?>
 ```
 
-Prepare environment with init call and thats finally done. You now can trigger_event and see the result of var you passed in data of event.
+Prepare environment with *init* call and thats finally done. You now can *trigger_event* and see the result of var you passed in data of event.
 
 ## Dependency
 
 To run project using KISS Core you need
 
-1. Linux with systemd (Ubuntu, Centos, Debian and so on)
-2. PHP 5.6+ with php-fpm (http://php.net)
-3. Nginx (http://nginx.org)
+1. Only PHP 5.6+ to run php code :)
+
+or
+
+1. PHP 5.6+ with php-fpm (http://php.net)
+2. Nginx (http://nginx.org)
+
+to handle web requests
 
 And also some linux knowledge ;)
 
