@@ -5,14 +5,16 @@ project_dir=$HOME/$1
 [[ -e "$project_dir" ]] && echo 'Project dir '$project_dir' already exist' && exit 255
 
 kc_dir=$(cd "$(dirname $0)" && pwd)
-. $kc_dir/.kissrc
-
-$kc_dir/install-env
+source $kc_dir/.kissrc
 
 # Start doing good staff
 echo -e '\e[1;35mCheck software\e[0m'
+$kc_dir/check
 [[ "$?" != "0" ]] &&  echo "...failed" && exit 255
 echo '...done'
+
+# Install environment scripts
+$kc_dir/install-env
 
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
 mkdir $project_dir
