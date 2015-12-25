@@ -8,7 +8,6 @@ trigger_map_file   = '%VAR_DIR%/trigger_event_map.json'
 trigger_param_file = '%VAR_DIR%/trigger_param_map.json'
 uri_map_file	  = '%VAR_DIR%/uri_request_map.json'
 param_map_file    = '%VAR_DIR%/import_var_map.json'
-nginx_route_file  = '%RUN_DIR%/nginx_route_map.conf'
 
 upload_max_filesize = '10M'
 

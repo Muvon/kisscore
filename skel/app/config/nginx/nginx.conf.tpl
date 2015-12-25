@@ -14,7 +14,8 @@ server {
   listen   80;
   server_name  %SERVER_NAME%;
   client_max_body_size %UPLOAD_MAX_FILESIZE%;
-  include %NGINX_ROUTE_FILE%;
+
+  include %CONFIG_DIR%/nginx_route_map.conf;
 
   auth_basic %AUTH%;
   auth_basic_user_file %CONFIG_DIR%/.htpasswd;

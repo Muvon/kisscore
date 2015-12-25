@@ -26,11 +26,10 @@ class Env {
   public static function init() {
     static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
     static::compileConfig();
-    static::generateConfigs();
     static::generateURIMap();
     static::generateParamMap();
-    static::generateNginxRouteMap();
     static::generateTriggerMap();
+    static::generateConfigs();
   }
 
   /**
@@ -148,39 +147,6 @@ class Env {
       }
       App::writeJSON($map_file, $map);
     }
-  }
-
-  /**
-   * Generate rewrite rules for nginx to route requests to action files
-   */
-  protected static function generateNginxRouteMap() {
-    $routes = App::getJSON(config('common.uri_map_file'));
-    uasort($routes, function ($a, $b) {
-      return (sizeof($a) > sizeof($b)) ? 1 : -1;
-    });
-
-    $rewrites = [];
-    foreach ($routes as $route => $action) {
-      $i = 0; // route like (bla (bla bla)) with uff8 cant handle by nginx. so hack it
-      $uri = '/?ROUTE='
-           . preg_replace_callback(
-              '|\([^\)]+\)|is',
-              function ($item) use (&$i) {
-                return '$' . ++$i;
-              },
-              $route
-            )
-           . '&ACTION=' . array_shift($action)
-      ;
-
-      if ($action) {
-        foreach ($action as $k => $v) {
-          $uri .= '&' . $v . '=$' . ($k + 1);
-        }
-      }
-      $rewrites[] = "rewrite '(*UTF8)^/$route/?$' '$uri';";
-    }
-    file_put_contents(config('common.nginx_route_file'), implode(PHP_EOL, $rewrites));
   }
 
   /**
