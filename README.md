@@ -134,6 +134,7 @@ return 'Hello';
 
 If action returns 1 as integer or no return statement then kisscore will try to include same name template and render it using View.
 If action returns string then it will be rendered as is.
+If action returns object or array then it will be rendered as json encoded string.
 
 Reinit your app and open in project http://myproj/test that will execute this action.
 

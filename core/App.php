@@ -131,6 +131,15 @@ class App {
         return $response->set($vars);
         break;
 
+      case is_string($response):
+        return View::fromString($response);
+        break;
+
+      case is_array($response):
+      case is_object($response):
+        return View::fromString(json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        break;
+
       default:
         return View::fromString((string) $response);
     }
