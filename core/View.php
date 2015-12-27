@@ -19,7 +19,7 @@ class View {
    */
   protected $data = [];
   protected $routes = [];
-  protected $body = '';
+  protected $body = null;
   protected $source_dir = null;
   protected $compile_dir = null;
 
@@ -396,7 +396,7 @@ class View {
    *   и возвращает ссылку на объект
    */
   public function render() {
-    if ($this->body) {
+    if (isset($this->body)) {
       return $this;
     }
 
