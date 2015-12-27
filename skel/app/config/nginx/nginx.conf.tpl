@@ -4,7 +4,7 @@ log_format  %PROJECT%
   '"$http_user_agent" "$http_x_forwarded_for" '
   '$upstream_response_time sec "$host"';
 
-upstream fpm {
+upstream %PROJECT%-fpm {
   server unix:%RUN_DIR%/php-fpm.sock;
 }
 
@@ -53,7 +53,7 @@ server {
     fastcgi_param  TMP_DIR          %TMP_DIR%;
     fastcgi_param  STATIC_DIR       %STATIC_DIR%;
 
-    fastcgi_pass   fpm;
+    fastcgi_pass   %PROJECT%-fpm;
   }
 
   # This location block is used to view PHP-FPM stats
@@ -63,6 +63,6 @@ server {
 
     include        %CONFIG_DIR%/nginx_fastcgi_params;
     fastcgi_param SCRIPT_FILENAME $fastcgi_script_name;
-    fastcgi_pass fpm;
+    fastcgi_pass %PROJECT%-fpm;
   }
 }
