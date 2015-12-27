@@ -20,7 +20,7 @@ server {
   auth_basic %AUTH%;
   auth_basic_user_file %CONFIG_DIR%/.htpasswd;
 
-  root %HTML_DIR%;
+  root %STATIC_DIR%;
   location = / {
     if ($request_method !~ ^(GET|HEAD|POST)$ ) {
       return 444;
@@ -51,7 +51,7 @@ server {
     fastcgi_param  BIN_DIR          %BIN_DIR%;
     fastcgi_param  RUN_DIR          %RUN_DIR%;
     fastcgi_param  TMP_DIR          %TMP_DIR%;
-    fastcgi_param  HTML_DIR         %HTML_DIR%;
+    fastcgi_param  STATIC_DIR       %STATIC_DIR%;
 
     fastcgi_pass   fpm;
   }

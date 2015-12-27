@@ -59,7 +59,6 @@ EOF
 
     mkdir -p ~/$PROJECT/env/{etc,log,var,run,tmp,backup}
 
-    test ! -L ~/$PROJECT/html && ln -s ~/$PROJECT/app/static \$_
     test ! -L ~/$PROJECT/env/bin && ln -s ~/$PROJECT/app/bin \$_
 
     kiss $PROJECT

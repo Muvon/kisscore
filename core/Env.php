@@ -6,7 +6,7 @@ class Env {
     'PROJECT_DIR',
     'PROJECT_ENV',
     'APP_DIR',
-    'HTML_DIR',
+    'STATIC_DIR',
     'CONFIG_DIR',
     'ENV_DIR',
     'BIN_DIR',

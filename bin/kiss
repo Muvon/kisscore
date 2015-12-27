@@ -30,7 +30,7 @@ else
     PROJECT=$name \
     PROJECT_DIR=$HOME/$PROJECT \
     APP_DIR=$PROJECT_DIR/app \
-    HTML_DIR=$PROJECT_DIR/html \
+    STATIC_DIR=$PROJECT_DIR/app/static \
     CONFIG_DIR=$PROJECT_DIR/env/etc \
     ENV_DIR=$PROJECT_DIR/env \
     PROJECT_ENV=$PROJECT_ENV \
@@ -52,7 +52,7 @@ else
     export PROJECT=$name
     export PROJECT_DIR=$HOME/$PROJECT
     export APP_DIR=$PROJECT_DIR/app \
-      HTML_DIR=$PROJECT_DIR/html \
+      STATIC_DIR=$PROJECT_DIR/app/static \
       CONFIG_DIR=$PROJECT_DIR/env/etc \
       ENV_DIR=$PROJECT_DIR/env \
       PROJECT_ENV=$PROJECT_ENV \

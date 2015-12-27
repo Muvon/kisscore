@@ -71,7 +71,6 @@ Just run install-core and enjoy!
 |--------|----------------------------------------------------------------------------------------|
 | app    | Main project folder with source code, libraries, static and KISSCore                   |
 | env    | Environment folder with tmp files, generated maps, configs and other special env stuff |
-| html   | Symlink to static folder in app dir. It is nginx root for web clients.                  |
 
 ### app skeleton
 | Folder         | Description                                                    | Namespace                     |
@@ -112,7 +111,7 @@ Just run install-core and enjoy!
 - $LOG_DIR - all logs from project collect here
 - $CONFIG_DIR - configuration files
 - $BIN_DIR - for special bin files and scripts
-- $HTML_DIR - public directory for static files
+- $STATIC_DIR - public directory for static files
 - $KISS_CORE - path to core.php file with KISSCore classes
 - $HTTP_HOST - hostname of the machine
 
