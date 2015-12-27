@@ -120,13 +120,20 @@ class App {
       return get_defined_vars();
     };
 
-    $vars = $process($View);
+    $vars = $process($response);
 
-    if (!$View instanceof View) {
-      $View = View::create($Request->getAction());
+    switch (true) {
+      case $response === 1:
+        return View::create($Request->getAction())->set($vars);
+        break;
+
+      case $response instanceof View:
+        return $response->set($vars);
+        break;
+
+      default:
+        return View::fromString((string) $response);
     }
-
-    return $View->set($vars);
   }
 
   /**

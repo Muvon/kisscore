@@ -128,8 +128,12 @@ All actions are in app/actions folder. You should just create any file, for exam
  * @route test
  * @param string $hello
  */
-return View::fromString('Hello');
+
+return 'Hello';
 ```
+
+If action returns 1 as integer or no return statement then kisscore will try to include same name template and render it using View.
+If action returns string then it will be rendered as is.
 
 Reinit your app and open in project http://myproj/test that will execute this action.
 
