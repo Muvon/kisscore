@@ -124,23 +124,28 @@ class App {
 
     switch (true) {
       case $response === 1:
+        $Response->header('Content-type', 'text/html;charset=utf-8');
         return View::create($Request->getAction())->set($vars);
         break;
 
       case $response instanceof View:
+        $Response->header('Content-type', 'text/html;charset=utf-8');
         return $response->set($vars);
         break;
 
       case is_string($response):
+        $Response->header('Content-type', 'text/plain;charset=utf-8');
         return View::fromString($response);
         break;
 
       case is_array($response):
       case is_object($response):
+        $Response->header('Content-type', 'application/json;charset=utf-8');
         return View::fromString(json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         break;
 
       default:
+        $Response->header('Content-type', 'text/plain;charset=utf-8');
         return View::fromString((string) $response);
     }
   }

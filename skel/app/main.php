@@ -1,7 +1,7 @@
 <?php
 include getenv('KISS_CORE');
 App::start();
-$Response = Response::create(200)->header('Content-type', 'text/html;charset=utf-8');
+$Response = Response::create(200);
 $View = App::process(Request::create(), $Response)
   ->prepend('_head')
   ->append('_foot')
