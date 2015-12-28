@@ -16,7 +16,7 @@ class Input {
       static::$params['ACTION'] = array_shift($argv);
       static::$params += $argv;
     } elseif (filter_input(INPUT_SERVER, 'CONTENT_TYPE') === 'application/json') {
-      static::$params = (array) filter_input_array(INPUT_GET) + json_decode(file_get_contents('php://input'), true);
+      static::$params = (array) filter_input_array(INPUT_GET) + (array) json_decode(file_get_contents('php://input'), true);
     } else {
       static::$params = (array) filter_input_array(INPUT_POST) + (array) filter_input_array(INPUT_GET);
     }
