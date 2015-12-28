@@ -22,7 +22,7 @@ server {
 
   root %STATIC_DIR%;
   location = / {
-    if ($request_method !~ ^(GET|HEAD|POST)$ ) {
+    if ($request_method !~ ^(GET|HEAD|POST|PUT|DELETE)$ ) {
       return 444;
     }
 
