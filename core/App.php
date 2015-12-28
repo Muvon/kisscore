@@ -54,9 +54,9 @@ class App {
     assert('is_string($message)');
     assert('is_string($type)');
     $id = bin2hex($message . ':' . implode('.', array_keys($dump)) . ':' . $type);
-    $log_file = getenv('LOG_DIR') . '/' . date('Ymd') . '-' . $type . '.log';
+    $log_file = getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-' . $type . '.log';
     $message =
-      date('[Y-m-d H:i:s T]')
+      gmdate('[Y-m-d H:i:s T]')
       . "\t" . $id
       . "\t" . $message
       . "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t"

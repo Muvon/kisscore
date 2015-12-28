@@ -20,7 +20,7 @@ $php $OPTS <<EOF
     $code;
     App::stop();
   } catch (Exception \$E) {
-    echo 'Error: ' . \$E->getMessage() . PHP_EOL . 'More info: tail -f $LOG_DIR/' . date('Ymd') . '-error.log';
+    echo 'Error: ' . \$E->getMessage() . PHP_EOL . 'More info: tail -f $LOG_DIR/' . gmdate('Ymd') . '-error.log';
   }
 EOF
 echo
