@@ -89,10 +89,7 @@ class App {
     set_exception_handler([static::class, 'handleException']);
 
     // Register default Exception handler
-    static::setExceptionHandler(Exception::class, function (Exception $Exception) {
-      $string = App::$debug ? static::getHtmlException($Exception) : 'Something went wrong';
-      return Response::create(500)->send((string) View::fromString($string));
-    });
+    static::setExceptionHandler(Exception::class, static::createExceptionHandler());
 
     Autoload::register('App', getenv('APP_DIR') . '/src');
     Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
@@ -173,22 +170,53 @@ class App {
     } while (false !== $exception = get_parent_class($exception));
   }
 
-  /**
-   * Get html page for display exception in debug mode
-   * @param Exception $Exception
-   * @return string
-   */
-  protected static function getHtmlException(Exception $Exception) {
-    return '<html><head><title>Error</title></head><body>'
-     . '<p>Unhandled exceptions <b>'
-     . get_class($Exception) . '</b> with message "' . $Exception->getMessage()
-     . '" in file "' . $Exception->getFile() . ':' . $Exception->getLine()
-     . '"</p>'
-     . '<p><ul>'
-     . implode('<br/>', array_map(function ($item) { return '<li>' . $item . '</li>'; }, explode(PHP_EOL, $Exception->getTraceAsString())))
-     . '</ul></p>'
-     . '</body></html>'
-    ;
+  public static function createExceptionHandler($code = 500, $type = 'html', Callable $format_func = null) {
+    static $types = [
+      'json' => 'application/json',
+      'html' => 'text/html',
+      'text' => 'text/plain',
+    ];
+
+    return function (Exception $Exception) use ($code, $type, $format_func, $types) {
+      switch (true) {
+        case isset($format_func):
+          $response = $format_func($Exception);
+          break;
+        case $type === 'json':
+          $response = json_encode([
+            'error' => $Exception->getMessage(),
+            'trace' => App::$debug ? $Exception->getTrace() : [],
+          ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+          break;
+
+        case $type === 'html':
+          $response = '<html><head><title>Error</title></head><body>'
+             . '<p>Unhandled exception <b>'
+             . get_class($Exception) . '</b> with message "' . $Exception->getMessage()
+             . (static::$debug ? '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() : '')
+             . '"</p>';
+
+          if (static::$debug) {
+            $response .= '<p><ul>'
+             . implode('<br/>', array_map(function ($item) { return '<li>' . $item . '</li>'; }, explode(PHP_EOL, $Exception->getTraceAsString())))
+             . '</ul></p>'
+             . '</body></html>'
+            ;
+          }
+          break;
+
+        default:
+          $response = 'Error: ' . $Exception->getMessage();
+          if (static::$debug) {
+            $response .= PHP_EOL . $Exception->getTraceAsString();
+          }
+      }
+
+      return Response::create($code)
+        ->header('Content-type', $types[$type] . ';charset=utf8')
+        ->send($response)
+      ;
+    };
   }
 
   /**
