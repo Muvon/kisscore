@@ -117,6 +117,15 @@ class Request {
   }
 
   /**
+   * Get requested header
+   * @param string $header
+   * @return string
+   */
+  public function getHeader($header) {
+    return filter_input(INPUT_SERVER, 'HTTP_' . strtoupper(str_replace('-', '_', $header)));
+  }
+
+  /**
    * Установка текущего роута с последующим парсингом его в действие и модуль
    *
    * @access public
