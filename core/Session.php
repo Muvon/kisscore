@@ -32,7 +32,7 @@ class Session {
   public final function __construct() {}
 
   public static function start() {
-    session_start(config('session.name'));
+    session_start();
     static::$container = &$_SESSION;
   }
 
