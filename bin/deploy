@@ -39,6 +39,7 @@ for server in $servers; do
 
   echo 'Deploying on server '$server':'$environment
   scp $HOME/.kissrc $server:~
+  scp -r $HOME/.bin $server:~
   ssh -T $server <<"EOF"
     /bin/cat ~/.bashrc | /bin/grep -v '#.kissrc$' > ~/.bashrc.tmp
     echo "source ~/.kissrc #.kissrc" >> ~/.bashrc.tmp
@@ -54,6 +55,7 @@ EOF
 
   # Compile PROJECT on server
   ssh -T $server <<EOF
+    source ~/.kissrc
     test -L ~/$PROJECT/app && rm -f \$_
     ln -s ~/$PROJECT/rev/$revision ~/$PROJECT/app
 
@@ -61,13 +63,14 @@ EOF
 
     test ! -L ~/$PROJECT/env/bin && ln -s ~/$PROJECT/app/bin \$_
 
-    kiss $PROJECT
+    source ~/.bin/kiss $PROJECT
     echo $environment > \$CONFIG_DIR/environment
     export PROJECT_ENV=$environment
     init
     [[ \$(/bin/ls \$TMP_DIR) ]] && /bin/rm \$TMP_DIR/*
     php-exec 'opcache_reset()' > /dev/null
 EOF
+
   # All is done
   echo 'Deployed on server '$server
   ) > $TMP_DIR/deploy.$server 2>&1 &

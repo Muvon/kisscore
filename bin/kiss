@@ -15,20 +15,17 @@ else
 
   # Declare common used variables
   HTTP_HOST=$(hostname)
+  PROJECT=$name
+  PROJECT_DIR=$HOME/$PROJECT
   PROJECT_ENV=$(test -f $PROJECT_DIR/env/etc/environment && cat $_ || echo 'dev')
 
-  if [[ "$bash_interactive" ]]; then
-    if [[ "$PROJECT" == "$name" ]]; then
-      echo "Error: already in $PROJECT..."
-      exit 1
-    fi
-
+  if [[ -n "$bash_interactive" ]]; then
     oldpath=$(pwd)
-    cd $HOME/$name
+    cd $PROJECT_DIR
     ci_pid=$!
 
-    PROJECT=$name \
-    PROJECT_DIR=$HOME/$PROJECT \
+    PROJECT=$PROJECT \
+    PROJECT_DIR=$PROJECT_DIR \
     APP_DIR=$PROJECT_DIR/app \
     STATIC_DIR=$PROJECT_DIR/app/static \
     CONFIG_DIR=$PROJECT_DIR/env/etc \
@@ -48,10 +45,9 @@ else
     [[ -n "$ci_pid" ]] && kill $ci_pid
     cd $oldpath
   else
-
-    export PROJECT=$name
-    export PROJECT_DIR=$HOME/$PROJECT
-    export APP_DIR=$PROJECT_DIR/app \
+    export PROJECT=$PROJECT \
+      PROJECT_DIR=$PROJECT_DIR \
+      APP_DIR=$PROJECT_DIR/app \
       STATIC_DIR=$PROJECT_DIR/app/static \
       CONFIG_DIR=$PROJECT_DIR/env/etc \
       ENV_DIR=$PROJECT_DIR/env \
