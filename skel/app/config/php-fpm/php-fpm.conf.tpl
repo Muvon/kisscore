@@ -213,7 +213,6 @@ catch_workers_output = yes
 ;php_admin_value[memory_limit] = 32M
 php_admin_flag[log_errors] = on
 php_value[error_log] = %LOG_DIR%/php-fpm.errors.log
-php_value[session.name] = "%SESSION_NAME%"
 php_value[session.save_path] = %TMP_DIR%
 
 php_value[upload_max_filesize] = %UPLOAD_MAX_FILESIZE%
