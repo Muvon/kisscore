@@ -27,10 +27,10 @@ server {
     }
 
     if ($request_method = 'OPTIONS') {
-      add_header 'Access-Control-Allow-Origin' '*' always;
-      add_header 'Access-Control-Allow-Credentials' 'true' always;
-      add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
-      add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type' always;
+      add_header 'Access-Control-Allow-Origin' '%CORS_ORIGIN%' always;
+      add_header 'Access-Control-Allow-Credentials' '%CORS_CREDENTIALS%' always;
+      add_header 'Access-Control-Allow-Methods' '%CORS_METHODS%' always;
+      add_header 'Access-Control-Allow-Headers' '%CORS_HEADERS%' always;
       add_header 'Access-Control-Max-Age' 1728000;
       add_header 'Content-Type' 'text/plain charset=UTF-8';
       add_header 'Content-Length' 0;
@@ -48,10 +48,10 @@ server {
     expires off;
 
     # CORS headers
-    add_header 'Access-Control-Allow-Origin' '*' always;
-    add_header 'Access-Control-Allow-Credentials' 'true' always;
-    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
-    add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type' always;
+    add_header 'Access-Control-Allow-Origin' '%CORS_ORIGIN%' always;
+    add_header 'Access-Control-Allow-Credentials' '%CORS_CREDENTIALS%' always;
+    add_header 'Access-Control-Allow-Methods' '%CORS_METHODS%' always;
+    add_header 'Access-Control-Allow-Headers' '%CORS_HEADERS%' always;
 
     include        %CONFIG_DIR%/nginx_fastcgi_params;
 

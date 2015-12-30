@@ -46,4 +46,8 @@ Env::configure(__DIR__, [
   '%IP_ALLOW%' => $ips,
   '%AUTH%' => config('nginx.auth'),
   '%REWRITE_RULES%' => implode(PHP_EOL, $rewrites),
+  '%CORS_ORIGIN%' => config('cors.origin'),
+  '%CORS_METHODS%' => config('cors.methods'),
+  '%CORS_HEADERS%' => config('cors.headers'),
+  '%CORS_CREDENTIALS%' => config('cors.credentials'),
 ]);

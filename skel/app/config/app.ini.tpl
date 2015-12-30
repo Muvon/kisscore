@@ -44,3 +44,9 @@ auth = 'off'
 
 [nginx:test]
 auth = 'Restricted'
+
+[cors]
+origin = '*'
+methods = 'GET, POST, PUT, DELETE, OPTIONS'
+headers = 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type'
+credentials = 'true'
