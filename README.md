@@ -117,8 +117,9 @@ Just run install-core and enjoy!
 
 ## Plugins
 
-There are special plugins to use DB, Cache and other cool staff in KISSCore.
-You can find plugins and help on github here: https://github.com/dmitrykuzmenkov/kisscore-plugins
+There are special plugins to use DB, Cache and other cool staff in KISSCore.  
+You can find plugins and help on my github page: https://github.com/dmitrykuzmenkov  
+All plugins named in pattern kisscore-plugin-{{name}}
 
 ## Actions
 All actions are in app/actions folder. You should just create any file, for example test.php and put code in it.
@@ -132,11 +133,11 @@ All actions are in app/actions folder. You should just create any file, for exam
 return 'Hello';
 ```
 
-If action returns 1 as integer or no return statement then kisscore will try to include same name template and render it using View.
-If action returns string then it will be rendered as is.
-If action returns object or array then it will be rendered as json encoded string.
+If action returns 1 as integer or no return statement then kisscore will try to include same name template and render it using View.  
+If action returns string then it will be rendered as is.  
+If action returns object or array then it will be rendered as json encoded string.  
 
-Reinit your app and open in project http://myproj/test that will execute this action.
+Reinit your app and open in project http://myproj/test that will execute this action.  
 
 ## Triggers
 

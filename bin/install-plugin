@@ -2,25 +2,27 @@
 [[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
 if [[ -z "$1" ]]; then
   echo -e 'Usage: install-plugin plugin1 plugin2 plugin3'
-  echo -e '- \e[35;1mPLUGIN_DIR\e[0;0m=/path/to/plugin   Specify dir with plugins that can be installed'
   echo -e '- \e[35;1mPLUGIN_UPDATE\e[0;0m=1              Update or skip during install. Default: 0'
   exit 1
 fi
-if [[ -z $PLUGIN_DIR ]]; then
-  PLUGIN_DIR=$PROJECT_DIR/plugin
-fi
-
-if [[ ! -d $PLUGIN_DIR ]]; then
-  echo 'No plugin dir specified or plugin dir does not exist. Define plugin dir. Use export PLUGIN_DIR=/path/to/plugin'
-  exit 1
-fi
-
 
 # internal method to call from install_plugin function
 _install_plugin() {
   plugin=$1
   echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
-  plugin_dir=$PLUGIN_DIR/$plugin
+  echo 'Fetching using git...'
+  plugin_dir=$TMP_DIR/kisscore-plugin-$plugin
+  if [[ -d $plugin_dir ]]; then
+    cd $plugin_dir && git fetch && git pull --rebase origin master
+  else
+    git clone git@github.com:dmitrykuzmenkov/kisscore-plugin-$plugin.git $plugin_dir
+  fi
+
+  if [[ "$?" != "0" ]]; then
+    echo 'Cant find plugin '$plugin
+    exit 1
+  fi
+  echo '...done'
 
   # Check requirements
   if [[ -x $plugin_dir/check ]]; then
@@ -59,14 +61,6 @@ _install_plugin() {
   fi
   rebuild=1
 }
-
-for plugin in "$@"; do
-  plugin_dir=$PLUGIN_DIR/$plugin
-  if [[ ! -d $plugin_dir ]]; then
-    echo 'Cant find plugin "'$plugin'" in plugin dir "'$PLUGIN_DIR'"'
-    exit 1
-  fi
-done
 
 rebuild=0
 for plugin in "$@"; do
