@@ -11,7 +11,7 @@ _install_plugin() {
   plugin=$1
   echo -e 'Trying install \e[34;1m'$plugin'\e[0;0m'
   echo 'Fetching using git...'
-  plugin_dir=$TMP_DIR/kisscore-plugin-$plugin
+  plugin_dir=$TMP_DIR/kisscore-plugin-$(echo $plugin | tr '[:upper:]' '[:lower:]')
   if [[ -d $plugin_dir ]]; then
     cd $plugin_dir && git fetch && git pull --rebase origin master
   else
