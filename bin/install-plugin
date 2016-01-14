@@ -24,6 +24,9 @@ _install_plugin() {
   fi
   echo '...done'
 
+  # Get plugin namespace for proper installation
+  plugin=$(cat $plugin_dir/namespace)
+
   # Check requirements
   if [[ -x $plugin_dir/check ]]; then
     check_log=$TMP_DIR/plugin-checks-$plugin
