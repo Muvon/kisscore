@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-[[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && return;
+# shellcheck source=./env.sh
+source "$(dirname $0)/../env.sh"
+
 if [[ -z "$1" ]]; then
   echo -e 'Usage: install-plugin plugin1 plugin2 plugin3'
   echo -e '- \e[35;1mPLUGIN_UPDATE\e[0;0m=1              Update or skip during install. Default: 0'

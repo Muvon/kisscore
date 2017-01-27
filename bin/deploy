@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-[[ -z "$PROJECT" ]] && echo 'Not in project. Use "kiss PROJECT" first' && exit 1
+# shellcheck source=./env.sh
+source "$(dirname $0)/../env.sh"
+
 if [[ -z "$1" ]]; then
   echo 'Usage: deploy [all|production|test|...]' && exit 1
 fi

@@ -255,10 +255,11 @@ class App {
    * @return string Result of execution
    */
   public static function exec($cmd) {
-    $project = getenv('PROJECT');
+    $project_dir = getenv('PROJECT_DIR');
     return trim(`bash <<"EOF"
-      source ~/.kissrc
-      kiss $project
+      set -e
+      cd $project_dir
+      source ./env.sh
       $cmd
 EOF`);
   }

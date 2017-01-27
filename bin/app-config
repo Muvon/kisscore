@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
+# shellcheck source=./env.sh
+source "$(dirname $0)/../env.sh"
+
 if [[ -z $1 || -z $2 ]]; then
   echo 'Usage: app-config block params'
-  exit 1
-fi
-
-if [[ -z $PROJECT ]]; then
-  echo 'Not in project. Run kiss PROJECT';
   exit 1
 fi
 

@@ -1,32 +1,29 @@
 #!/usr/bin/env bash
-[[ -z "$1" ]] && echo 'Enter name of project to create. Example: ./create-app app' && exit 255
+set -e
 
-project_dir=$HOME/$1
+[[ -z "$1" ]] && echo 'Enter path of project to create. Example: ./create-app ~/app' && exit 255
+
+project_dir=$1
 [[ -e "$project_dir" ]] && echo 'Project dir '$project_dir' already exist' && exit 255
 
 kc_dir=$(cd "$(dirname $0)" && pwd)
-source $kc_dir/.kissrc
 
-# Start doing good staff
-echo -e '\e[1;35mCheck software\e[0m'
-$kc_dir/check
-[[ "$?" != "0" ]] &&  echo "...failed" && exit 255
-echo '...done'
-
-# Install environment scripts
-$kc_dir/install-env
+# shellcheck source=./func.sh
+source $kc_dir/func.sh
 
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
 mkdir $project_dir
-cp -avr $kc_dir/skel/. $project_dir
+cp -vr $kc_dir/skel/. $project_dir
+cp -vr $kc_dir/bin/. $project_dir/bin
+cp -vr $kc_dir/env.sh $project_dir
 mkdir -p $project_dir/env/{tmp,var,run,log,etc,backup}
-mkdir -p $project_dir/app/{bin,vendor,src,lib,triggers,scripts,tests,plugin}
+mkdir -p $project_dir/app/{vendor,src,lib,triggers,scripts,tests,plugin}
 echo '...done'
 
 echo -e '\e[1;35mConfigure etc templates\e[0m'
 app_dir=$project_dir'/app'
 epoch=$(date +%s)'000'
-secret_key=$(ssh-random-string 'A-Za-z0-9' 64)
+secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 # Replace global static variables for init project
 cat $kc_dir/skel/app/config/app.ini.tpl \
   | sed "s|%KISS_EPOCH%|$epoch|g" \
@@ -39,7 +36,5 @@ $kc_dir/install-core $1
 echo '...done'
 
 echo -e '\e[1;35mInitializing new application\e[0m'
-kiss $1 << "EOF"
-  init
-EOF
+( cd $1; ./bin/php-exec 'Env::init()' )
 echo '...done'
