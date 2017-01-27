@@ -42,7 +42,7 @@ class Env {
   public static function configure($template, array $params = []) {
     // Add default params
     foreach (static::$params as $param) {
-      $params['%' . $param . '%'] = getenv($param);
+      $params['{{' . $param . '}}'] = getenv($param);
     }
 
     // Add extra params
