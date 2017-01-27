@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -e
-# shellcheck source=./env.sh
-source "$(dirname $0)/../env.sh"
-
-exec php -d variables_order=EGPCS -S 0.0.0.0:${1:-8000} app/main.php
