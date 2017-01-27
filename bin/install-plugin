@@ -54,7 +54,7 @@ _install_plugin() {
   fi
 
   /bin/mkdir -p $install_to
-  /bin/cp -favr $plugin_dir/* $install_to
+  /bin/cp -fvr $plugin_dir/* $install_to
 
   [[ -x $install_to/setup ]] && $install_to/setup
   echo '...done'
@@ -74,7 +74,5 @@ done
 
 if (( $rebuild )); then
   echo -e '\e[32;1mStarting init script to realod maps\e[0;0m'
-  kiss $PROJECT << "EOF"
-    init
-EOF
+  $(dirname $0)/php-exec 'Env::init()'
 fi
