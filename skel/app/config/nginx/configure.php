@@ -31,12 +31,12 @@ foreach ($routes as $route => $action) {
 }
 
 Env::configure(__DIR__, [
-  '%UPLOAD_MAX_FILESIZE%' => config('common.upload_max_filesize'),
-  '%SERVER_NAME%' => config('common.domain'),
-  '%AUTH%' => config('nginx.auth'),
-  '%REWRITE_RULES%' => implode(PHP_EOL, $rewrites),
-  '%CORS_ORIGIN%' => config('cors.origin'),
-  '%CORS_METHODS%' => config('cors.methods'),
-  '%CORS_HEADERS%' => config('cors.headers'),
-  '%CORS_CREDENTIALS%' => config('cors.credentials'),
+  '{{UPLOAD_MAX_FILESIZE}}' => config('common.upload_max_filesize'),
+  '{{SERVER_NAME}}' => config('common.domain'),
+  '{{AUTH}}' => config('nginx.auth'),
+  '{{REWRITE_RULES}}' => implode(PHP_EOL, $rewrites),
+  '{{CORS_ORIGIN}}' => config('cors.origin'),
+  '{{CORS_METHODS}}' => config('cors.methods'),
+  '{{CORS_HEADERS}}' => config('cors.headers'),
+  '{{CORS_CREDENTIALS}}' => config('cors.credentials'),
 ]);

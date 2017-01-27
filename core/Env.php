@@ -47,7 +47,7 @@ class Env {
 
     // Add extra params
     $params += [
-      '%DEBUG%' => (int) App::$debug,
+      '{{DEBUG}}' => (int) App::$debug,
     ];
 
     foreach(is_dir($template) ? glob($template . '/*.tpl') : [$template] as $file) {

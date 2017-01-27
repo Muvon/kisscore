@@ -1,5 +1,5 @@
 ; Start a new pool named 'project-name'.
-[%PROJECT%]
+[{{PROJECT}}]
 ; The address on which to accept FastCGI requests.
 ; Valid syntaxes are:
 ;   'ip.add.re.ss:port'    - to listen on a TCP socket to a specific address on
@@ -9,7 +9,7 @@
 ;   '/path/to/unix/socket' - to listen on a unix socket.
 ; Note: This value is mandatory.
 ; listen = 127.0.0.1:9000
-listen = %RUN_DIR%/php-fpm.sock
+listen = {{RUN_DIR}}/php-fpm.sock
 
 
 ; Set listen(2) backlog. A value of '-1' means unlimited.
@@ -29,7 +29,7 @@ listen.allowed_clients = 127.0.0.1
 ; BSD-derived systems allow connections regardless of permissions.
 ; Default Values: user and group are set as the running user
 ;                 mode is set to 0666
-listen.owner = %USER%
+listen.owner = {{USER}}
 ; listen.group = dk
 listen.mode = 0666
 
@@ -38,7 +38,7 @@ listen.mode = 0666
 ;       will be used.
 ; user = dk
 ; group = dk
-user = %USER%
+user = {{USER}}
 
 ; Choose how the process manager will control the number of child processes.
 ; Possible Values:
@@ -153,7 +153,7 @@ request_slowlog_timeout = 1s
 
 ; The log file for slow requests
 ; Default Value: /var/log/php-fpm.log.slow
-slowlog =%LOG_DIR%/php-fpm.log.slow
+slowlog ={{LOG_DIR}}/php-fpm.log.slow
 
 ; Set open file descriptor rlimit.
 ; Default Value: system defined value
@@ -212,21 +212,21 @@ catch_workers_output = yes
 ;php_admin_flag[log_errors] = on
 ;php_admin_value[memory_limit] = 32M
 php_admin_flag[log_errors] = on
-php_value[error_log] = %LOG_DIR%/php-fpm.errors.log
-php_value[session.save_path] = %TMP_DIR%
+php_value[error_log] = {{LOG_DIR}}/php-fpm.errors.log
+php_value[session.save_path] = {{TMP_DIR}}
 
-php_value[upload_max_filesize] = %UPLOAD_MAX_FILESIZE%
-php_value[post_max_size] = %UPLOAD_MAX_FILESIZE%
-php_value[upload_tmp_dir] = %TMP_DIR%
+php_value[upload_max_filesize] = {{UPLOAD_MAX_FILESIZE}}
+php_value[post_max_size] = {{UPLOAD_MAX_FILESIZE}}
+php_value[upload_tmp_dir] = {{TMP_DIR}}
 
-php_value[display_errors] = %DEBUG%
+php_value[display_errors] = {{DEBUG}}
 
-php_value[assert.active] = %DEBUG%
+php_value[assert.active] = {{DEBUG}}
 php_value[assert.bail] = 0
 php_value[assert.quiet_eval] = 0
 php_value[assert.callback] = "App::handleAssertion"
 
-php_value[opcache.validate_timestamps] = %DEBUG%
+php_value[opcache.validate_timestamps] = {{DEBUG}}
 php_value[opcache.revalidate_freq] = 0
 php_value[opcache.save_comments] = 0
 php_flag[opcache.fast_shutdown] = 1
