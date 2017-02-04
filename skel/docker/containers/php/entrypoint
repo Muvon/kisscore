@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+if [ ! -e /.inited ]; then
+  mkdir -p /src/env/backup /src/env/etc /src/env/log /src/env/run /src/env/tmp /src/env/var
+  /src/bin/php-exec 'Env::init()'
+  touch /.inited
+fi
+
+exec php-fpm -R -F -y /src/docker/containers/php/config/php-fpm.conf

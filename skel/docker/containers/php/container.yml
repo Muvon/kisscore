@@ -1,0 +1,12 @@
+image: php
+labels:
+  - role=php
+working_dir: /src
+network_mode: host
+restart: unless-stopped
+cap_drop:
+  - ALL
+cap_add:
+  - CHOWN
+environment:
+  - PROJECT=$COMPOSE_PROJECT_NAME

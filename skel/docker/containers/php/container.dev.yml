@@ -1,0 +1,4 @@
+volumes:
+  - ${SOURCE_PATH}:/src
+  - env-storage:/src/env:rw
+network_mode: bridge

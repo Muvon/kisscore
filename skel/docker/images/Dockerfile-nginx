@@ -1,0 +1,10 @@
+FROM nginx:1.11-alpine
+MAINTAINER Dmitrii Kuzmenkov <dmitrii.kuzmenkov@muvon.io>
+
+RUN mkdir /var/cache/nginx/client_temp /var/cache/nginx/fastcgi_temp \
+  /var/cache/nginx/proxy_temp /var/cache/nginx/scgi_temp /var/cache/nginx/uwsgi_temp
+COPY . /src
+WORKDIR /src
+
+ENTRYPOINT ["/src/docker/containers/nginx/entrypoint"]
+CMD [""]

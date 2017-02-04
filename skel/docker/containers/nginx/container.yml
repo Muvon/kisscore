@@ -1,0 +1,18 @@
+image: nginx
+labels:
+  - role=nginx
+working_dir: /src
+network_mode: host
+expose:
+  - '80'
+  - '443'
+restart: unless-stopped
+cap_drop:
+  - ALL
+cap_add:
+  - NET_BIND_SERVICE
+  - SYS_NICE
+volumes:
+  - env-storage:/src/env
+environment:
+  - PROJECT=$COMPOSE_PROJECT_NAME

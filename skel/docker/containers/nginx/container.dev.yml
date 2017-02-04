@@ -1,0 +1,8 @@
+volumes:
+  - ${SOURCE_PATH}:/src
+  - env-storage:/src/env
+network_mode: bridge
+links:
+  - php.0
+ports:
+  - '80:80'

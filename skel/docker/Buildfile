@@ -1,0 +1,2 @@
+php: -t ${COMPOSE_PROJECT_NAME}/php:${REVISION}
+nginx: -t ${COMPOSE_PROJECT_NAME}/nginx:${REVISION}

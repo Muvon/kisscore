@@ -24,6 +24,10 @@ echo -e '\e[1;35mConfigure etc templates\e[0m'
 app_dir=$project_dir'/app'
 epoch=$(date +%s)'000'
 secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
+# Copy yoda folder for containerization
+cat $kc_dir/skel/docker/.yodarc \
+  | sed "s|{{KISS_PROJECT}}|${project_dir##*/}|g" \
+  > $project_dir/docker/.yodarc
 # Replace global static variables for init project
 cat $kc_dir/skel/app/config/app.ini.tpl \
   | sed "s|{{KISS_EPOCH}}|$epoch|g" \
