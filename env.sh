@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 current_path=$(pwd)
 PROJECT_DIR=$current_path
-export PROJECT=${current_path##*/} \
+export PROJECT=${PROJECT:-"${current_path##*/}"} \
+  USER=${USER:-"$(whoami)"} \
   PROJECT_DIR \
   HTTP_HOST=$(hostname) \
   APP_DIR=$PROJECT_DIR/app \
