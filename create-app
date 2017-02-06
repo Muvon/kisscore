@@ -17,7 +17,6 @@ cp -vr $kc_dir/skel/. $project_dir
 cp -vr $kc_dir/bin/. $project_dir/bin
 cp -vr $kc_dir/env.sh $project_dir
 mkdir -p $project_dir/env/{tmp,var,run,log,etc,backup}
-mkdir -p $project_dir/app/{vendor,src,lib,triggers,scripts,tests,plugin}
 echo '...done'
 
 echo -e '\e[1;35mConfigure etc templates\e[0m'
