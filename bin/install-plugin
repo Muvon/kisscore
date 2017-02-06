@@ -56,7 +56,7 @@ _install_plugin() {
   /bin/mkdir -p $install_to
   /bin/cp -fvr $plugin_dir/* $install_to
 
-  [[ -x $install_to/setup ]] && $install_to/setup
+  test -x $install_to/setup && PATH=$PATH:./bin $_
   echo '...done'
 
   if [[ -f $install_to/require ]]; then
