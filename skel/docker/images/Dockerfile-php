@@ -1,11 +1,10 @@
 FROM php:7.1.1-fpm-alpine
 MAINTAINER Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>
 
-RUN apk update && \
-  apk add bash && \
+RUN apk add --update bash && \
   rm -fr /var/cache/apk/* && \
   rm -fr /usr/local/etc/php-fpm.d/*
-  
+
 COPY . /src
 WORKDIR /src
 

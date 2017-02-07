@@ -8,5 +8,7 @@ cap_drop:
   - ALL
 cap_add:
   - CHOWN
+volumes:
+  - env-storage:/src/env:rw
 environment:
   - PROJECT=$COMPOSE_PROJECT_NAME
