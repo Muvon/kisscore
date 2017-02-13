@@ -37,7 +37,7 @@ class App {
    */
   public static function getJSON($file) {
     if (!is_file($file)) {
-      throw new Exception('Cant find file ' . $file . '. Be sure you started init script to compile application');
+      throw new Error('Cant find file ' . $file . '. Be sure you started init script to compile application');
     }
 
     return json_decode(file_get_contents($file), true);
@@ -156,9 +156,9 @@ class App {
 
   /**
    * Handle exception. Call handlers and do some staff
-   * @param Exception $Exception
+   * @param Throwable $Exception
    */
-  public static function handleException(Exception $Exception) {
+  public static function handleException(Throwable $Exception) {
     $Exception->id = static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
 
     $exception = get_class($Exception);
@@ -177,7 +177,7 @@ class App {
       'text' => 'text/plain',
     ];
 
-    return function (Exception $Exception) use ($code, $type, $format_func, $types) {
+    return function (Throwable $Exception) use ($code, $type, $format_func, $types) {
       switch (true) {
         case isset($format_func):
           $response = $format_func($Exception);
@@ -236,7 +236,7 @@ class App {
    * @throws Exception
    */
   public static function handleAssertion($file, $line, $code) {
-    throw new Exception('Assertion failed in file ' . $file . ' at line ' . $line . ' with code ' . $code);
+    throw new Error('Assertion failed in file ' . $file . ' at line ' . $line . ' with code ' . $code);
   }
 
   /**
