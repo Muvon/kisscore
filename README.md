@@ -3,7 +3,7 @@
 
 ## What is it?
 
-Kiss Core Microframework on PHP 5.6+ is the lightweight single file packed end-project framework for rapid development of very fast projects.
+Kiss Core Microframework on PHP 7+ is the lightweight single file packed end-project framework for rapid development of very fast projects.
 
 1. Single core file in project you create
 2. Simple and very fast template engine that allows you only use blocks and iterations (easy to learn for designers)
@@ -36,7 +36,7 @@ include /home/*/*/env/etc/nginx.conf;
 
 Now you can create application with single command in KISS Core dir:
 ```bash
-./create-app myproj
+./create-app ~/Work/myproj
 ```
 
 That will create your application in folder myproj under home dir, prepare all it environment in local machine and restart php-fpm and nginx.
@@ -49,20 +49,11 @@ sudo echo '127.0.0.1 myproj.lo' >> /etc/hosts
 
 Restart services nginx and php-fpm and enjoy in you browser opening your project http://myproj.lo
 
-## Project environment
-After project installation you got new command in your shell line - kiss.
-This command uses for switching project and setup special environment. Use it like
-```bash
-kiss myproj
-```
-
-And you are in project with special var and PATH configured
-
 ## Update core in existing application
 You also can update compiled KISSCore file in your application.
 Just run install-core and enjoy!
 ```bash
-./install-core myproj
+./install-core ~/Work/myproj
 ```
 
 ## Folder structure
@@ -159,21 +150,17 @@ Prepare environment with *init* call and thats finally done. You now can *trigge
 
 To run project using KISS Core you need
 
-1. Only PHP 5.6+ to run php code :)
+1. Only PHP 7+ to run php code :)
 
 or
 
-1. PHP 5.6+ with php-fpm (http://php.net)
-2. Nginx (http://nginx.org)
+1. [PHP 7+ with php-fpm](http://php.net)
+2. [Nginx](https://nginx.org)
+3. [Docker](https://docker.com) for isolation
 
 to handle web requests
 
 And also some linux knowledge ;)
-
-You also can check requirements on your system using this bash command in kisscore folder:
-```bash
-./check
-```
 
 ## How to extend?
 Just use lib dir into your application folder.
