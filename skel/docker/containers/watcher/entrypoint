@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+path=/src/app
+
+sha=0
+update_sha() {
+  sha=`ls -lRe $path | sha1sum`
+}
+update_sha
+previous_sha=$sha
+compare() {
+  update_sha
+  if [[ "$sha" != "$previous_sha" ]] ; then
+    echo -n "sync..."
+
+    # Command to update maps
+    id=$(curl --silent -0 -H 'Content-type: application/json' --unix-socket /var/run/docker.sock -d '{"Cmd": ["bin/php-exec", "Env::init()"]}' -X POST localhost/containers/${PHP_CONTAINER}/exec | cut -d '"' -f 4)
+    curl --silent -0 -H 'Content-type: application/json' --unix-socket /var/run/docker.sock -X POST -d '{"Detach": false, "Tty": false}' localhost/exec/$id/start
+    curl --silent -0 -H 'Content-type: application/json' --unix-socket /var/run/docker.sock -X POST localhost/containers/${NGINX_CONTAINER}/kill?signal=HUP
+
+    previous_sha=$sha
+  else
+    echo -n .
+  fi
+}
+trap exit SIGINT SIGTERM EXIT
+
+echo -en "--> watching."
+while true; do
+  compare
+  sleep 2
+done

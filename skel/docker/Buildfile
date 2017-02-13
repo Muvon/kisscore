@@ -1,2 +1,3 @@
 php: --network host -t ${COMPOSE_PROJECT_NAME}/php:${REVISION}
 nginx: --network host -t ${COMPOSE_PROJECT_NAME}/nginx:${REVISION}
+watcher: --network host -t ${COMPOSE_PROJECT_NAME}/watcher:${REVISION}
