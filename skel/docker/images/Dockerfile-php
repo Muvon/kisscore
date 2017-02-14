@@ -1,16 +1,9 @@
-FROM php:7.1.1-fpm-alpine
+FROM dmitrykuzmenkov/php:7.1.1-fpm
 MAINTAINER Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>
-ENV BUILD_DEPS="autoconf automake build-base"
-RUN apk add --update bash $BUILD_DEPS && \
-  pecl install igbinary && \
-  apk del $BUILD_DEPS && \
-  rm -fr /var/cache/apk/* && \
-  rm -fr /usr/local/etc/php-fpm.d/* && \
-  rmdir /usr/local/etc/php/conf.d
 
 COPY . /src
-RUN ln -fs /src/docker/containers/php/config/php.ini /usr/local/etc/php/php.ini && \
-  ln -fs /src/docker/containers/php/config/conf.d /usr/local/etc/php/conf.d
+RUN ln -fs /src/docker/containers/php/config/php.ini /etc/php/php.ini && \
+  ln -fs /src/docker/containers/php/config/conf.d /etc/php/conf.d
 WORKDIR /src
 
 ENTRYPOINT ["/src/docker/containers/php/entrypoint"]
