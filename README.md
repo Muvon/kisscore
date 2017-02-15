@@ -156,7 +156,7 @@ or
 
 1. [PHP 7+ with php-fpm](http://php.net)
 2. [Nginx](https://nginx.org)
-3. [Docker](https://docker.com) for isolation
+3. [Yoda](https://github.com/dmitrykuzmenkov/yoda) for isolation using [Docker](https://docker.com)
 
 to handle web requests
 
