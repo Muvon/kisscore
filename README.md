@@ -49,6 +49,13 @@ sudo echo '127.0.0.1 myproj.lo' >> /etc/hosts
 
 Restart services nginx and php-fpm and enjoy in you browser opening your project http://myproj.lo
 
+## Running using Docker containers
+You can simple run newly created project using [Yoda](https://github.com/dmitrykuzmenkov/yoda) with [Docker](https://docker.com).
+Just install Yoda, change dir of your current project and run in your bash shell:
+```bash
+yoda start
+```
+
 ## Update core in existing application
 You also can update compiled KISSCore file in your application.
 Just run install-core and enjoy!
@@ -61,6 +68,7 @@ Just run install-core and enjoy!
 | Folder | Description                                                                            |
 |--------|----------------------------------------------------------------------------------------|
 | app    | Main project folder with source code, libraries, static and KISSCore                   |
+| docker | This folder contains Yoda configs to start project using docker containers             |
 | env    | Environment folder with tmp files, generated maps, configs and other special env stuff |
 
 ### app skeleton
