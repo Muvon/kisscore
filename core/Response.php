@@ -133,7 +133,7 @@ class Response {
     assert('in_array($code, [301, 302])');
 
     if ($url[0] === '/')
-      $url = 'http://' . getenv('HTTP_HOST') . $url;
+      $url = (filter_input(INPUT_SERVER, 'HTTPS') ? 'https': 'http') . '://' . getenv('HTTP_HOST') . $url;
 
     static::create($code)
       ->header('Content-type', '')
