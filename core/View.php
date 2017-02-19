@@ -406,4 +406,16 @@ class View {
 
     return $this;
   }
+
+  /**
+   * Clean compiled files
+   * @return $this
+   */
+  public static function flush() {
+    foreach(glob(config('view.compile_dir') . '/view-*') as $file) {
+      unlink($file);
+    }
+
+    return $this;
+  }
 }
