@@ -11,6 +11,7 @@ param_map_file    = '{{VAR_DIR}}/import_var_map.json'
 
 upload_max_filesize = '10M'
 
+proto = 'http'
 domain = '{{PROJECT}}.lo'
 
 [common:test]
