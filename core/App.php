@@ -3,6 +3,7 @@ class App {
   /** @property bool $debug */
   public static $debug;
   protected static $e_handlers = [];
+  protected static $action_map = [];
 
   /**
    * Fetch annotated variables from $file using $map_file
@@ -95,6 +96,8 @@ class App {
     Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
     Autoload::register('Lib', getenv('APP_DIR') . '/lib');
     Autoload::register('', getenv('APP_DIR') . '/vendor');
+
+    static::$action_map = static::getJSON(config('common.action_map_file'));
   }
 
   /**
@@ -110,7 +113,7 @@ class App {
    */
   public static function process(Request $Request, Response $Response) {
     $process = function (&$_RESPONSE) use ($Request, $Response) {
-      $_ACTION = getenv('APP_DIR') . '/actions/' . $Request->getAction() . '.php';
+      $_ACTION = static::$action_map[$Request->getAction()];
       extract(Input::get(static::getImportVarsArgs($_ACTION)));
       $_RESPONSE = include $_ACTION;
 

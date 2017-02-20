@@ -26,6 +26,7 @@ class Env {
   public static function init() {
     static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
     static::compileConfig();
+    static::generateActionMap();
     static::generateURIMap();
     static::generateParamMap();
     static::generateTriggerMap();
@@ -121,6 +122,17 @@ class Env {
       }
     }
     App::writeJSON(config('common.uri_map_file'), $map);
+  }
+
+  /**
+   * Generate action => file_path map
+   */
+  protected static function generateActionMap() {
+    $map = [];
+    foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
+      $map[basename($file, '.php')] = $file;
+    }
+    App::writeJSON(config('common.action_map_file'), $map);
   }
 
   /**
