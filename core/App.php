@@ -3,7 +3,7 @@ class App {
   /** @property bool $debug */
   public static $debug;
   protected static $e_handlers = [];
-  protected static $action_map = [];
+  protected static $action_map;
 
   /**
    * Fetch annotated variables from $file using $map_file
@@ -112,6 +112,10 @@ class App {
    * @return View
    */
   public static function process(Request $Request, Response $Response) {
+    if (!isset(static::$action_map)) {
+      static::$action_map = static::getJSON(config('common.action_map_file'));
+    }
+
     $process = function (&$_RESPONSE) use ($Request, $Response) {
       $_ACTION = static::$action_map[$Request->getAction()];
       extract(Input::get(static::getImportVarsArgs($_ACTION)));
