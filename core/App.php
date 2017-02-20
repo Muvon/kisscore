@@ -96,8 +96,6 @@ class App {
     Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
     Autoload::register('Lib', getenv('APP_DIR') . '/lib');
     Autoload::register('', getenv('APP_DIR') . '/vendor');
-
-    static::$action_map = static::getJSON(config('common.action_map_file'));
   }
 
   /**
