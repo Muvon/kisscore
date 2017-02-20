@@ -415,7 +415,5 @@ class View {
     foreach(glob(config('view.compile_dir') . '/view-*') as $file) {
       unlink($file);
     }
-
-    return $this;
   }
 }
