@@ -227,9 +227,3 @@ php_value[assert.quiet_eval] = 0
 php_value[assert.callback] = "App::handleAssertion"
 
 php_value[opcache.validate_timestamps] = {{DEBUG}}
-php_value[opcache.revalidate_freq] = 0
-php_value[opcache.save_comments] = 0
-php_flag[opcache.fast_shutdown] = 1
-php_value[opcache.interned_strings_buffer] = 16
-php_value[opcache.memory_consumption] = 32
-php_value[opcache.max_accelerated_files] = 10000
