@@ -20,6 +20,7 @@ server {
   auth_basic {{AUTH}};
   auth_basic_user_file {{CONFIG_DIR}}/.htpasswd;
 
+  open_file_cache {{OPEN_FILE_CACHE}}; # disable file cache for development
   root {{STATIC_DIR}};
   location = / {
     if ($request_method !~ ^(GET|HEAD|POST|PUT|DELETE|OPTIONS)$ ) {

@@ -39,4 +39,5 @@ Env::configure(__DIR__, [
   '{{CORS_METHODS}}' => config('cors.methods'),
   '{{CORS_HEADERS}}' => config('cors.headers'),
   '{{CORS_CREDENTIALS}}' => config('cors.credentials'),
+  '{{OPEN_FILE_CACHE}}' => config('nginx.open_file_cache'),
 ]);
