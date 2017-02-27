@@ -117,6 +117,15 @@ class Request {
   }
 
   /**
+   * Get url query
+   * @return string
+   */
+  public function getUrlQuery() {
+    return parse_url($this->url, PHP_URL_QUERY);
+  }
+
+
+  /**
    * Get requested header
    * @param string $header
    * @return string
