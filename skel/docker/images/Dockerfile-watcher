@@ -1,6 +1,6 @@
 FROM dmitrykuzmenkov/php:7.1.1-fpm
 MAINTAINER Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>
 
-RUN apk update && apk add bash curl && rm -fr /var/cache/apk/*
+RUN apk update && apk add bash curl inotify-tools && rm -fr /var/cache/apk/*
 
 ENTRYPOINT ["/src/docker/containers/watcher/entrypoint"]
