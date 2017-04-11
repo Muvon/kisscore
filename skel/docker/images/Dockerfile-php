@@ -1,4 +1,4 @@
-FROM dmitrykuzmenkov/php:7.1.1-fpm
+FROM dmitrykuzmenkov/php:7.1.3-fpm
 MAINTAINER Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>
 
 COPY . /src
