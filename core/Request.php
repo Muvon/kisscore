@@ -162,7 +162,7 @@ class Request {
    * @return $this
    */
   public function setAction($action) {
-    $this->action = preg_replace('|[^a-z0-9\_\-]+|is', '', $action);
+    $this->action = trim(preg_replace('|[^a-z0-9\_\-\/]+|is', '', $action), '/');
     return $this;
   }
 

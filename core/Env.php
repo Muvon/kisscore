@@ -116,7 +116,7 @@ class Env {
         foreach ($m[0] as $k => $matches) {
           $pattern = trim($m[1][$k]);
           $params  = isset($m[2][$k]) && $m[2][$k] ? array_map('trim', explode(',', substr($m[2][$k], 1))) : [];
-          array_unshift($params, basename($file, '.php'));
+          array_unshift($params, static::getActionByFile($file));
           $map[$pattern] = $params;
         }
       }
@@ -130,7 +130,7 @@ class Env {
   protected static function generateActionMap() {
     $map = [];
     foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
-      $map[basename($file, '.php')] = $file;
+      $map[static::getActionByFile($file)] = $file;
     }
     App::writeJSON(config('common.action_map_file'), $map);
   }
@@ -180,6 +180,10 @@ class Env {
     }
     App::writeJSON(config('common.trigger_map_file'), $map);
   }
+
+   protected static function getActionByFile($file) {
+     return substr(trim(str_replace(getenv('APP_DIR') . '/actions', '', $file), '/'), 0, -4);
+   }
 
   /**
    * Helper for getting list of all php files in dir
