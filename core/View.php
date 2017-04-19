@@ -391,19 +391,27 @@ class View {
    * Рендеринг и подготовка данных шаблона на вывод
    *
    * @access public
+   * @param bool $quiet Quiet mode render empty string if no template found
    * @return View
    *   Записывает результат во внутреннюю переменную $body
    *   и возвращает ссылку на объект
    */
-  public function render() {
+  public function render($quiet = false) {
     if (isset($this->body)) {
       return $this;
     }
 
-    ob_start();
-    $this->compile();
-    $this->body = ob_get_clean();
-
+    try {
+      ob_start();
+      $this->compile();
+      $this->body = ob_get_clean();
+    } catch (Exception $e) {
+      if ($quiet) {
+        $this->body = '';
+      } else {
+        throw $e;
+      }
+    }
     return $this;
   }
 
