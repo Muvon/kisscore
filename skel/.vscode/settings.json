@@ -7,6 +7,12 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "app/static/files": true,
-    "env": true
+    "env": true,
+    "app/static/asset": true,
+    "app/client/asset": true,
+    "app/vendor": true
+  },
+  "files.associations": {
+    "*.tpl": "html"
   }
 }
