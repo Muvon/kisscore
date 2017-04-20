@@ -13,6 +13,7 @@
     "app/vendor": true
   },
   "files.associations": {
-    "*.tpl": "html"
+    "*.tpl": "html",
+    "Dockerfile-*": "dockerfile"
   }
 }
