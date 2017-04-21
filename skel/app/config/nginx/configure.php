@@ -1,7 +1,5 @@
 <?php
-if (config('nginx.auth') !== 'off') {
-  App::exec('echo "' . config('nginx.auth_name') . ':"$(openssl passwd -apr1 ' . escapeshellarg(config('nginx.auth_pass')) . ') > $CONFIG_DIR/.htpasswd');
-}
+App::exec('echo "' . config('nginx.auth_name') . ':"$(openssl passwd -apr1 ' . escapeshellarg(config('nginx.auth_pass')) . ') > $CONFIG_DIR/.htpasswd');
 
 $routes = App::getJSON(config('common.uri_map_file'));
 uasort($routes, function ($a, $b) {
