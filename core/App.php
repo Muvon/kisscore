@@ -261,11 +261,11 @@ class App {
    */
   public static function exec($cmd) {
     $project_dir = getenv('PROJECT_DIR');
-    return trim(`bash <<"EOF"
+    return trim(`
       set -e
       cd $project_dir
       source ./env.sh
       $cmd
-EOF`);
+    `);
   }
 }
