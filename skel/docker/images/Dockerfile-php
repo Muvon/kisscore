@@ -1,7 +1,7 @@
 FROM dmitrykuzmenkov/php:7.1.4-fpm
 MAINTAINER Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>
 
-RUN apk add --update openssl && \
+RUN apk add --update bash openssl && \
   rm -fr /var/cache/apk/*
 
 COPY . /src
