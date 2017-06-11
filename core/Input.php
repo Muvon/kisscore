@@ -68,7 +68,7 @@ class Input {
   public static function extractTypified(array $args, Closure $fetcher) {
     $params = [];
     foreach ($args as $arg) {
-      preg_match('#^([a-z0-9_]+)(?:\:([a-z]+))?(?:\=(.+))?$#', $arg, $m);
+      preg_match('#^([a-zA-Z0-9_]+)(?:\:([a-z]+))?(?:\=(.+))?$#', $arg, $m);
       $params[$m[1]]  = $fetcher($m[1], isset($m[3]) ? $m[3] : '');
 
       // Нужно ли типизировать
