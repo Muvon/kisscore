@@ -37,6 +37,14 @@ class Session {
     static::$container = &$_SESSION;
   }
 
+  public static function id() {
+    return session_id();
+  }
+
+  public static function destroy() {
+    return session_destroy();
+  }
+
   /**
    * Regenrate new session ID
    */
