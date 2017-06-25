@@ -328,12 +328,13 @@ class View {
    *   Имя скомпилированного файла
    */
   protected function compileChunk($route) {
-    $file_c = $this->compile_dir . '/view-' . md5($route) . '.chunk';
+    $source_file = $this->getSourceFile($route);
+    $file_c = $this->compile_dir . '/view-' . md5($source_file) . '.chunk';
     if (!App::$debug && is_file($file_c)) {
       return $file_c;
     }
 
-    $str = file_get_contents($this->getSourceFile($route));
+    $str = file_get_contents($source_file);
 
     $str = $this->chunkCloseBlocks($str);
 
@@ -384,7 +385,7 @@ class View {
 
   protected function getCompiledFile() {
     assert("is_string(\$this->compile_dir) && is_dir(\$this->compile_dir) && is_writable(\$this->compile_dir)");
-    return $this->compile_dir . '/view-' . md5(implode(':', $this->routes)) . '.page';
+    return $this->compile_dir . '/view-' . md5($this->source_dir . ':' . implode(':', $this->routes)) . '.page';
   }
 
   /**
