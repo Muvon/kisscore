@@ -39,6 +39,7 @@ class Request {
   $xff         = '',
   $host        = '',
   $user_agent  = '',
+  $languages   = [],
   $is_ajax     = false;
 
   /**
@@ -76,6 +77,18 @@ class Request {
       self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 
       static::parseRealIp();
+      preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE'), $lang);
+      if ($lang && sizeof($lang[1]) > 0) {
+        $langs = array_combine($lang[1], $lang[4]);
+
+        foreach ($langs as $k => $v) {
+          if ($v === '') {
+            $langs[$k] = 1;
+          }
+        }
+        arsort($langs, SORT_NUMERIC);
+        static::$languages = $langs;
+      }
 
       if ($url === true && $url = filter_input(INPUT_SERVER, 'REQUEST_URI')) {
         $url = rtrim($url, ';&?') ?: '/';
