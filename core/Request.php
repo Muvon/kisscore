@@ -66,7 +66,7 @@ class Request {
     if (filter_input(INPUT_SERVER, 'argc')) {
       self::$protocol = 'CLI';
     } else {
-      self::$protocol = filter_input(INPUT_SERVER, 'HTTPS') ?: 'HTTP';
+      self::$protocol = filter_input(INPUT_SERVER, 'HTTPS') ? 'HTTPS' : 'HTTP';
       self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
       self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
       self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
