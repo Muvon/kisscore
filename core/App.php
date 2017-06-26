@@ -54,7 +54,7 @@ class App {
   public static function log($message, array $dump = [], $type = 'error') {
     assert('is_string($message)');
     assert('is_string($type)');
-    $id = bin2hex($message . ':' . implode('.', array_keys($dump)) . ':' . $type);
+    $id = hash('sha256', $message . ':' . implode('.', array_keys($dump)) . ':' . $type);
     $log_file = getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-' . $type . '.log';
     $message =
       gmdate('[Y-m-d H:i:s T]')
