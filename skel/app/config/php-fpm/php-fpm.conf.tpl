@@ -224,6 +224,8 @@ php_value[display_errors] = {{DEBUG}}
 php_value[assert.active] = {{DEBUG}}
 php_value[assert.bail] = 0
 php_value[assert.quiet_eval] = 0
+php_value[assert.exception] = 0
+php_value[zend.assertions] = {{ASSERTIONS}}
 php_value[assert.callback] = "App::handleAssertion"
 
 php_value[opcache.validate_timestamps] = {{DEBUG}}
