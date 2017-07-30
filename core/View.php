@@ -120,7 +120,7 @@ class View {
   }
 
   public function assign($key, $val = null) {
-    assert('in_array(gettype($key), ["string", "array"])');
+    assert(in_array(gettype($key), ["string", "array"]));
     if (is_string($key)) {
       $this->data[$key] = $val;
     } elseif (is_array($key)) {

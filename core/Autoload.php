@@ -16,7 +16,7 @@ class Autoload {
    * @return bool
    */
   protected static function load($class) {
-    assert('is_string($class)');
+    assert(is_string($class));
 
     $prefix = $class;
     while (false !== $pos = strrpos($prefix, '\\')) {
@@ -37,8 +37,8 @@ class Autoload {
    * @param string $class
    */
   protected static function loadMapped($prefix, $class) {
-    assert('is_string($prefix)');
-    assert('is_string($class)');
+    assert(is_string($prefix));
+    assert(is_string($class));
 
     if (!isset(static::$prefixes[$prefix])) {
       return false;
@@ -61,9 +61,9 @@ class Autoload {
    * @param bool $prepend Priority for this
    */
   public static function register($prefix, $dir, $prepend = false) {
-    assert('is_string($prefix)');
-    assert("is_string(\$dir) && is_dir(\$dir) /* Dir $dir does not exist */");
-    assert('is_bool($prepend)');
+    assert(is_string($prefix));
+    assert(is_string($dir) && is_dir($dir) /* Dir $dir does not exist */);
+    assert(is_bool($prepend));
 
     if (!static::$inited) {
       static::init();

@@ -34,7 +34,7 @@ class Cookie {
    * @return void
    */
   public static function set($name, $value, $time, $path = '/') {
-    assert('is_string($name)');
+    assert(is_string($name));
 
     static::$cookies[$name] = [
       'name' => $name,

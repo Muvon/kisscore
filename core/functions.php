@@ -5,7 +5,7 @@
  * @return mixed
  */
 function config($param) {
-  assert('is_string($param)');
+  assert(is_string($param));
 
   static $config = [];
   if (!$config) {
@@ -71,7 +71,7 @@ function typify(&$var, $type) {
  * @return mixed
  */
 function trigger_event($event, array $payload = []) {
-  assert('is_string($event)');
+  assert(is_string($event));
 
   static $map;
   if (!isset($map)) {

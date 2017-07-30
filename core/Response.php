@@ -89,7 +89,7 @@ class Response {
    * @return $this
    */
   public function status($status) {
-    assert('in_array($status, array_keys(self::$messages))');
+    assert(in_array($status, array_keys(self::$messages)));
     if (isset(self::$messages[$status])) {
       $this->status = $status;
     }
@@ -129,8 +129,8 @@ class Response {
   * @return void
   */
   public static function redirect($url, $code = 302) {
-    assert('is_string($url)');
-    assert('in_array($code, [301, 302])');
+    assert(is_string($url));
+    assert(in_array($code, [301, 302]));
 
     if ($url[0] === '/')
       $url = (filter_input(INPUT_SERVER, 'HTTPS') ? 'https': 'http') . '://' . getenv('HTTP_HOST') . $url;
@@ -159,8 +159,8 @@ class Response {
   * @return Response
   */
   public function header($header, $value) {
-    assert('is_string($header)');
-    assert('is_string($value)');
+    assert(is_string($header));
+    assert(is_string($value));
 
     $this->headers[$header] = $value;
     return $this;
@@ -193,7 +193,7 @@ class Response {
   * @return $this
   */
   public function setBody($body) {
-    assert('is_string($body)');
+    assert(is_string($body));
 
     $this->body = $body;
     return $this;

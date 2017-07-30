@@ -52,8 +52,8 @@ class App {
    * @return string идентификатор исключения
    */
   public static function log($message, array $dump = [], $type = 'error') {
-    assert('is_string($message)');
-    assert('is_string($type)');
+    assert(is_string($message));
+    assert(is_string($type));
     $id = hash('sha256', $message . ':' . implode('.', array_keys($dump)) . ':' . $type);
     $log_file = getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-' . $type . '.log';
     $message =

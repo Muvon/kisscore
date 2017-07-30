@@ -57,7 +57,7 @@ class Session {
    * @return bool
    */
   public static function has($key) {
-    assert('is_string($key)');
+    assert(is_string($key));
     return isset(static::$container[$key]);
   }
 
