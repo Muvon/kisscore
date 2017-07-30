@@ -3,6 +3,6 @@ volumes:
   - env-storage:/src/env
 network_mode: bridge
 links:
-  - php.0
+  - php
 ports:
   - '80:80'
