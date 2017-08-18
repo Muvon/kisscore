@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+if [[ -z "$1" ]]; then
+  echo 'Usage: '$0' [path-to-file]'
+  exit 1
+fi
+
+pid="/src/env/run/${1##*/}.pid"
+trap "rm -f $pid" SIGSEGV
+trap "rm -f $pid" SIGINT
+
+if [ -e $pid ]; then
+  echo 'Instance with pid '$(cat $pid)' is running already'
+  echo 'You can remove pid file to fix it: '$pid
+  exit 1
+else
+  echo $$ > $pid
+fi
+
+bin/php-exec "$1"
+
+rm -f $pid
+exit 0
