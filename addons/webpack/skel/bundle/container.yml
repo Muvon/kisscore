@@ -1,0 +1,11 @@
+image: webpack
+labels:
+  - role=bundle
+working_dir: /src
+network_mode: host
+restart: "no"
+cap_drop:
+  - ALL
+entrypoint: ["/src/docker/containers/bundle/entrypoint"]
+volumes:
+  - env-storage:/src/env:rw

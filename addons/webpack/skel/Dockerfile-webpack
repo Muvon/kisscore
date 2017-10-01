@@ -1,0 +1,14 @@
+FROM node:8.1.2-alpine
+MAINTAINER Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>
+
+RUN mkdir /src
+
+COPY package.json /src/package.json
+COPY yarn.lock /src/yarn.lock
+RUN cd /src && yarn install && yarn cache clean
+
+COPY app/client /src/app/client
+COPY .babelrc /src/.babelrc
+COPY webpack.config.js /src/webpack.config.js
+COPY docker /src/docker
+WORKDIR /src

@@ -1,0 +1,14 @@
+--- app/config/nginx/nginx.conf.tpl	2017-09-16 13:06:09.000000000 +0700
++++ new/app/config/nginx/nginx.conf.tpl	2017-09-16 13:06:14.000000000 +0700
+@@ -43,6 +43,11 @@
+     error_log      /dev/null;
+   }
+ 
++  # Common bundles
++  location ~* ^/([a-zA-Z0-9]+)\-[0-9A-Za-z]+\.(js|js.map|css|css.map)$ {
++    alias {{VAR_DIR}}/$1.$2;
++  }
++
+   location @app {
+     access_log  {{LOG_DIR}}/nginx-access.log {{PROJECT}} buffer=32k;
+ 

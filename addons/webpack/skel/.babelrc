@@ -1,0 +1,12 @@
+{
+  "presets": [
+    ["es2015", {"modules": false}],
+    ["es2016"]
+  ],
+  "plugins": [
+    "transform-runtime",
+    "transform-decorators",
+    "transform-class-properties",
+    "transform-object-rest-spread"
+  ]
+}

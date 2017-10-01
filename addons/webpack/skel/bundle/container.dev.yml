@@ -1,0 +1,6 @@
+restart: unless-stopped
+volumes:
+  - ${SOURCE_PATH}/app:/src/app
+  - env-storage:/src/env:rw
+network_mode: bridge
+entrypoint: ["/src/docker/containers/bundle/entrypoint-watch"]

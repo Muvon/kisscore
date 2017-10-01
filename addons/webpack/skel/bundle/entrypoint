@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+touch /src/env/run/nginx_reload
+exec yarn run build

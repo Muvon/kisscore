@@ -1,0 +1,11 @@
+--- app/main.php	2017-09-16 13:00:32.000000000 +0700
++++ new/app/main.php	2017-09-16 13:02:30.000000000 +0700
+@@ -7,6 +7,8 @@
+   ->prepend('_head')
+   ->append('_foot')
+ ;
++$View->assign('BUNDLE_HASH', filemtime(getenv('VAR_DIR') . '/bundle.css'));
++
+ $Response
+   ->header('X-Frame-Options', 'DENY')
+   ->header('X-XSS-Protection', '1; mode=block')
