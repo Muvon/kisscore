@@ -11,7 +11,8 @@ if [[ ! -d "$1" ]]; then
 fi
 
 ADDON_PATH=$(dirname `realpath $0`)
-#cp -r $ADDON_PATH/skel/* $1/
+cp -r $ADDON_PATH/skel/* $1/
+cp $ADDON_PATH/{.babelrc,.eslintrc.js} $1/
 
 pushd $1
 for file in $ADDON_PATH/patches/*; do
