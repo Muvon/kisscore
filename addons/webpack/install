@@ -1,2 +1,20 @@
 #!/usr/bin/env bash
-echo Not implemented
+set -e
+if [[ -z "$1" ]]; then
+  echo 'Usage '$0' [path-to-project]'
+  exit 1
+fi
+
+if [[ ! -d "$1" ]]; then
+  echo "Path '$1' does not exist or its not a directory"
+  exit 1
+fi
+
+ADDON_PATH=$(dirname `realpath $0`)
+#cp -r $ADDON_PATH/skel/* $1/
+
+pushd $1
+for file in $ADDON_PATH/patches/*; do
+  patch -p1 < $file;
+done
+popd
