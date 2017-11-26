@@ -12,4 +12,4 @@ volumes:
   - env-storage:/src/env:rw
 environment:
   - PROJECT=$COMPOSE_PROJECT_NAME
-  - PROJECT_ENV=$ENV
+  - PROJECT_ENV=$PROJECT_ENV
