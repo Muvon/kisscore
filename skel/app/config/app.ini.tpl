@@ -39,6 +39,7 @@ merge_lines    = true
 name          = 'KISS'
 
 [nginx]
+port = 80
 auth_name = 'test'
 auth_pass = 'test'
 ; auth_basic nginx param: off, Restricted
