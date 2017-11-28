@@ -204,6 +204,13 @@ catch_workers_output = yes
 ; overwrite previously defined php.ini values, but will append the new value
 ; instead.
 
+; Clear environment in FPM workers.
+; Prevents arbitrary environment variables from reaching FPM worker processes
+; by clearing the environment in workers before env vars specified in this
+; pool configuration are added. Since PHP 5.4.27, 5.5.11, and 5.6.0.
+; Default value: Yes.
+clear_env = no
+
 ; Default Value: nothing is defined by default except the values in php.ini and
 ;                specified at startup with the -d argument
 ;php_admin_value[sendmail_path] = /usr/sbin/sendmail -t -i -f www@my.domain.com
