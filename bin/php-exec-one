@@ -4,19 +4,21 @@ if [[ -z "$1" ]]; then
   exit 1
 fi
 
-pid="/src/env/run/${1##*/}.pid"
-trap "rm -f $pid" SIGSEGV
-trap "rm -f $pid" SIGINT
+pid_file="/src/env/run/${1##*/}.pid"
+trap "rm -f $pid_file" SIGSEGV
+trap "rm -f $pid_file" SIGINT
 
-if [ -e $pid ]; then
-  echo 'Instance with pid '$(cat $pid)' is running already'
-  echo 'You can remove pid file to fix it: '$pid
-  exit 1
+if [ -e $pid_file ]; then
+  pid=$(cat $pid_file)
+  if ! kill -0 $pid 1> /dev/null 2>&1; then
+    rm -f $pid_file
+  else
+    echo 'Instance with pid '$pid' is running already'
+    echo 'You can remove pid file to fix it: '$pid_file
+    exit 1
+  fi
 else
-  echo $$ > $pid
+  echo $$ > $pid_file
 fi
 
-bin/php-exec "$1"
-
-rm -f $pid
-exit 0
+exec bin/php-exec "$1"
