@@ -12,7 +12,7 @@ if [[ -f $config ]]; then
   OPTS='-c '$config
 fi
 code=$(test -f "$1" && echo "include '$1'" || echo "$1");
-exec $php $OPTS <<EOF
+$php $OPTS <<EOF
 <?php
   include getenv('KISS_CORE');
 

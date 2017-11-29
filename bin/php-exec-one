@@ -3,22 +3,18 @@ if [[ -z "$1" ]]; then
   echo 'Usage: '$0' [path-to-file]'
   exit 1
 fi
+lockfile="/src/env/run/${1##*/}.lock"
+trap release SIGSEGV SIGINT SIGTERM
+release() {
+  rm -f $lockfile
+}
 
-pid_file="/src/env/run/${1##*/}.pid"
-trap "rm -f $pid_file" SIGSEGV
-trap "rm -f $pid_file" SIGINT
+exec 9> $lockfile
+flock -x -n 9 || {
+  >&2 echo 'Instance is running already'
+  >&2 echo 'You can remove lock file to fix it: '$lockfile
+  exit 1
+}
 
-if [ -e $pid_file ]; then
-  pid=$(cat $pid_file)
-  if ! kill -0 $pid 1> /dev/null 2>&1; then
-    rm -f $pid_file
-  else
-    echo 'Instance with pid '$pid' is running already'
-    echo 'You can remove pid file to fix it: '$pid_file
-    exit 1
-  fi
-else
-  echo $$ > $pid_file
-fi
-
-exec bin/php-exec "$1"
+bin/php-exec "$1" childpid=$!
+release
