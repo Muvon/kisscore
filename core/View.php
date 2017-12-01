@@ -351,7 +351,7 @@ class View {
     // Переменные: {array.index}
     $str = static::chunkTransformVars($str);
 
-    file_put_contents($file_c, $str);
+    file_put_contents($file_c, $str, LOCK_EX);
     return $file_c;
   }
 
@@ -370,7 +370,7 @@ class View {
 
       // Init global context
       array_unshift($content, '<?php $item = &$this->data; ?>');
-      file_put_contents($file_c, implode($content));
+      file_put_contents($file_c, implode($content), LOCK_EX);
     }
     include $file_c;
     return $this;
