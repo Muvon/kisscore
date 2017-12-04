@@ -101,3 +101,23 @@ function trigger_event($event, array $payload = []) {
 function get_class_name($class) {
   return (new ReflectionClass($class))->getShortName();
 }
+
+// Missed functions for large integers for BCmath
+function bchexdec($hex) {
+  $dec = 0;
+  $len = strlen($hex);
+  for ($i = 1; $i <= $len; $i++) {
+    $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
+  }
+  return $dec;
+}
+
+function bcdechex($dec) {
+  $hex = '';
+  do {
+    $last = bcmod($dec, 16);
+    $hex = dechex($last).$hex;
+    $dec = bcdiv(bcsub($dec, $last), 16);
+  } while($dec > 0);
+  return $hex;
+}
