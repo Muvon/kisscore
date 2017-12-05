@@ -1,8 +1,9 @@
-FROM dmitrykuzmenkov/php:7.1.9-fpm
+FROM dmitrykuzmenkov/php:7.1.12-fpm
 MAINTAINER Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>
 
 RUN apk add --update bash openssl && \
-  rm -fr /var/cache/apk/*
+  rm -fr /var/cache/apk/* && \
+  rm -fr /tmp/*
 
 COPY . /src
 RUN ln -fs /src/docker/containers/php/config/php.ini /etc/php/php.ini && \
