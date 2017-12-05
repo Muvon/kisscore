@@ -329,7 +329,7 @@ class View {
    */
   protected function compileChunk($route) {
     $source_file = $this->getSourceFile($route);
-    $file_c = $this->compile_dir . '/view-' . md5($source_file) . '.chunk';
+    $file_c = $this->getCompiledFile([$route]);
     if (!App::$debug && is_file($file_c)) {
       return $file_c;
     }
@@ -383,9 +383,9 @@ class View {
     return $this->source_dir . '/' . $route . '.' . $this->template_extension;
   }
 
-  protected function getCompiledFile() {
+  protected function getCompiledFile($routes = []) {
     assert("is_string(\$this->compile_dir) && is_dir(\$this->compile_dir) && is_writable(\$this->compile_dir)");
-    return $this->compile_dir . '/view-' . md5($this->source_dir . ':' . implode(':', $this->routes)) . '.page';
+    return $this->compile_dir . '/view-' . md5($this->source_dir . ':' . implode(':', $routes ?: $this->routes)) . '.tplc';
   }
 
   /**
