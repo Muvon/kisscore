@@ -26,7 +26,7 @@ action = 'home'
 
 [view]
 source_dir          = '{{APP_DIR}}/views'
-compile_dir         = '{{TMP_DIR}}'
+compile_dir         = '{{TMP_DIR}}/{{PROJECT_REV}}'
 template_extension  = 'tpl'
 strip_comments      = false
 merge_lines         = false

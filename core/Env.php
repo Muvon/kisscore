@@ -5,6 +5,7 @@ class Env {
     'PROJECT',
     'PROJECT_DIR',
     'PROJECT_ENV',
+    'PROJECT_REV',
     'APP_DIR',
     'STATIC_DIR',
     'CONFIG_DIR',
@@ -31,6 +32,7 @@ class Env {
     static::generateParamMap();
     static::generateTriggerMap();
     static::generateConfigs();
+    static::prepareDirs();
   }
 
   /**
@@ -102,6 +104,12 @@ class Env {
 
     foreach (glob(getenv('APP_DIR') . '/config/*/configure.php') as $file) {
       $configure($file);
+    }
+  }
+
+  protected static function prepareDirs() {
+    if (!is_dir(config('view.compile_dir'))) {
+      mkdir(config('view.compile_dir'), 0755, true);
     }
   }
 

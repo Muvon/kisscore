@@ -2,7 +2,6 @@
 if [ ! -e /.inited ]; then
   mkdir -p /src/env/backup /src/env/etc /src/env/log /src/env/run /src/env/tmp /src/env/var
   /src/bin/php-exec 'Env::init()'
-  /src/bin/php-exec 'View::flush()'
   touch /.inited
 fi
 

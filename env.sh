@@ -10,6 +10,7 @@ export PROJECT=${PROJECT:-"${current_path##*/}"} \
   CONFIG_DIR=$PROJECT_DIR/env/etc \
   ENV_DIR=$PROJECT_DIR/env \
   PROJECT_ENV=${PROJECT_ENV:-"$(test -f $PROJECT_DIR/env/etc/environment && cat $_ || echo 'dev')"} \
+  PROJECT_REV=${PROJECT_REV:-"dev"} \
   BIN_DIR=$PROJECT_DIR/env/bin \
   RUN_DIR=$PROJECT_DIR/env/run \
   LOG_DIR=$PROJECT_DIR/env/log \
