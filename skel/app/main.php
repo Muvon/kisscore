@@ -8,6 +8,7 @@ $View = App::process(Request::create(), $Response)
   ->append('_foot')
 ;
 $Response
+  ->header('Referrer-Policy', 'origin-when-cross-origin')
   ->header('X-Frame-Options', 'DENY')
   ->header('X-XSS-Protection', '1; mode=block')
   ->header('X-Content-Type-Options', 'nosniff')
