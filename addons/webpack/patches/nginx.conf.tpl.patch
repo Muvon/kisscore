@@ -6,6 +6,7 @@
  
 +  # Common bundles
 +  location ~* ^/([a-zA-Z0-9]+)\-[0-9A-Za-z]+\.(js|js.map|css|css.map)$ {
++    add_header 'X-Content-Type-Options' 'nosniff' always;
 +    alias {{VAR_DIR}}/$1.$2;
 +  }
 +
