@@ -220,7 +220,9 @@ clear_env = no
 ;php_admin_value[memory_limit] = 32M
 php_admin_flag[log_errors] = on
 php_value[error_log] = {{LOG_DIR}}/php-fpm.errors.log
-php_value[session.save_path] = {{TMP_DIR}}
+php_value[session.save_handler] = {{SESSION_SAVE_HANDLER}}
+php_value[session.save_path] = {{SESSION_SAVE_PATH}}
+php_flag[session.cookie_secure] = {{SESSION_COOKIE_SECURE}}
 
 php_value[upload_max_filesize] = {{UPLOAD_MAX_FILESIZE}}
 php_value[post_max_size] = {{UPLOAD_MAX_FILESIZE}}
