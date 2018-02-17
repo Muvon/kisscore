@@ -33,14 +33,15 @@ class Cookie {
    * @param string $path Cookie save path
    * @return void
    */
-  public static function set($name, $value, $time, $path = '/') {
-    assert(is_string($name));
+  public static function set($name, $value, $time, $path = '/', $domain = null) {
+    assert('is_string($name)');
 
     static::$cookies[$name] = [
       'name' => $name,
       'value' => $value,
       'time' => $time,
       'path' => $path,
+      'domain' => $domain
     ];
   }
 
@@ -52,9 +53,9 @@ class Cookie {
    * @param string $path Cookie save path
    * @return void
    */
-  public static function add($name, $value, $time, $path = '/') {
+  public static function add($name, $value, $time, $path = '/', $domain = null) {
     if (!filter_has_var(INPUT_COOKIE, $name)) {
-      static::set($name, $value, $time, $path);
+      static::set($name, $value, $time, $path, $domain);
     }
   }
 
@@ -63,7 +64,7 @@ class Cookie {
    */
   public static function send() {
     foreach (static::$cookies as $cookie) {
-      setcookie($cookie['name'], $cookie['value'], $cookie['time'], $cookie['path']);
+      setcookie($cookie['name'], $cookie['value'], $cookie['time'], $cookie['path'], $cookie['domain'] ?? null, !!getenv('HTTPS'), 0 === strpos(getenv('SERVER_PROTOCOL'), 'HTTP'));
     }
   }
 }
