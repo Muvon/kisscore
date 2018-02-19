@@ -108,8 +108,7 @@ class Request {
   protected static function parseRealIp() {
     self::$real_ip = self::$ip;
     if (self::$xff && self::$xff !== self::$ip) {
-      self::$real_ip = str_replace(self::$ip, '', self::$xff);
-      self::$real_ip = trim(self::$real_ip, ' ,');
+      self::$real_ip = trim(strtok(self::$ip, ','));
     }
   }
 
