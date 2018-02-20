@@ -64,7 +64,7 @@ class Cookie {
    */
   public static function send() {
     foreach (static::$cookies as $cookie) {
-      setcookie($cookie['name'], $cookie['value'], $cookie['time'], $cookie['path'], $cookie['domain'] ?? null, !!getenv('HTTPS'), 0 === strpos(getenv('SERVER_PROTOCOL'), 'HTTP'));
+      setcookie($cookie['name'], $cookie['value'], $cookie['time'], $cookie['path'], $cookie['domain'] ?? null, config('common.proto') === 'https', 0 === strpos(getenv('SERVER_PROTOCOL'), 'HTTP'));
     }
   }
 }
