@@ -1,5 +1,5 @@
 FROM dmitrykuzmenkov/php:7.1.13-fpm
-MAINTAINER Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>
+LABEL maintainer="Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>"
 
 RUN apk update && apk add bash curl inotify-tools && rm -fr /var/cache/apk/*
 
