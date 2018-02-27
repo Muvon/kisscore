@@ -1,4 +1,4 @@
-FROM nginx:1.11-alpine
+FROM nginx:1.13.9-alpine
 MAINTAINER Dmitrii Kuzmenkov <dmitrii.kuzmenkov@muvon.io>
 
 RUN mkdir /var/cache/nginx/client_temp /var/cache/nginx/fastcgi_temp \
