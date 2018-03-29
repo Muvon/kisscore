@@ -1,6 +1,6 @@
---- app/config/nginx/nginx.conf.tpl	2017-09-16 13:06:09.000000000 +0700
-+++ new/app/config/nginx/nginx.conf.tpl	2017-09-16 13:06:14.000000000 +0700
-@@ -43,6 +43,11 @@
+--- app/config/nginx/nginx.conf.tpl	2017-11-29 01:14:27.000000000 +0700
++++ new/app/config/nginx/nginx.conf.tpl	2018-03-30 02:05:47.000000000 +0700
+@@ -43,6 +43,12 @@
      error_log      /dev/null;
    }
  
