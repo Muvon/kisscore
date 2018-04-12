@@ -22,6 +22,8 @@ class View {
   protected $body = null;
   protected $source_dir = null;
   protected $compile_dir = null;
+  protected $output_filters = [];
+  protected $compilers = [];
 
   protected static $filter_funcs = [
     'html' => 'htmlspecialchars',
@@ -104,7 +106,20 @@ class View {
    * @return string
    */
   public function __toString( ) {
-    return $this->body;
+    return $this->getBody();
+  }
+
+  public function addOutputFilter(Callable $filter) {
+    $this->output_filters = $filter;
+    return $this;
+  }
+
+  protected function getBody() {
+    $body = $this->body;
+    foreach ($this->output_filters as $filter) {
+      $body = $filter($body);
+    }
+    return $body;
   }
 
   /**
@@ -345,7 +360,7 @@ class View {
 
     // Замена подключений файлов
     $str = preg_replace_callback('#\{\>([a-z\_0-9\/]+)(.*?)\}#ium', function ($matches) {
-      return static::chunkParseParams($matches[2]) . file_get_contents($this->compileChunk($matches[1]));
+      return static::chunkParseParams($matches[2]) . $this->getChunkContent($matches[1]);
     }, $str);
 
     // Переменные: {array.index}
@@ -365,7 +380,7 @@ class View {
     if (App::$debug || !is_file($file_c)) {
       $content = [];
       foreach ($this->routes as $template) {
-        $content[] = file_get_contents($this->compileChunk($template));
+        $content[] = $this->getChunkContent($template);
       }
 
       // Init global context
@@ -373,6 +388,24 @@ class View {
       file_put_contents($file_c, implode($content), LOCK_EX);
     }
     include $file_c;
+    return $this;
+  }
+
+  protected function getChunkContent($template) {
+    $chunk = file_get_contents($this->compileChunk($template));
+    $compilers = array_merge($this->compilers[$template] ?? [], $this->compilers['*'] ?? []);
+    if ($compilers) {
+      foreach ($compilers as $compiler) {
+        $chunk = $compiler($chunk, $template);
+      }
+    } else {
+      $chunk = $this->getChunkContent($template);
+    }
+    return $chunk;
+  }
+
+  public function addCompiler(Callable $compiler, $template = '*') {
+    $this->compilers[$template][] = $compiler;
     return $this;
   }
 
@@ -416,3 +449,4 @@ class View {
     return $this;
   }
 }
+
