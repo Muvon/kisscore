@@ -80,7 +80,7 @@ class Session {
    * @return void
    */
   public static function set($key, $value) {
-    assert("is_string(\$key)");
+    assert(is_string($key));
     static::$container[$key] = $value;
   }
 
@@ -90,7 +90,7 @@ class Session {
    * @return bool
    */
   public static function remove($key) {
-    assert("is_string(\$key)");
+    assert(is_string($key));
     if (isset(static::$container[$key])) {
       unset(static::$container[$key]);
       return true;

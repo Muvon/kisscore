@@ -71,7 +71,7 @@ class Response {
    * @return void
    */
   final protected function __construct($status = 200) {
-    assert("is_int(\$status)", 'Status must be integer');
+    assert(is_int($status), 'Status must be integer');
     $this->status($status);
   }
   /**

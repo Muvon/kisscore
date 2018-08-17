@@ -46,7 +46,7 @@ class Request {
    * @param string|bool $url адрес текущего запроса
    */
   final protected function __construct($url) {
-    assert("in_array(gettype(\$url), ['string', 'boolean'])");
+    assert(in_array(gettype($url), ['string', 'boolean']));
 
     $this->url  = $url;
   }
@@ -60,7 +60,7 @@ class Request {
    * @return Request ссылка на объекта запроса
    */
   public static function create($url = true) {
-    assert("in_array(gettype(\$url), ['string', 'boolean'])");
+    assert(in_array(gettype($url), ['string', 'boolean']));
 
     self::$time = time();
     if (filter_input(INPUT_SERVER, 'argc')) {

@@ -163,7 +163,7 @@ class View {
    * @return View
    */
   protected function block($key, $param, $item, Closure $block) {
-    assert("is_string(\$key)");
+    assert(is_string($key));
 
     static $arrays = [];
     $arrays[$key] = is_array($param);
@@ -410,14 +410,14 @@ class View {
   }
 
   protected function getSourceFile($route) {
-    assert("is_string(\$this->source_dir) && is_dir(\$this->source_dir)");
-    assert("is_string(\$this->template_extension) && isset(\$this->template_extension[0])");
+    assert(is_string($this->source_dir) && is_dir($this->source_dir));
+    assert(is_string($this->template_extension) && isset($this->template_extension[0]));
 
     return $this->source_dir . '/' . $route . '.' . $this->template_extension;
   }
 
   protected function getCompiledFile($routes = []) {
-    assert("is_string(\$this->compile_dir) && is_dir(\$this->compile_dir) && is_writable(\$this->compile_dir)");
+    assert(is_string($this->compile_dir) && is_dir($this->compile_dir) && is_writable($this->compile_dir));
     return $this->compile_dir . '/view-' . md5($this->source_dir . ':' . implode(':', $routes ?: $this->routes)) . '.tplc';
   }
 
