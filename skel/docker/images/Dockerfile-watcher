@@ -1,4 +1,4 @@
-FROM dmitrykuzmenkov/php:7.1.14-fpm
+FROM dmitrykuzmenkov/php:7.1.21-fpm
 LABEL maintainer="Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>"
 
 RUN apk update && apk add bash curl inotify-tools && rm -fr /var/cache/apk/*
