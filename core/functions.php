@@ -121,3 +121,24 @@ function bcdechex($dec) {
   } while($dec > 0);
   return $hex;
 }
+
+function bench($level = 0, $txt = null) {
+  static $t = [], $r = [];
+  if ($level === true) {
+    foreach ($r as $txt => $vals) {
+      echo $txt . ': ' . sprintf('%f', array_sum($vals) / sizeof($vals)) . 's' . PHP_EOL;
+    }
+    $t = $r = [];
+    return;
+  }
+  $n = microtime(true);
+
+  if ($txt && !isset($r[$txt])) {
+    $r[$txt] = [];
+  }
+
+  if ($txt && isset($t[$level])) {
+    $r[$txt][] = $n - $t[$level][sizeof($t[$level]) - 1];
+  }
+  $t[$level][] = $n;
+}
