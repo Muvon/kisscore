@@ -398,8 +398,6 @@ class View {
       foreach ($compilers as $compiler) {
         $chunk = $compiler($chunk, $template);
       }
-    } else {
-      $chunk = $this->getChunkContent($template);
     }
     return $chunk;
   }
