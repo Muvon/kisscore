@@ -2,6 +2,9 @@
 if [ ! -e /.inited ]; then
   mkdir -p /src/env/backup /src/env/etc /src/env/log /src/env/run /src/env/tmp /src/env/var
   /src/bin/php-exec 'Env::init()'
+  # We need to flush files for production
+  # cuz by default compiled files in volume
+  /src/bin/php-exec 'View::flush()'
   touch /.inited
 fi
 

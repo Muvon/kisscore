@@ -446,5 +446,9 @@ class View {
     }
     return $this;
   }
+
+  public static function flush() {
+    system('for file in `find ' . escapeshellarg(config('view.compile_dir')) . ' -name \'view-*\'`; do rm -f $file; done');
+  }
 }
 
