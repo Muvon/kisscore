@@ -1,4 +1,4 @@
-FROM dmitrykuzmenkov/php:7.1.21-fpm
+FROM dmitrykuzmenkov/php:7.1.26-fpm
 LABEL maintainer="Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>"
 
 RUN apk add --update bash openssl && \
