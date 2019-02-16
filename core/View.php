@@ -350,6 +350,13 @@ class View {
     }
 
     $str = file_get_contents($source_file);
+    // Do precompile by custom compiler to make it possible to change vars after
+    $compilers = array_merge($this->compilers[$route] ?? [], $this->compilers['*'] ?? []);
+    if ($compilers) {
+      foreach ($compilers as $compiler) {
+        $str = $compiler($str, $route);
+      }
+    }
 
     $str = $this->chunkCloseBlocks($str);
 
@@ -392,14 +399,7 @@ class View {
   }
 
   protected function getChunkContent($template) {
-    $chunk = file_get_contents($this->compileChunk($template));
-    $compilers = array_merge($this->compilers[$template] ?? [], $this->compilers['*'] ?? []);
-    if ($compilers) {
-      foreach ($compilers as $compiler) {
-        $chunk = $compiler($chunk, $template);
-      }
-    }
-    return $chunk;
+    return file_get_contents($this->compileChunk($template));
   }
 
   public function addCompiler(Callable $compiler, $template = '*') {
