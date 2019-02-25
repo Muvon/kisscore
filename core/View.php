@@ -22,6 +22,7 @@ class View {
   protected $body = null;
   protected $source_dir = null;
   protected $compile_dir = null;
+  protected $prefix = 'c';
   protected $output_filters = [];
   protected $compilers = [];
 
@@ -416,7 +417,7 @@ class View {
 
   protected function getCompiledFile($routes = []) {
     assert(is_string($this->compile_dir) && is_dir($this->compile_dir) && is_writable($this->compile_dir));
-    return $this->compile_dir . '/view-' . md5($this->source_dir . ':' . implode(':', $routes ?: $this->routes)) . '.tplc';
+    return $this->compile_dir . '/view-' . $this->prefix . '-' . md5($this->source_dir . ':' . implode(':', $routes ?: $this->routes)) . '.tplc';
   }
 
   /**
