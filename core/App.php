@@ -93,8 +93,9 @@ class App {
     static::setExceptionHandler(Exception::class, static::createExceptionHandler());
 
     Autoload::register('App', getenv('APP_DIR') . '/src');
-    Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
-    Autoload::register('Lib', getenv('APP_DIR') . '/lib');
+    Autoload::register('App\Model', getenv('APP_DIR') . '/src/model');
+    Autoload::register('App\Component', getenv('APP_DIR') . '/src/component');
+    Autoload::register('App\Lib', getenv('APP_DIR') . '/src/lib');
     Autoload::register('', getenv('APP_DIR') . '/vendor');
   }
 
