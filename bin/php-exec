@@ -19,6 +19,7 @@ $php $OPTS <<EOF
   // Получаем ответ   и выполняем запрос
   try {
     App::start();
+    Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
     Autoload::register('App', getenv('APP_DIR') . '/src');
     Autoload::register('App\Model', getenv('APP_DIR') . '/src/model');
     Autoload::register('App\Component', getenv('APP_DIR') . '/src/component');

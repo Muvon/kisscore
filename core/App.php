@@ -92,6 +92,7 @@ class App {
     // Register default Exception handler
     static::setExceptionHandler(Exception::class, static::createExceptionHandler());
 
+    Autoload::register('Plugin', getenv('APP_DIR') . '/plugin');
     Autoload::register('App', getenv('APP_DIR') . '/src');
     Autoload::register('App\Model', getenv('APP_DIR') . '/src/model');
     Autoload::register('App\Component', getenv('APP_DIR') . '/src/component');
