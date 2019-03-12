@@ -1,10 +1,12 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const webpack = require('webpack')
 const postcssWillChange = require('postcss-will-change')
 const postcssAssets = require('postcss-assets')
 const autoprefixer = require('autoprefixer')
 const postcssPxtorem = require('postcss-pxtorem')
 const path = require('path')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
   cache: true,
@@ -113,7 +115,8 @@ module.exports = {
           mangle: true
         },
         sourceMap: true
-      })
+      }),
+      new OptimizeCSSAssetsPlugin({})
     ]
   }
 }
