@@ -1,10 +1,10 @@
-var ExtractTextPlugin = require('extract-text-webpack-plugin')
-var webpack = require('webpack')
-var postcssWillChange = require('postcss-will-change')
-var postcssAssets = require('postcss-assets')
-var autoprefixer = require('autoprefixer')
-var postcssPxtorem = require('postcss-pxtorem')
-var path = require('path')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const webpack = require('webpack')
+const postcssWillChange = require('postcss-will-change')
+const postcssAssets = require('postcss-assets')
+const autoprefixer = require('autoprefixer')
+const postcssPxtorem = require('postcss-pxtorem')
+const path = require('path')
 
 module.exports = {
   cache: true,
@@ -63,57 +63,57 @@ module.exports = {
       },
       {
         test: /\.(s?css|sass)/,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader'
-              // options: {
-              //   sourceMap: true
-              // }
-            }, {
-              loader: 'postcss-loader',
-              options: {
-                plugins: [
-                  postcssWillChange(),
-                  postcssAssets({basePath: './app/static/img'}),
-                  autoprefixer({browsers: [
-                    'last 2 versions',
-                    'IE >= 9',
-                    'opera 12',
-                    'safari 7',
-                    'Android >= 4',
-                    'iOS >= 7'
-                  ]}),
-                  postcssPxtorem()
-                ]
-              }
-            }, {
-              loader: 'sass-loader'
+        use: [
+          'style-loader',
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: [
+                postcssWillChange(),
+                postcssAssets({basePath: './app/static/img'}),
+                autoprefixer({browsers: [
+                  'last 2 versions',
+                  'IE >= 9',
+                  'opera 12',
+                  'safari 7',
+                  'Android >= 4',
+                  'iOS >= 7'
+                ]}),
+                postcssPxtorem()
+              ]
             }
-          ]
-        })
+          }, {
+            loader: 'sass-loader'
+          }
+        ]
       }
     ]
   },
   plugins: [
-    new ExtractTextPlugin({
+    new MiniCssExtractPlugin({
       filename: '[name].css',
-      allChunks: true
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-      minimize: true,
-      sourceMap: true,
-      output: {
-        comments: false
-      },
-      compress: {
-        warnings: false
-      }
+			chunkFilename: '[id].css'
     })
   ],
   watchOptions: {
     poll: 1000,
     aggregateTimeout: 500
+  },
+  optimization: {
+    minimizer: [
+      // we specify a custom UglifyJsPlugin here to get source maps in production
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        uglifyOptions: {
+          compress: false,
+          ecma: 6,
+          mangle: true
+        },
+        sourceMap: true
+      })
+    ]
   }
 }

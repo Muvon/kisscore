@@ -1,12 +1,11 @@
 {
   "presets": [
-    ["es2015", {"modules": false}],
-    ["es2016"]
+    ["@babel/preset-env", {"modules": false}]
   ],
   "plugins": [
-    "transform-runtime",
-    "transform-decorators",
-    "transform-class-properties",
-    "transform-object-rest-spread"
+    ["@babel/plugin-proposal-decorators", {"legacy": true}],
+    ["@babel/plugin-proposal-class-properties", {"legacy": true}],
+    "@babel/plugin-proposal-object-rest-spread",
+    "@babel/plugin-transform-runtime"
   ]
 }
