@@ -6,7 +6,7 @@ const postcssAssets = require('postcss-assets')
 const autoprefixer = require('autoprefixer')
 const postcssPxtorem = require('postcss-pxtorem')
 const path = require('path')
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 
 module.exports = {
   cache: true,
@@ -105,7 +105,7 @@ module.exports = {
   },
   optimization: {
     minimizer: [
-      new UglifyJsPlugin({
+      new TerserPlugin({
         cache: true,
         parallel: true,
         sourceMap: true // set to true if you want JS source maps
