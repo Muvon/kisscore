@@ -11,12 +11,13 @@ upstream {{PROJECT}}-fpm {
 server {
   error_log {{LOG_DIR}}/nginx-error.log;
 
-  listen   {{SERVER_PORT}};
+  listen   {{SERVER_PORT}} {{SERVER_PROTOCOL}};
   server_name  {{SERVER_NAME}};
   client_max_body_size {{UPLOAD_MAX_FILESIZE}};
 
   include {{CONFIG_DIR}}/nginx_route_map.conf;
 
+  set $realm "{{AUTH}}";
   auth_basic {{AUTH}};
   auth_basic_user_file {{CONFIG_DIR}}/.htpasswd;
 

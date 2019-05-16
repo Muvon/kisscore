@@ -45,6 +45,7 @@ auth_pass = 'test'
 ; auth_basic nginx param: off, Restricted
 auth = 'off'
 open_file_cache = 'off'
+protocol = ''
 
 [nginx:production]
 open_file_cache = 'max=100000 inactive=600s'
