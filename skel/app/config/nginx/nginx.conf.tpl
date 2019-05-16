@@ -18,7 +18,7 @@ server {
   include {{CONFIG_DIR}}/nginx_route_map.conf;
 
   set $realm "{{AUTH}}";
-  auth_basic {{AUTH}};
+  auth_basic $realm;
   auth_basic_user_file {{CONFIG_DIR}}/.htpasswd;
 
   open_file_cache {{OPEN_FILE_CACHE}}; # disable file cache for development
