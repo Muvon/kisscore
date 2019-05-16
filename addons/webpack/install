@@ -10,7 +10,7 @@ if [[ ! -d "$1" ]]; then
   exit 1
 fi
 
-ADDON_PATH=$(dirname `realpath $0`)
+ADDON_PATH=$(cd `dirname $0` && pwd)
 cp -r $ADDON_PATH/skel/* $1/
 cp $ADDON_PATH/{.babelrc,.eslintrc.js} $1/
 

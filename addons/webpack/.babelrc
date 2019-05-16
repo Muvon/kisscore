@@ -1,12 +1,17 @@
 {
   "presets": [
-    ["es2015", {"modules": false}],
-    ["es2016"]
+    ["@babel/preset-env", {
+      "targets": {
+        // The % refers to the global coverage of users from browserslist
+        "browsers": [ ">0.25%", "not ie 11", "not op_mini all"]
+      },
+      "modules": false
+    }]
   ],
   "plugins": [
-    "transform-runtime",
-    "transform-decorators",
-    "transform-class-properties",
-    "transform-object-rest-spread"
+    ["@babel/plugin-proposal-decorators", {"legacy": true}],
+    ["@babel/plugin-proposal-class-properties", {"legacy": true}],
+    "@babel/plugin-proposal-object-rest-spread",
+    "@babel/plugin-transform-runtime"
   ]
 }
