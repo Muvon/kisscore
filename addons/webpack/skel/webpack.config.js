@@ -99,10 +99,7 @@ module.exports = {
 			chunkFilename: '[id].css'
     })
   ],
-  watchOptions: {
-    poll: 1000,
-    aggregateTimeout: 500
-  },
+
   optimization: {
     minimizer: [
       new TerserPlugin({
@@ -113,4 +110,8 @@ module.exports = {
       new OptimizeCSSAssetsPlugin({})
     ]
   },
+  watchOptions: {
+    poll: 1000,
+    aggregateTimeout: 500
+  }
 }
