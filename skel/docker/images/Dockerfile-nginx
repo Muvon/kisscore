@@ -1,4 +1,4 @@
-FROM nginx:1.15.8-alpine
+FROM nginx:1.15.12-alpine
 LABEL maintainer="Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>"
 
 RUN mkdir /var/cache/nginx/client_temp /var/cache/nginx/fastcgi_temp \
