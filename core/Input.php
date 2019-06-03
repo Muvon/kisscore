@@ -24,6 +24,11 @@ class Input {
     static::$is_parsed = true;
   }
 
+  public static function set(string $key, $value) {
+    static::$is_parsed || static::parse();
+    static::$params[$key] = $value;
+  }
+
   /**
    * Получение переменной запроса
    *

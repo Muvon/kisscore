@@ -24,6 +24,16 @@ $php $OPTS <<EOF
     Autoload::register('App\Model', getenv('APP_DIR') . '/src/model');
     Autoload::register('App\Component', getenv('APP_DIR') . '/src/component');
     Autoload::register('App\Lib', getenv('APP_DIR') . '/src/lib');
+
+    \$opt_string = trim('${@:2}');
+    foreach (explode('--', \$opt_string) as \$param) {
+      if (false === strpos(\$param, '=')) {
+        continue;
+      }
+      [\$key, \$value] = explode('=', trim(\$param));
+      Input::set(\$key, \$value);
+    }
+
     $code;
     App::stop();
   } catch (Exception \$E) {
