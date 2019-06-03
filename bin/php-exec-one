@@ -16,5 +16,5 @@ flock -x -n 9 || {
   exit 1
 }
 
-bin/php-exec "$1" "${@:2}" childpid=$!
+bin/php-exec "$1" "${@:2}"
 release
