@@ -9,6 +9,6 @@
   <link rel="stylesheet" type="text/css" href="/css/default.css" media="all"/>
   <link rel="icon" type="image/x-icon" href="/img/favicon.png"/>
   <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.png"/>
+  <title>KISS Core</title>
 </head>
-<title>KISS Core</title>
 <body>
