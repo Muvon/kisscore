@@ -1,6 +1,6 @@
---- app/views/_head.tpl	2017-01-27 18:08:14.000000000 +0700
-+++ new/app/views/_head.tpl	2017-09-16 13:04:13.000000000 +0700
-@@ -6,9 +6,22 @@
+--- app/views/_head.tpl	2020-02-19 00:49:01.000000000 +0700
++++ new/app/views/_head.tpl	2020-07-26 23:31:42.000000000 +0700
+@@ -6,9 +6,20 @@
    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,minimum-scale=1.0,target-densitydpi=160dpi,user-scalable=1"/>
    <meta name="robots" content="noarchive"/>
    <meta name="googlebot" content="noarchive"/>
@@ -8,20 +8,18 @@
 +  <link rel="stylesheet" type="text/css" href="/bundle-{BUNDLE_HASH}.css"/>
    <link rel="icon" type="image/x-icon" href="/img/favicon.png"/>
    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.png"/>
+-  <title>KISS Core</title>
++  <script type="text/javascript">
++    //<![CDATA[
++    if (window.top !== window.self) {document.write = '';window.top.location = window.self.location; setTimeout(function(){document.body.innerHTML='';},1);window.self.onload=function(evt){document.body.innerHTML='';};}
++    //]]>
++    document.addEventListener('DOMContentLoaded', function () {
++      var script = document.createElement('script');
++      script.src = '/bundle-{BUNDLE_HASH}.js';
++      script.async = true;
++      document.head.appendChild(script);
++    });
++  </script>
++  <title>KISS Core</title>
  </head>
-+<script type="text/javascript">
-+  //<![CDATA[
-+  if (window.top !== window.self) {document.write = '';window.top.location = window.self.location; setTimeout(function(){document.body.innerHTML='';},1);window.self.onload=function(evt){document.body.innerHTML='';};}
-+  //]]>
-+</script>
-+<script>
-+  document.addEventListener('DOMContentLoaded', function () {
-+    var script = document.createElement('script');
-+    script.src = '/bundle-{BUNDLE_HASH}.js';
-+    script.async = true;
-+    document.head.appendChild(script);
-+  });
-+</script>
- <title>KISS Core</title>
  <body>
-\ No newline at end of file
