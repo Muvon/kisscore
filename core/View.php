@@ -30,6 +30,8 @@ class View {
     'html' => 'htmlspecialchars',
     'url'  => 'rawurlencode',
     'json' => 'json_encode',
+    'upper' => 'strtoupper',
+    'lower' => 'strtolower',
     'raw'  => '',
   ];
 
