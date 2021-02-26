@@ -4,9 +4,7 @@
  * @param  string $param Param using dot for separate packages
  * @return mixed
  */
-function config($param) {
-  assert(is_string($param));
-
+function config(string $param): mixed {
   static $config = [];
   if (!$config) {
     $config = include getenv('CONFIG_DIR') . '/config.php';
@@ -28,7 +26,7 @@ function config($param) {
  * var_dump($var); // int(1)
  * </code>
  */
-function typify(&$var, $type) {
+function typify(&$var, string $type): void {
   switch ($type) {
     case 'int':
     case 'integer':
@@ -61,7 +59,6 @@ function typify(&$var, $type) {
       $var = (string) $var;
       break;
   }
-  return;
 }
 
 /**
@@ -70,9 +67,7 @@ function typify(&$var, $type) {
  * @param array $payload Дополнительные данные для манипуляции
  * @return mixed
  */
-function trigger_event($event, array $payload = []) {
-  assert(is_string($event));
-
+function trigger_event(string $event, array $payload = []): mixed {
   static $map;
   if (!isset($map)) {
     $map = App::getJSON(config('common.trigger_map_file'));
@@ -84,7 +79,7 @@ function trigger_event($event, array $payload = []) {
         Input::extractTypified(
           App::getImportVarsArgs($_file, config('common.trigger_param_file')),
           function ($key, $default = null) use ($payload) {
-            return isset($payload[$key]) ? $payload[$key] : $default;
+            return $payload[$key] ?? $default;
           }
         )
       );
@@ -98,12 +93,12 @@ function trigger_event($event, array $payload = []) {
  * @param string $class The name of class with namespaces
  * @return string
  */
-function get_class_name($class) {
+function get_class_name(string $class): string {
   return (new ReflectionClass($class))->getShortName();
 }
 
 // Missed functions for large integers for BCmath
-function bchexdec($hex) {
+function bchexdec(string $hex): string {
   $dec = 0;
   $len = strlen($hex);
   for ($i = 1; $i <= $len; $i++) {
@@ -112,7 +107,7 @@ function bchexdec($hex) {
   return $dec;
 }
 
-function bcdechex($dec) {
+function bcdechex(string $dec): string {
   $hex = '';
   do {
     $last = bcmod($dec, 16);
@@ -122,7 +117,7 @@ function bcdechex($dec) {
   return $hex;
 }
 
-function bench($level = 0, $txt = null) {
+function bench(int|bool $level = 0, ?string $txt = null): void {
   static $t = [], $r = [];
   if ($level === true) {
     foreach ($r as $txt => $vals) {

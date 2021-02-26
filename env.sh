@@ -2,9 +2,7 @@
 current_path=$(pwd)
 PROJECT_DIR=$current_path
 export PROJECT=${PROJECT:-"${current_path##*/}"} \
-  USER=${USER:-"$(whoami)"} \
   PROJECT_DIR \
-  HTTP_HOST=$(hostname) \
   APP_DIR=$PROJECT_DIR/app \
   STATIC_DIR=$PROJECT_DIR/app/static \
   CONFIG_DIR=$PROJECT_DIR/env/etc \

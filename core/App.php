@@ -1,17 +1,17 @@
 <?php
-class App {
+final class App {
   /** @property bool $debug */
-  public static $debug;
-  protected static $e_handlers = [];
-  protected static $action_map;
+  public static bool $debug;
+  protected static array $e_handlers = [];
+  protected static array $action_map;
 
   /**
    * Fetch annotated variables from $file using $map_file
    * @param string $file File that was annotated with import params (action or something else)
-   * @param strign $map_file File with map of args or empty to use default
+   * @param string $map_file File with map of args or empty to use default
    * @return array
    */
-  public static function getImportVarsArgs($file, $map_file = null) {
+  public static function getImportVarsArgs(string $file, string $map_file = null): array {
     $params = static::getJSON($map_file ?: config('common.param_map_file'));
     $args = [];
     if (isset($params[$file])) {
@@ -26,9 +26,10 @@ class App {
    * Write json data into file
    * @param string $file File path to json
    * @param mixed $data Data to put in json file
+   * @return bool
    */
-  public static function writeJSON($file, $data) {
-    return file_put_contents($file, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+  public static function writeJSON(string $file, mixed $data): bool {
+    return !!file_put_contents($file, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
   }
 
   /**
@@ -36,7 +37,7 @@ class App {
    * @param string $file
    * @return mixed
    */
-  public static function getJSON($file) {
+  public static function getJSON(string $file): mixed {
     if (!is_file($file)) {
       throw new Error('Cant find file ' . $file . '. Be sure you started init script to compile application');
     }
@@ -51,9 +52,7 @@ class App {
    * @param string $type error, info, wanr, notice
    * @return string идентификатор исключения
    */
-  public static function log($message, array $dump = [], $type = 'error') {
-    assert(is_string($message));
-    assert(is_string($type));
+  public static function log(string $message, array $dump = [], string $type = 'error'): string {
     $id = hash('sha256', $message . ':' . implode('.', array_keys($dump)) . ':' . $type);
     $log_file = getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-' . $type . '.log';
     $message =
@@ -71,7 +70,7 @@ class App {
    * Иницилизация работы приложения
    * @param array $config
    */
-  public static function start(array $config = []) {
+  public static function start(array $config = []): void {
     foreach ($config as $param => $value) {
       static::$$param = $value;
     }
@@ -103,7 +102,7 @@ class App {
   /**
    * Завершение исполнени приложени
    */
-  public static function stop() {
+  public static function stop(): void {
     // Todo some work here
   }
 
@@ -111,7 +110,7 @@ class App {
    * @param Request $Request
    * @return View
    */
-  public static function process(Request $Request, Response $Response) {
+  public static function process(Request $Request, Response $Response): View {
     if (!isset(static::$action_map)) {
       static::$action_map = static::getJSON(config('common.action_map_file'));
     }
@@ -157,8 +156,8 @@ class App {
   /**
    * Замена стандартного обработчика ошибок на эксепшены
    */
-  public static function handleError($errno, $errstr, $errfile, $errline, $errcontext) {
-    return static::error($errstr);
+  public static function handleError(int $errno, string $errstr, string $errfile, string $errline): void {
+    static::error($errstr);
   }
 
   /**
@@ -177,7 +176,7 @@ class App {
     } while (false !== $exception = get_parent_class($exception));
   }
 
-  public static function createExceptionHandler($code = 500, $type = 'html', Callable $format_func = null) {
+  public static function createExceptionHandler(int $code = 500, string $type = 'html', Callable $format_func = null): Callable {
     static $types = [
       'json' => 'application/json',
       'html' => 'text/html',
@@ -231,18 +230,18 @@ class App {
    * @param string $exception
    * @param Callable $handler
    */
-  public static function setExceptionHandler($exception, Callable $handler) {
+  public static function setExceptionHandler(string $exception, Callable $handler): void {
     static::$e_handlers[$exception] = $handler;
   }
 
   /**
    * Хэндлер для управления ошибками ассертов
-   * @param	stirng  $file
+   * @param	string  $file
    * @param	string	$line
-   * @param	string	$code
+   * @param	int	$code
    * @throws Exception
    */
-  public static function handleAssertion($file, $line, $code) {
+  public static function handleAssertion(string $file, string $line, ?int $code): void {
     throw new Error('Assertion failed in file ' . $file . ' at line ' . $line . ' with code ' . $code);
   }
 
@@ -252,7 +251,7 @@ class App {
    * @param string $class Exception class name to be raised
    * @throws \Exception
    */
-  public static function error($error, $class = 'Exception') {
+  public static function error(string $error, string $class = 'Exception'): void {
     throw new $class($error);
   }
 
@@ -261,13 +260,14 @@ class App {
    * @param string $cmd Command to be executed
    * @return string Result of execution
    */
-  public static function exec($cmd) {
+  public static function exec(string $cmd): string {
     $project_dir = getenv('PROJECT_DIR');
-    return trim(`
+    $output = `
       set -e
       cd $project_dir
       source ./env.sh
       $cmd
-    `);
+    `;
+    return $output ? trim($output) : '';
   }
 }

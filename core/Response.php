@@ -7,7 +7,7 @@
  * @subpackage Config
  */
 
-class Response {
+final class Response {
   /**
    * @property array $headers Список заголовков, которые отправляются клиенту
    * @property string $body ответ клиенту, содержаший необходимый контент на выдачу
@@ -15,12 +15,16 @@ class Response {
    *
    * @property array $messages возможные статусы и сообщения HTTP-ответов
    */
-  protected
-  $headers  = [],
-  $body     = '',
+  protected array
+  $headers  = [];
+
+  protected string
+  $body     = '';
+
+  protected int
   $status   = 200;
 
-  protected static
+  protected static array
   $messages = [
     200 => 'OK',
     201 => 'Created',
@@ -62,7 +66,6 @@ class Response {
     503 => 'Service Unavailable',
     504 => 'Gateway Timeout',
     505 => 'HTTP Version Not Supported',
-
   ];
 
   /**
@@ -70,8 +73,7 @@ class Response {
    * @param int $status HTTP Status of response
    * @return void
    */
-  final protected function __construct($status = 200) {
-    assert(is_int($status), 'Status must be integer');
+  final protected function __construct(int $status = 200) {
     $this->status($status);
   }
   /**
@@ -79,7 +81,7 @@ class Response {
    * @param int $status HTTP status of response
    * @return $this
    */
-  public static function create($status = 200) {
+  public static function create(int $status = 200): self {
     return new static($status);
   }
 
@@ -88,7 +90,7 @@ class Response {
    * @param int $status New HTTP status to be set
    * @return $this
    */
-  public function status($status) {
+  public function status(int $status): self {
     assert(in_array($status, array_keys(self::$messages)));
     if (isset(self::$messages[$status])) {
       $this->status = $status;
@@ -101,7 +103,7 @@ class Response {
   * @access public
   * @return string данные ответа клиенту
   */
-  public function __toString( ) {
+  public function __toString(): string {
     return (string) $this->body;
   }
 
@@ -109,7 +111,7 @@ class Response {
    * Send body to output
    * @return $this
    */
-  public function sendBody() {
+  public function sendBody(): self {
     echo (string) $this;
     return $this;
   }
@@ -118,7 +120,7 @@ class Response {
    * Send all staff to output: headers, body and so on
    * @return $this
    */
-  public function send($content = '') {
+  public function send(string $content = ''): self {
     return $this->sendHeaders()->setBody($content)->sendBody();
   }
 
@@ -128,12 +130,11 @@ class Response {
   * @param int $code код редиректа (301 | 302)
   * @return void
   */
-  public static function redirect($url, $code = 302) {
-    assert(is_string($url));
+  public static function redirect(string $url, int $code = 302): void {
     assert(in_array($code, [301, 302]));
 
     if ($url[0] === '/')
-      $url = config('common.proto') . '://' . getenv('HTTP_HOST') . $url;
+      $url = config('common.proto') . '://' . config('common.domain') . $url;
 
     static::create($code)
       ->header('Content-type', '')
@@ -147,7 +148,7 @@ class Response {
   * Reset headers stack
   * @return Response
   */
-  public function flushHeaders( ) {
+  public function flushHeaders(): self {
     $this->headers = [];
     return $this;
   }
@@ -158,10 +159,7 @@ class Response {
   * @param string $value
   * @return Response
   */
-  public function header($header, $value) {
-    assert(is_string($header));
-    assert(is_string($value));
-
+  public function header(string $header, string $value): self {
     $this->headers[$header] = $value;
     return $this;
   }
@@ -170,7 +168,7 @@ class Response {
    * Send stacked headers to output
    * @return Response
    */
-  protected function sendHeaders() {
+  protected function sendHeaders(): self {
     Cookie::send(); // This is not good but fuck it :D
     if (headers_sent()) {
       return $this;
@@ -192,9 +190,7 @@ class Response {
   * @param string $body
   * @return $this
   */
-  public function setBody($body) {
-    assert(is_string($body));
-
+  public function setBody(string $body): self {
     $this->body = $body;
     return $this;
   }

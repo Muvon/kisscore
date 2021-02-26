@@ -112,7 +112,6 @@ Just run install-core and enjoy!
 - $BIN_DIR - for special bin files and scripts
 - $STATIC_DIR - public directory for static files
 - $KISS_CORE - path to core.php file with KISSCore classes
-- $HTTP_HOST - hostname of the machine
 
 ## Plugins
 

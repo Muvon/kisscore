@@ -1,7 +1,7 @@
 <?php
-class Input {
-  public static $is_parsed = false;
-  public static $params = [];
+final class Input {
+  public static bool $is_parsed = false;
+  public static array $params = [];
 
   /**
    * Парсит и сохраняет все параметры в переменной self::$params
@@ -9,7 +9,7 @@ class Input {
    * @access protected
    * @return $this
    */
-  protected static function parse() {
+  protected static function parse(): void {
     if (filter_input(INPUT_SERVER, 'argc')) {
       $argv = filter_input(INPUT_SERVER, 'argv');
       array_shift($argv); // file
@@ -24,7 +24,7 @@ class Input {
     static::$is_parsed = true;
   }
 
-  public static function set(string $key, $value) {
+  public static function set(string $key, mixed $value): void {
     static::$is_parsed || static::parse();
     static::$params[$key] = $value;
   }
@@ -38,7 +38,7 @@ class Input {
    * $params = Input::get(['test:int=1']);
    * </code>
    */
-  public static function get(...$args) {
+  public static function get(...$args): mixed {
     static::$is_parsed || static::parse();
 
     if (!isset($args[0])) {
@@ -49,7 +49,7 @@ class Input {
     if (is_string($args[0])) {
       return isset(static::$params[$args[0]])
         ? static::$params[$args[0]]
-        : (isset($args[1]) ? $args[1] : null);
+        : ($args[1] ?? null);
     }
 
     if (is_array($args[0])) {
@@ -70,11 +70,11 @@ class Input {
    * @param array $args
    * @param Closure $fetcher ($key, $default)
    */
-  public static function extractTypified(array $args, Closure $fetcher) {
+  public static function extractTypified(array $args, Closure $fetcher): array {
     $params = [];
     foreach ($args as $arg) {
       preg_match('#^([a-zA-Z0-9_]+)(?:\:([a-z]+))?(?:\=(.+))?$#', $arg, $m);
-      $params[$m[1]]  = $fetcher($m[1], isset($m[3]) ? $m[3] : '');
+      $params[$m[1]]  = $fetcher($m[1], $m[3] ?? '');
 
       // Нужно ли типизировать
       if (isset($m[2])) {

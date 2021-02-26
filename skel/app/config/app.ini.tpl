@@ -26,12 +26,13 @@ action = 'home'
 
 [view]
 source_dir          = '{{APP_DIR}}/views'
-compile_dir         = '{{TMP_DIR}}/{{PROJECT_REV}}'
+compile_dir         = '{{TMP_DIR}}/views'
 template_extension  = 'tpl'
 strip_comments      = false
 merge_lines         = false
 
 [view:production]
+compile_dir    = '{{TMP_DIR}}/{{PROJECT_REV}}'
 strip_comments = true
 merge_lines    = true
 

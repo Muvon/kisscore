@@ -6,7 +6,7 @@
  * @package Core
  * @subpackage Request
  */
-class Request {
+final class Request {
   /**
    * @property array $params все параметры, переданные в текущем запросе
    *
@@ -23,14 +23,18 @@ class Request {
    * @property bool $is_ajax запрос посылается через ajax
    */
 
-  private
-  $params       = [],
+  private array
+  $params       = [];
+
+  private string
   $action  = '',
   $route   = '',
   $url     = '';
 
-  public static
-  $time        = 0,
+  public static int
+  $time        = 0;
+
+  public static string
   $method      = 'GET',
   $protocol    = 'HTTP',
   $referer     = '',
@@ -38,16 +42,18 @@ class Request {
   $real_ip     = '0.0.0.0',
   $xff         = '',
   $host        = '',
-  $user_agent  = '',
-  $languages   = [],
+  $user_agent  = '';
+
+  public static array
+  $languages   = [];
+
+  public static bool
   $is_ajax     = false;
 
   /**
    * @param string|bool $url адрес текущего запроса
    */
-  final protected function __construct($url) {
-    assert(in_array(gettype($url), ['string', 'boolean']));
-
+  final protected function __construct(string|bool $url) {
     $this->url  = $url;
   }
 
@@ -59,17 +65,15 @@ class Request {
    * @param $url
    * @return Request ссылка на объекта запроса
    */
-  public static function create($url = true) {
-    assert(in_array(gettype($url), ['string', 'boolean']));
-
+  public static function create(string|bool $url = true): self {
     self::$time = time();
     if (filter_input(INPUT_SERVER, 'argc')) {
       self::$protocol = 'CLI';
     } else {
       self::$protocol = filter_input(INPUT_SERVER, 'HTTPS') ? 'HTTPS' : 'HTTP';
       self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
-      self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
-      self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
+      self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER') ?? '';
+      self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR') ?? '';
 
       // Эти переменные всегда определены в HTTP-запросе
       self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
@@ -105,7 +109,7 @@ class Request {
    * Parse IPS to prepare request
    * @return void
    */
-  protected static function parseRealIp() {
+  protected static function parseRealIp(): void {
     self::$real_ip = self::$ip;
     if (self::$xff && self::$xff !== self::$ip) {
       self::$real_ip = trim(strtok(self::$xff, ','));
@@ -116,7 +120,7 @@ class Request {
    * Get current handled url for this request
    * @return string
    */
-  public function getUrl() {
+  public function getUrl(): string {
     return $this->url;
   }
 
@@ -124,7 +128,7 @@ class Request {
    * Get part of url as path. /some/path for url /some/path?fuck=yea
    * @param string
    */
-  public function getUrlPath() {
+  public function getUrlPath(): string {
     return parse_url($this->url, PHP_URL_PATH);
   }
 
@@ -132,7 +136,7 @@ class Request {
    * Get url query
    * @return string
    */
-  public function getUrlQuery() {
+  public function getUrlQuery(): string {
     return parse_url($this->url, PHP_URL_QUERY);
   }
 
@@ -142,7 +146,7 @@ class Request {
    * @param string $header
    * @return string
    */
-  public function getHeader($header) {
+  public function getHeader(string $header): self {
     return filter_input(INPUT_SERVER, 'HTTP_' . strtoupper(str_replace('-', '_', $header)));
   }
 
@@ -150,11 +154,11 @@ class Request {
    * Установка текущего роута с последующим парсингом его в действие и модуль
    *
    * @access public
-   * @param string $route
+   * @param string|null $route
    * @return $this
    */
-  public function setRoute($route) {
-    $this->route = $route;
+  public function setRoute(?string $route): self {
+    $this->route = $route ?? '/home';
     return $this;
   }
 
@@ -163,18 +167,21 @@ class Request {
    * @access public
    * @return string
    */
-  public function getRoute() {
-    return $this->route ? $this->route : '';
+  public function getRoute(): string {
+    return $this->route ?? '';
   }
 
   /**
    * Set action that's processing now
    * @access public
-   * @param string $route
+   * @param string|null$route
    * @return $this
    */
-  public function setAction($action) {
-    $this->action = trim(preg_replace('|[^a-z0-9\_\-\/]+|is', '', $action), '/');
+  public function setAction(?string $action): self {
+    $this->action = $action
+      ? trim(preg_replace('|[^a-z0-9\_\-\/]+|is', '', $action), '/')
+      : 'home'
+    ;
     return $this;
   }
 
@@ -183,7 +190,7 @@ class Request {
    * @access public
    * @return string
    */
-  public function getAction() {
-    return $this->action ? $this->action : config('default.action');
+  public function getAction(): string {
+    return $this->action ?? config('default.action');
   }
 }

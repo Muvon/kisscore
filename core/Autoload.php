@@ -1,23 +1,21 @@
 <?php
-class Autoload {
-  protected static $inited = false;
-  protected static $prefixes = [];
+final class Autoload {
+  protected static bool $inited = false;
+  protected static array $prefixes = [];
 
   /**
    * Init autoload mecahnism
    */
-  protected static function init() {
+  protected static function init(): void {
     spl_autoload_register([static::class, 'load']);
     static::$inited = true;
   }
 
   /**
    * @param string $class Class to be loaded
-   * @return bool
+   * @return bool|string
    */
-  protected static function load($class) {
-    assert(is_string($class));
-
+  protected static function load(string $class): bool|string {
     $prefix = $class;
     while (false !== $pos = strrpos($prefix, '\\')) {
       $prefix = substr($class, 0, $pos + 1);
@@ -36,10 +34,7 @@ class Autoload {
    * @param string $prefix
    * @param string $class
    */
-  protected static function loadMapped($prefix, $class) {
-    assert(is_string($prefix));
-    assert(is_string($class));
-
+  protected static function loadMapped(string $prefix, string $class): false|string {
     if (!isset(static::$prefixes[$prefix])) {
       return false;
     }
@@ -60,10 +55,8 @@ class Autoload {
    * @param string $dir
    * @param bool $prepend Priority for this
    */
-  public static function register($prefix, $dir, $prepend = false) {
-    assert(is_string($prefix));
-    assert(is_string($dir) && is_dir($dir) /* Dir $dir does not exist */);
-    assert(is_bool($prepend));
+  public static function register(string $prefix, string $dir, bool $prepend = false): void {
+    assert(is_dir($dir) /* Dir $dir does not exist */);
 
     if (!static::$inited) {
       static::init();
@@ -81,6 +74,5 @@ class Autoload {
     } else {
       static::$prefixes[$prefix][] = $dir;
     }
-
   }
 }

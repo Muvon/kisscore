@@ -2,16 +2,16 @@
 set -e
 
 [[ -z "$1" ]] && echo 'Enter path of project to create. Example: ./install-core ./app' && exit 255
-[[ ! -e "$1" ]] && echo 'Cant find project dir '$1'. Use ./create-app '$1 && exit 255
+[[ ! -e "$1" ]] && echo "Cant find project dir $1. Use ./create-app $1" && exit 255
 
-kc_dir=$(cd "$(dirname $0)" && pwd)
+kc_dir=$(cd "$(dirname "$0")" && pwd)
 core_file=$1/app/core.php
-echo '<?php' > $core_file
-echo -e '\e[1;35mInstall kiss core to '$1'\e[0m'
-for file in $kc_dir/core/*; do
-  echo 'Add file '$file;
-  tail -n +2 $file >> $core_file
-  echo >> $core_file
+echo '<?php declare(strict_types=1);' > "$core_file"
+echo -e '\e[1;35mInstall kiss core to '"$1"'\e[0m'
+for file in "$kc_dir/core"/*; do
+  echo "Add file $file";
+  tail -n +2 "$file" >> "$core_file"
+  echo >> "$core_file"
 done
-echo 'Write into '$core_file
+echo "Write into $core_file"
 echo '...done'

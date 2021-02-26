@@ -22,42 +22,41 @@
  * Session:get('key', 'default');
  * </code>
  */
-class Session {
+final class Session {
   /** @var Session $Instance */
-  protected static $Instance = null;
+  protected static self $Instance;
 
   /** @var array $container */
-  protected static $container = [];
+  protected static array $container = [];
 
   public final function __construct() {}
 
-  public static function start() {
+  public static function start(): void {
     session_name(config('session.name'));
     session_start();
     static::$container = &$_SESSION;
   }
 
-  public static function id() {
+  public static function id(): string {
     return session_id();
   }
 
-  public static function destroy() {
+  public static function destroy(): bool {
     return session_destroy();
   }
 
   /**
-   * Regenrate new session ID
+   * Regenerate new session ID
    */
-  public static function regenerate() {
-    session_regenerate_id();
+  public static function regenerate(): void {
+    session_regenerate_id(true);
   }
 
   /**
    * @param string $key
    * @return bool
    */
-  public static function has($key) {
-    assert(is_string($key));
+  public static function has(string $key): bool {
     return isset(static::$container[$key]);
   }
 
@@ -67,7 +66,7 @@ class Session {
    * @param mixed $value Can be callable function, so it executes and pushes
    * @return void
    */
-  public static function add($key, $value) {
+  public static function add(string $key, mixed $value): void {
     if (!static::has($key)) {
       static::set($key, is_callable($value) ? $value() : $value);
     }
@@ -79,8 +78,7 @@ class Session {
    * @param mixed $value
    * @return void
    */
-  public static function set($key, $value) {
-    assert(is_string($key));
+  public static function set(string $key, mixed $value): void {
     static::$container[$key] = $value;
   }
 
@@ -89,8 +87,7 @@ class Session {
    * @param string $key
    * @return bool
    */
-  public static function remove($key) {
-    assert(is_string($key));
+  public static function remove(string $key): bool {
     if (isset(static::$container[$key])) {
       unset(static::$container[$key]);
       return true;
@@ -102,7 +99,7 @@ class Session {
    * Alias for self::remove
    * @see self::remove
    */
-  public static function delete($key) {
+  public static function delete(string $key): bool {
     return static::remove($key);
   }
 
@@ -112,7 +109,7 @@ class Session {
    * @param mixed $default Return default there is no such key, set on closure
    * @return mixed
    */
-  public static function get($key, $default = null) {
+  public static function get(string $key, mixed $default = null): mixed {
     if (!static::has($key) && $default && is_callable($default)) {
       $default = $default();
       static::set($key, $default);

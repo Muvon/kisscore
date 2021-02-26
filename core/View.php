@@ -10,23 +10,26 @@
  * View::create('template')->set(['test_var' => 'test_val'])->render();
  * </code>
  */
-class View {
+final class View {
   const VAR_PTRN = '\!?[a-z\_]{1}[a-z0-9\.\_]*';
 
   /**
    * @property array $data массив переменных, которые использует подключаемый шаблон
    * @property string $body обработанные и готовые данные для отдачи их клиенту
    */
-  protected $data = [];
-  protected $routes = [];
-  protected $body = null;
-  protected $source_dir = null;
-  protected $compile_dir = null;
-  protected $prefix = 'c';
-  protected $output_filters = [];
-  protected $compilers = [];
+  protected array
+  $data = [],
+  $routes = [],
+  $output_filters = [],
+  $compilers = [];
 
-  protected static $filter_funcs = [
+  protected string
+  $body,
+  $source_dir,
+  $compile_dir,
+  $prefix = 'c';
+
+  protected static array $filter_funcs = [
     'html' => 'htmlspecialchars',
     'url'  => 'rawurlencode',
     'json' => 'json_encode',
@@ -36,10 +39,10 @@ class View {
   ];
 
   /** @var string $template_extension */
-  protected $template_extension = 'tpl';
+  protected string $template_extension = 'tpl';
 
   /** @var array $block_path */
-  protected $block_path = [];
+  protected array $block_path = [];
 
   /**
    * Финальный приватный конструктор, через него создания вида закрыто
@@ -55,7 +58,7 @@ class View {
     $this->compile_dir = config('view.compile_dir');
   }
 
-  public function configure(array $config) {
+  public function configure(array $config): self {
     foreach ($config as $prop => $val) {
       if (property_exists($this, $prop)) {
         $this->$prop = $val;
@@ -68,7 +71,7 @@ class View {
    * @param string $template
    * @return View
    */
-  public function prepend($template) {
+  public function prepend(string $template): self {
     array_unshift($this->routes, $template);
     return $this;
   }
@@ -77,7 +80,7 @@ class View {
    * @param string $template
    * @return View
    */
-  public function append($template) {
+  public function append(string $template): self {
     $this->routes[] = $template;
     return $this;
   }
@@ -90,13 +93,13 @@ class View {
    * @param string $route Список всех роутов в нужной последовательности для сборки
    * @return View
    */
-  public static function create(...$routes) {
+  public static function create(...$routes): self {
     $View = new static;
     $View->routes = $routes;
     return $View;
   }
 
-  public static function fromString($content) {
+  public static function fromString(string $content): self {
     $View = new static;
     $View->body = $content;
     return $View;
@@ -108,16 +111,16 @@ class View {
    * @access public
    * @return string
    */
-  public function __toString( ) {
+  public function __toString(): string {
     return $this->getBody();
   }
 
-  public function addOutputFilter(Callable $filter) {
+  public function addOutputFilter(Callable $filter): self {
     $this->output_filters = $filter;
     return $this;
   }
 
-  protected function getBody() {
+  protected function getBody(): string {
     $body = $this->body;
     foreach ($this->output_filters as $filter) {
       $body = $filter($body);
@@ -132,13 +135,12 @@ class View {
    * @param array $data
    * @return View
    */
-  public function set(array $data) {
+  public function set(array $data): self {
     $this->data = $data;
     return $this;
   }
 
-  public function assign($key, $val = null) {
-    assert(in_array(gettype($key), ["string", "array"]));
+  public function assign(string|array $key, mixed $val = null): self {
     if (is_string($key)) {
       $this->data[$key] = $val;
     } elseif (is_array($key)) {
@@ -147,7 +149,7 @@ class View {
     return $this;
   }
 
-  public function &access($key) {
+  public function &access(string $key): mixed {
     return $this->data[$key];
   }
 
@@ -165,9 +167,7 @@ class View {
    *   Скомпилированный код, которые отображается внутри блока
    * @return View
    */
-  protected function block($key, $param, $item, Closure $block) {
-    assert(is_string($key));
-
+  protected function block(string $key, mixed $param, mixed $item, Closure $block): self {
     static $arrays = [];
     $arrays[$key] = is_array($param);
     if ($arrays[$key] && is_int(key($param))) {
@@ -198,7 +198,7 @@ class View {
   }
 
 
-  protected static function chunkVar($v, $container = '$item') {
+  protected static function chunkVar(string $v, string $container = '$item'): string {
     $var = '';
     foreach (explode('.', $v) as $p) {
       $var .= ($var ? '' : $container) . '[\'' . $p . '\']';
@@ -207,7 +207,7 @@ class View {
   }
 
 
-  protected static function chunkVarExists($v, $container = '$item') {
+  protected static function chunkVarExists(string $v, string $container = '$item'): string {
     $parts = explode('.', $v);
     $sz = sizeof($parts);
     $var = '';
@@ -222,14 +222,14 @@ class View {
     return 'isset(' . $array . ') && array_key_exists(\'' . $p . '\', ' . $array . ')';
   }
 
-  protected static function chunkParseParams($str) {
+  protected static function chunkParseParams(string $str): string {
     $str = trim($str);
     if (!$str)
       return '';
 
     $code = '';
     foreach (array_map('trim', explode(' ', $str)) as $item) {
-      list($key, $val) = array_map('trim', explode('=', $item));
+      [$key, $val] = array_map('trim', explode('=', $item));
       $code .= '<?php ' . static::chunkVar($key) . ' = ' . static::chunkVar($val) . '; ?>';
     }
     return $code;
@@ -239,7 +239,7 @@ class View {
    * @param string $str
    * @return string
    */
-  protected static function chunkTransformVars($str) {
+  protected static function chunkTransformVars(string $str): string {
     $filter_ptrn = implode(
       '|' ,
       array_map(
@@ -271,7 +271,7 @@ class View {
    * @param string $str
    * @return string
    */
-  protected function chunkCloseBlocks($str) {
+  protected function chunkCloseBlocks(string $str): string {
     $line_block = '#\{(' . static::VAR_PTRN . ')\:\}(.+)$#ium';
 
     // Могут быть вложенные
@@ -286,7 +286,7 @@ class View {
    * @param string $str
    * @return string
    */
-  protected function chunkCompileBlocks($str) {
+  protected function chunkCompileBlocks(string $str): string {
     return preg_replace_callback(
       '#\{(' . static::VAR_PTRN . ')\}(.+?){\/\\1}#ius',
       function ($m) {
@@ -323,7 +323,7 @@ class View {
    * @param string $str
    * @return string
    */
-  protected function chunkMinify($str) {
+  protected function chunkMinify(string $str): string {
     // Remove tabs and merge into single line
     if (config('view.merge_lines')) {
       $str = preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $str);
@@ -345,7 +345,7 @@ class View {
    * @return string
    *   Имя скомпилированного файла
    */
-  protected function compileChunk($route) {
+  protected function compileChunk(string $route): string {
     $source_file = $this->getSourceFile($route);
     $file_c = $this->getCompiledFile([$route]);
     if (!App::$debug && is_file($file_c)) {
@@ -385,7 +385,7 @@ class View {
    *
    * @return View
    */
-  protected function compile() {
+  protected function compile(): self {
     $file_c = $this->getCompiledFile();
     if (App::$debug || !is_file($file_c)) {
       $content = [];
@@ -401,24 +401,24 @@ class View {
     return $this;
   }
 
-  protected function getChunkContent($template) {
+  protected function getChunkContent(string $template): string {
     return file_get_contents($this->compileChunk($template));
   }
 
-  public function addCompiler(Callable $compiler, $template = '*') {
+  public function addCompiler(Callable $compiler, string $template = '*'): self {
     $this->compilers[$template][] = $compiler;
     return $this;
   }
 
-  protected function getSourceFile($route) {
-    assert(is_string($this->source_dir) && is_dir($this->source_dir));
-    assert(is_string($this->template_extension) && isset($this->template_extension[0]));
+  protected function getSourceFile(string $route): string {
+    assert(is_dir($this->source_dir));
+    assert(isset($this->template_extension[0]));
 
     return $this->source_dir . '/' . $route . '.' . $this->template_extension;
   }
 
-  protected function getCompiledFile($routes = []) {
-    assert(is_string($this->compile_dir) && is_dir($this->compile_dir) && is_writable($this->compile_dir));
+  protected function getCompiledFile(array $routes = []): string {
+    assert(is_dir($this->compile_dir) && is_writable($this->compile_dir));
     return $this->compile_dir . '/view-' . $this->prefix . '-' . md5($this->source_dir . ':' . implode(':', $routes ?: $this->routes)) . '.tplc';
   }
 
@@ -431,7 +431,7 @@ class View {
    *   Записывает результат во внутреннюю переменную $body
    *   и возвращает ссылку на объект
    */
-  public function render($quiet = false) {
+  public function render(bool $quiet = false): self {
     if (isset($this->body)) {
       return $this;
     }
@@ -450,7 +450,7 @@ class View {
     return $this;
   }
 
-  public static function flush() {
+  public static function flush(): void {
     system('for file in `find ' . escapeshellarg(config('view.compile_dir')) . ' -name \'view-*\'`; do rm -f $file; done');
   }
 }

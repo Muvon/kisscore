@@ -1,7 +1,6 @@
 <?php
-class Env {
+final class Env {
   protected static $params = [
-    'USER',
     'PROJECT',
     'PROJECT_DIR',
     'PROJECT_ENV',
@@ -16,7 +15,6 @@ class Env {
     'VAR_DIR',
     'TMP_DIR',
     'KISS_CORE',
-    'HTTP_HOST',
   ];
 
   /**
@@ -24,7 +22,7 @@ class Env {
    *
    * @return void
    */
-  public static function init() {
+  public static function init(): void {
     static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
     static::compileConfig();
     static::generateActionMap();
@@ -42,7 +40,7 @@ class Env {
    * @param array $params
    * @return void
    */
-  public static function configure($template, array $params = []) {
+  public static function configure(string $template, array $params = []): void {
     // Add default params
     foreach (static::$params as $param) {
       $params['{{' . $param . '}}'] = getenv($param);
@@ -61,9 +59,10 @@ class Env {
   /**
    * Compile config.json into fast php array to include it ready to use optimized config
    */
-  protected static function compileConfig() {
+  protected static function compileConfig(): void {
     $env = getenv('PROJECT_ENV');
 
+    $config = [];
     // Prepare production config replacement
     foreach (parse_ini_file(getenv('CONFIG_DIR') . '/app.ini', true) as $group => $block) {
       if (false !== strpos($group, ':') && explode(':', $group)[1] === $env) {
@@ -97,7 +96,7 @@ class Env {
    * Generate all configs for configurable plugins. It includes all plugin/_/configure.php files
    * @return void
    */
-  protected static function generateConfigs() {
+  protected static function generateConfigs(): void {
     $configure = function ($file) {
       return include $file;
     };
@@ -107,16 +106,16 @@ class Env {
     }
   }
 
-  protected static function prepareDirs() {
+  protected static function prepareDirs(): void {
     if (!is_dir(config('view.compile_dir'))) {
-      mkdir(config('view.compile_dir'), 0755, true);
+      mkdir(config('view.compile_dir'), 0700, true);
     }
   }
 
   /**
    * Generate nginx URI map for route request to special file
    */
-  protected static function generateURIMap() {
+  protected static function generateURIMap(): void {
     $map = [];
     foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
       $content = file_get_contents($file);
@@ -135,7 +134,7 @@ class Env {
   /**
    * Generate action => file_path map
    */
-  protected static function generateActionMap() {
+  protected static function generateActionMap(): void {
     $map = [];
     foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
       $map[static::getActionByFile($file)] = $file;
@@ -146,7 +145,7 @@ class Env {
   /**
    * Generate parameters map from annotations in actions and triggers files
    */
-  protected static function generateParamMap() {
+  protected static function generateParamMap(): void {
     $map_files = [
       'actions'  => config('common.param_map_file'),
       'triggers' => config('common.trigger_param_file'),
@@ -157,8 +156,9 @@ class Env {
         $content = file_get_contents($file);
         if (preg_match_all('/^\s*\*\s*\@param\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
           foreach ($m[0] as $k => $matches) {
+            $param = substr(strtok($m[2][$k], ' '), 1);
             $map[$file][] = [
-              'name'    => $param = substr(strtok($m[2][$k], ' '), 1),
+              'name'    => $param,
               'type'    => $m[1][$k],
               'default' => trim(substr($m[2][$k], strlen($param) + 1)) ?: null,
             ];
@@ -172,7 +172,7 @@ class Env {
   /**
    * Generate trigger map to be called on some event
    */
-  protected static function generateTriggerMap() {
+  protected static function generateTriggerMap(): void {
     $map = [];
     foreach (static::getPHPFiles(getenv('APP_DIR') . '/triggers') as $file) {
       $content = file_get_contents($file);
@@ -189,7 +189,7 @@ class Env {
     App::writeJSON(config('common.trigger_map_file'), $map);
   }
 
-   protected static function getActionByFile($file) {
+   protected static function getActionByFile(string $file): string {
      return substr(trim(str_replace(getenv('APP_DIR') . '/actions', '', $file), '/'), 0, -4);
    }
 
@@ -198,7 +198,9 @@ class Env {
    * @param string $dir
    * @return array
    */
-  protected static function getPHPFiles($dir) {
-    return ($res = trim(`find -L $dir -name '*.php'`)) ? explode(PHP_EOL, $res) : [];
+  protected static function getPHPFiles(string $dir): array {
+    assert(is_dir($dir));
+    $output = `find -L $dir -name '*.php'`;
+    return $output ? explode(PHP_EOL, trim($output)) : [];
   }
 }
