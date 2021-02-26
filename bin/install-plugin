@@ -17,7 +17,7 @@ _install_plugin() {
   if [[ -d $plugin_dir ]]; then
     pushd "$(pwd)" && cd $plugin_dir && git fetch && git pull --rebase origin master && popd
   else
-    git clone git@github.com:dmitrykuzmenkov/kisscore-plugin-$plugin.git $plugin_dir
+    git clone git@github.com:kisscore/plugin-$plugin.git $plugin_dir
   fi
 
   if [[ "$?" != "0" ]]; then

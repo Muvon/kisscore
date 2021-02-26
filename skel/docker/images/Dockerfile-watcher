@@ -1,5 +1,5 @@
-FROM dmitrykuzmenkov/php:7.1.29-fpm
-LABEL maintainer="Dmitrii Kuzmenkov <dmitrii@kuzmenkov.me>"
+FROM muvon/php:8.0.2-fpm
+LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
 
 RUN apk update && apk add bash curl inotify-tools && rm -fr /var/cache/apk/*
 
