@@ -299,7 +299,7 @@ final class View {
         $denial = false;
         $key    = $m[1];
 
-        if (0 === strpos($m[1], '!')) {
+        if (str_starts_with($m[1], '!')) {
           $key = substr($m[1], 1);
         }
 

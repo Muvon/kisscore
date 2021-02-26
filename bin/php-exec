@@ -27,7 +27,7 @@ $php $OPTS <<EOF
 
     \$opt_string = trim('${@:2}');
     foreach (explode('--', \$opt_string) as \$param) {
-      if (false === strpos(\$param, '=')) {
+      if (!str_contains(\$param, '=')) {
         continue;
       }
       [\$key, \$value] = explode('=', trim(\$param));

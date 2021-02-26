@@ -65,7 +65,7 @@ final class Env {
     $config = [];
     // Prepare production config replacement
     foreach (parse_ini_file(getenv('CONFIG_DIR') . '/app.ini', true) as $group => $block) {
-      if (false !== strpos($group, ':') && explode(':', $group)[1] === $env) {
+      if (str_contains($group, ':') && explode(':', $group)[1] === $env) {
         $origin = strtok($group, ':');
         $config[$origin] = array_merge($config[$origin], $block);
         $group = $origin;
