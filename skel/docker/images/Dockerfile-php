@@ -1,6 +1,7 @@
 FROM muvon/php:8.0.2-fpm
 LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
 
+RUN php-ext add igbinary
 RUN apk add --update bash openssl && \
   rm -fr /var/cache/apk/* && \
   rm -fr /tmp/*
