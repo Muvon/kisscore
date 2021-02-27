@@ -4,11 +4,11 @@ alphabet    = 'nGWZFAQcUxV2fqJtMmyR7BHwPXNrL9DijhCsvuaezpTS3gEdk546Yb8K'
 epoch       = {{KISS_EPOCH}}
 secret      = '{{KISS_SECRET_KEY}}'
 
-trigger_map_file   = '{{VAR_DIR}}/trigger_event_map.php'
-trigger_param_file = '{{VAR_DIR}}/trigger_param_map.php'
-uri_map_file	     = '{{VAR_DIR}}/uri_request_map.php'
-param_map_file     = '{{VAR_DIR}}/import_var_map.php'
-action_map_file    = '{{VAR_DIR}}/action_map.php'
+trigger_map_file   = '{{CONFIG_DIR}}/trigger_event_map.php'
+trigger_param_file = '{{CONFIG_DIR}}/trigger_param_map.php'
+uri_map_file	     = '{{CONFIG_DIR}}/uri_request_map.php'
+param_map_file     = '{{CONFIG_DIR}}/import_var_map.php'
+action_map_file    = '{{CONFIG_DIR}}/action_map.php'
 
 upload_max_filesize = '10M'
 
