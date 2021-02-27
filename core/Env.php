@@ -89,7 +89,7 @@ final class Env {
       $config[join('.', $keys)] = $leaf_value;
     }
 
-    file_put_contents(getenv('CONFIG_DIR') . '/config.php', '<?php return ' . var_export($config, true) . ';');
+    static::store(getenv('CONFIG_DIR') . '/config.php', $config);
   }
 
   /**
@@ -128,7 +128,7 @@ final class Env {
         }
       }
     }
-    App::writeJSON(config('common.uri_map_file'), $map);
+    static::store(config('common.uri_map_file'), $map);
   }
 
   /**
@@ -139,7 +139,7 @@ final class Env {
     foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
       $map[static::getActionByFile($file)] = $file;
     }
-    App::writeJSON(config('common.action_map_file'), $map);
+    static::store(config('common.action_map_file'), $map);
   }
 
   /**
@@ -165,7 +165,7 @@ final class Env {
           }
         }
       }
-      App::writeJSON($map_file, $map);
+      static::store($map_file, $map);
     }
   }
 
@@ -186,7 +186,7 @@ final class Env {
         }
       }
     }
-    App::writeJSON(config('common.trigger_map_file'), $map);
+    static::store(config('common.trigger_map_file'), $map);
   }
 
    protected static function getActionByFile(string $file): string {
@@ -202,5 +202,22 @@ final class Env {
     assert(is_dir($dir));
     $output = `find -L $dir -name '*.php'`;
     return $output ? explode(PHP_EOL, trim($output)) : [];
+  }
+
+  /**
+   * This function uses for store variable in php file for next load
+   * Its much faster than parse and encode jsons or whatever
+   *
+   * @param string $file
+   * @param mixed $data
+   * @return bool
+   */
+  protected static function store(string $file, mixed $data): bool {
+    return !!file_put_contents($file, '<?php return ' . var_export($data, true) . ';');
+  }
+
+  public static function load(string $file): array {
+    assert(is_file($file));
+    return include $file;
   }
 }

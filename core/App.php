@@ -12,7 +12,7 @@ final class App {
    * @return array
    */
   public static function getImportVarsArgs(string $file, string $map_file = null): array {
-    $params = static::getJSON($map_file ?: config('common.param_map_file'));
+    $params = Env::load($map_file ?: config('common.param_map_file'));
     $args = [];
     if (isset($params[$file])) {
       foreach ($params[$file] as $param) {
@@ -112,7 +112,7 @@ final class App {
    */
   public static function process(Request $Request, Response $Response): View {
     if (!isset(static::$action_map)) {
-      static::$action_map = static::getJSON(config('common.action_map_file'));
+      static::$action_map = Env::load(config('common.action_map_file'));
     }
 
     $process = function (&$_RESPONSE) use ($Request, $Response) {

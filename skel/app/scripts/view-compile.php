@@ -1,5 +1,5 @@
 <?php
-$action_map = App::getJSON(config('common.action_map_file'));
+$action_map = Env::load(config('common.action_map_file'));
 $setups = [
   ['prepend' => '_head_ajax', 'append' => '_foot_ajax'],
   ['prepend' => '_head', 'append' => '_head']

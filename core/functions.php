@@ -70,7 +70,7 @@ function typify(&$var, string $type): void {
 function trigger_event(string $event, array $payload = []): mixed {
   static $map;
   if (!isset($map)) {
-    $map = App::getJSON(config('common.trigger_map_file'));
+    $map = Env::load(config('common.trigger_map_file'));
   }
 
   if (isset($map[$event])) {
