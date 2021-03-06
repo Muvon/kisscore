@@ -228,9 +228,8 @@ php_value[upload_tmp_dir] = {{TMP_DIR}}
 php_value[display_errors] = {{DEBUG}}
 
 php_value[assert.active] = {{DEBUG}}
-php_value[assert.bail] = 0
-php_value[assert.quiet_eval] = 0
-php_value[assert.exception] = 0
+php_value[assert.bail] = {{DEBUG}}
+php_value[assert.exception] = {{DEBUG}}
 php_value[zend.assertions] = {{ASSERTIONS}}
 php_value[assert.callback] = "App::handleAssertion"
 
