@@ -96,7 +96,6 @@ final class App {
     Autoload::register('App\Model', getenv('APP_DIR') . '/src/model');
     Autoload::register('App\Component', getenv('APP_DIR') . '/src/component');
     Autoload::register('App\Lib', getenv('APP_DIR') . '/src/lib');
-    Autoload::register('', getenv('APP_DIR') . '/vendor');
   }
 
   /**
