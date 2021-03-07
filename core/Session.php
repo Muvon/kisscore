@@ -48,8 +48,8 @@ final class Session {
   /**
    * Regenerate new session ID
    */
-  public static function regenerate(): void {
-    session_regenerate_id(true);
+  public static function regenerate(bool $destroy = false): void {
+    session_regenerate_id($destroy);
   }
 
   /**
