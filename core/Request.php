@@ -148,8 +148,8 @@ final class Request {
    * @param string $header
    * @return string
    */
-  public function getHeader(string $header): self {
-    return filter_input(INPUT_SERVER, 'HTTP_' . strtoupper(str_replace('-', '_', $header)));
+  public function getHeader(string $header): string {
+    return filter_input(INPUT_SERVER, 'HTTP_' . strtoupper(str_replace('-', '_', $header))) ?? '';
   }
 
   /**
