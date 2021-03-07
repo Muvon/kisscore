@@ -97,10 +97,11 @@ final class App {
     Autoload::register('App\Component', getenv('APP_DIR') . '/src/component');
     Autoload::register('App\Lib', getenv('APP_DIR') . '/src/lib');
 
-    // If we set extra autoload file that need to be included
-    if ($autoload_file = config('common.autoload_file')) {
-      assert(is_file($autoload_file));
-      include_once $autoload_file;
+    // If we have vendor dir with autoload file load it
+    // This is required for composer packages
+    $vendor_autoload_file = getenv('APP_DIR') . '/vendor/autoload.php';
+    if (file_exists($vendor_autoload_file)) {
+      include_once $vendor_autoload_file;
     }
   }
 

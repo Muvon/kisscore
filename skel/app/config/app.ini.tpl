@@ -9,9 +9,6 @@ trigger_param_file = '{{CONFIG_DIR}}/trigger_param_map.php'
 uri_map_file	     = '{{CONFIG_DIR}}/uri_request_map.php'
 param_map_file     = '{{CONFIG_DIR}}/import_var_map.php'
 action_map_file    = '{{CONFIG_DIR}}/action_map.php'
-autoload_file      = ''
-; In case if we use composer it can be like this
-; autoload_file      = '{{APP_DIR}}/vendor/autoload.php'
 
 upload_max_filesize = '10M'
 
