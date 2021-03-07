@@ -181,12 +181,20 @@ final class App {
     } while (false !== $exception = get_parent_class($exception));
   }
 
-  public static function createExceptionHandler(int $code = 500, string $type = 'html', Callable $format_func = null): Callable {
+  public static function createExceptionHandler(int $code = 500, string $type = null, Callable $format_func = null): Callable {
     static $types = [
       'json' => 'application/json',
       'html' => 'text/html',
       'text' => 'text/plain',
     ];
+
+    if (!isset($type)) {
+      $type = match(true) {
+        Input::isJSON() => 'json',
+        Input::isCLI() => 'text',
+        default => 'html'
+      };
+    }
 
     return function (Throwable $Exception) use ($code, $type, $format_func, $types) {
       switch (true) {
