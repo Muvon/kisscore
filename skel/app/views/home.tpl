@@ -1,3 +1,3 @@
-<p>Hello, {name}</p>
-<p>You can change your name by opening /home/yourname</p>
-<p>You are welcome to main page of KISS Core Microframework on PHP 7+</p>
+<p>Welcome to KISSCore</p>
+<p>Fast and robust skeleton for web apps</p>
+<p>It works with PHP 8+ only and uses Yoda as running and deployment tool</p>
