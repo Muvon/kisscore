@@ -133,8 +133,9 @@ final class Response {
   public static function redirect(string $url, int $code = 302): void {
     assert(in_array($code, [301, 302]));
 
-    if ($url[0] === '/')
-      $url = config('common.proto') . '://' . config('common.domain') . $url;
+    if ($url[0] === '/') {
+      $url = Lang::getUrlPrefix() . $url;
+    }
 
     static::create($code)
       ->header('Content-type', '')

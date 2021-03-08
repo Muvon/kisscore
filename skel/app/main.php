@@ -18,8 +18,9 @@ if ($lang_type !== 'none') {
     'compile_dir' => config('view.compile_dir') . '/' . $lang,
   ])
     ->addCompiler(Lang::getViewCompiler($lang))
-    ->assign('LOCALE_LIST', Lang::getList($lang))
-    ->assign('CURRENT_LOCALE', Lang::getInfo($lang))
+    ->assign('LANGUAGE_LIST', Lang::getList($lang))
+    ->assign('CURRENT_LANGUAGE', Lang::getInfo($lang))
+    ->assign('LANG', $lang)
   ;
 }
 // } Language

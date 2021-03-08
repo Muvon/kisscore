@@ -39,6 +39,8 @@ final class Lang {
     'kk' => 'Қазақша',
   ];
 
+  protected static string $current;
+
   public static function init(Request $Request): string {
     $lang_type = config('common.lang_type');
     assert(in_array($lang_type, ['path', 'domain']));
@@ -51,28 +53,36 @@ final class Lang {
     };
 
     // If we find current language we return as string
-    if (isset(static::LANGUAGE_MAP[$lang])) {
-      return $lang;
+    if (isset(static::LANGUAGE_MAP[$lang]) && in_array($lang, config('common.languages'))) {
+      static::$current = $lang;
+      return static::$current;
     }
 
     // No supported language found try to find in headers
-    $lang = static::parse();
-
-    $lang_domain = match($lang_type) {
-      'domain' => $lang . '.' . config('common.domain'),
-      'path' => config('common.domain') . '/' . $lang . '/'
-    };
-
-    $url_prefix = config('common.proto') . '://' . $lang_domain;
+    static::$current = static::parse();
 
     $url_path = match($lang_type) {
       'domain' => $Request->getUrlPath(),
-      'path' => substr($Request->getUrlPath(), 4)
+      'path' => substr($Request->getUrlPath(), 3)
     };
 
-    Response::redirect($url_prefix . $url_path . '?' . $Request->getUrlQuery());
+    $query_str = $Request->getUrlQuery();
+    Response::redirect(static::getUrlPrefix() . ($url_path ? $url_path : '/') . ($query_str ? '?' . $query_str : ''));
   }
 
+  public static function current(): string {
+    return static::$current;
+  }
+
+  public static function getUrlPrefix(): string {
+    $lang_domain = match(config('common.lang_type')) {
+      'domain' => static::$current . '.' . config('common.domain'),
+      'path' => config('common.domain') . '/' . static::$current,
+      'none' => config('common.domain')
+    };
+
+    return config('common.proto') . '://' . $lang_domain;
+  }
   /**
    * Try to parse locale from headers and auto detect it
    *
@@ -124,13 +134,16 @@ final class Lang {
   }
 
   public static function getList(string $lang): array {
-    $info = static::getInfo($lang);
+    $languages = config('common.languages');
     $list = [];
     foreach (static::LANGUAGE_MAP as $key => $item) {
+      if (!in_array($key, $languages)) {
+        continue;
+      }
       $list[] = [
         'language' => $key,
         'name' => static::LANGUAGE_MAP[$key],
-        'is_active' => $info['language'] === $key,
+        'is_active' => $lang === $key,
       ];
     }
 
