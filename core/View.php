@@ -35,6 +35,10 @@ final class View {
     'json' => 'json_encode',
     'upper' => 'strtoupper',
     'lower' => 'strtolower',
+    'ucfirst' => 'ucfirst',
+    'md5' => 'md5',
+    'nl2br' => 'nl2br',
+    'base64' => 'base64_encode',
     'raw'  => '',
   ];
 
@@ -56,6 +60,19 @@ final class View {
     $this->template_extension = config('view.template_extension');
     $this->source_dir = config('view.source_dir');
     $this->compile_dir = config('view.compile_dir');
+  }
+
+  /**
+   * Add custom filter function that can be used with template var to modify it
+   *
+   * @param string $name alias to use in template
+   * @param string $func global name of function
+   * @return void
+   */
+  public static function registerFilterFunc(string $name, string $func): void {
+    assert(!isset(static::$filter_funcs[$name]));
+    assert(function_exists($func));
+    static::$filter_funcs[$name] = $func;
   }
 
   public function configure(array $config): self {
