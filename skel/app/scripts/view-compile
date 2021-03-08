@@ -1,3 +1,4 @@
+#!/usr/bin/env /src/bin/php-exec-one
 <?php
 $action_map = Env::load(config('common.action_map_file'));
 $setups = [
