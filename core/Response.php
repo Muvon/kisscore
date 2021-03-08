@@ -91,7 +91,7 @@ final class Response {
    * @return $this
    */
   public function status(int $status): self {
-    assert(in_array($status, array_keys(self::$messages)));
+    assert(isset(self::$messages[$status]));
     if (isset(self::$messages[$status])) {
       $this->status = $status;
     }

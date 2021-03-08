@@ -309,7 +309,7 @@ final class View {
       function ($m) {
         // Oh Shit so magic :)
         $this->block_path[] = $m[1];
-        $compiled  = static::chunkTransformVars(static::chunkCompileBlocks($m[2]));
+        $compiled  = static::chunkTransformVars($this->chunkCompileBlocks($m[2]));
         array_pop($this->block_path);
 
         // Если стоит отрицание
