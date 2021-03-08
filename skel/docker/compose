@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-yoda compose "$@"
-cat <<EOF
-volumes:
-  env-storage:
-EOF

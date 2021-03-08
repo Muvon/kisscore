@@ -2,10 +2,8 @@ image: nginx
 labels:
   - role=nginx
 working_dir: /src
-network_mode: host
 expose:
   - '80'
-restart: unless-stopped
 cap_drop:
   - ALL
 cap_add:

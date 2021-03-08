@@ -1,4 +1,4 @@
-FROM muvon/php:8.0.2-fpm
+FROM muvon/php:8.0.3-fpm
 LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
 
 RUN php-ext add msgpack

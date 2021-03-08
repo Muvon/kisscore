@@ -1,6 +1,0 @@
-FROM muvon/php:8.0.2-fpm
-LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
-
-RUN apk update && apk add bash curl inotify-tools && rm -fr /var/cache/apk/*
-
-ENTRYPOINT ["/src/docker/containers/watcher/entrypoint"]
