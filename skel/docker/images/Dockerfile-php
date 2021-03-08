@@ -1,10 +1,10 @@
 FROM muvon/php:8.0.3-fpm
 LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
 
-RUN php-ext add msgpack
 RUN apk add --update bash openssl && \
   rm -fr /var/cache/apk/* && \
   rm -fr /tmp/*
+RUN php-ext add msgpack yaml
 
 COPY . /src
 RUN ln -fs /src/docker/containers/php/config/php.ini /etc/php/php.ini && \

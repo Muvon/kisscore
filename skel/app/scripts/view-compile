@@ -2,12 +2,11 @@
 <?php
 $action_map = Env::load(config('common.action_map_file'));
 $setups = [
-  ['prepend' => '_head_ajax', 'append' => '_foot_ajax'],
   ['prepend' => '_head', 'append' => '_head']
 ];
 
 foreach ($setups as $setup) {
-  foreach (config('common.locale') as $language => $domain) {
+  foreach (config('common.languages') as $language) {
     foreach ($action_map as $action => $file) {
       View::create($action)
         ->configure(['source_dir' => config('view.source_dir') . '/' . $language])

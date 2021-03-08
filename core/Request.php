@@ -139,7 +139,7 @@ final class Request {
    * @return string
    */
   public function getUrlQuery(): string {
-    return parse_url($this->url, PHP_URL_QUERY);
+    return parse_url($this->url, PHP_URL_QUERY) ?? '';
   }
 
 

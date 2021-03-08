@@ -110,6 +110,15 @@ final class Env {
     if (!is_dir(config('view.compile_dir'))) {
       mkdir(config('view.compile_dir'), 0700, true);
     }
+
+    if (config('common.lang_type') !== 'none') {
+      foreach (config('common.languages') as $lang) {
+        $lang_dir = config('view.compile_dir') . '/' . $lang;
+        if (!is_dir($lang_dir)) {
+          mkdir($lang_dir, 0700);
+        }
+      }
+    }
   }
 
   /**

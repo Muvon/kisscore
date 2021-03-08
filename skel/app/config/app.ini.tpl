@@ -15,6 +15,8 @@ upload_max_filesize = '10M'
 proto = 'http'
 domain = '{{PROJECT}}.lo'
 
+lang_type = 'path' ; path or domain or none depends what we use for split
+languages[] = 'en'
 
 [common:test]
 domain = '{{PROJECT}}.dev'

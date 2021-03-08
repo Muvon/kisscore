@@ -6,6 +6,13 @@ uasort($routes, function ($a, $b) {
   return (sizeof($a) > sizeof($b)) ? 1 : -1;
 });
 
+$lang_type = config('common.lang_type');
+
+$lang_match = match($lang_type) {
+  'path' => implode('|', config('common.languages')),
+  default => null
+};
+
 $rewrites = [];
 foreach ($routes as $route => $action) {
   $i = 0; // route like (bla (bla bla)) with uff8 cant handle by nginx. so hack it
@@ -25,6 +32,15 @@ foreach ($routes as $route => $action) {
       $uri .= '&' . $v . '=$' . ($k + 1);
     }
   }
+
+  // If we have lang_type = path
+  if ($lang_match) {
+    if ($route === 'home') { // Set root
+      $rewrites[] = "rewrite '(*UTF8)^/(?:$lang_match)/?$' '$uri';";
+    }
+    $route = "(?:$lang_match)/$route";
+  }
+
   $rewrites[] = "rewrite '(*UTF8)^/$route/?$' '$uri';";
 }
 
