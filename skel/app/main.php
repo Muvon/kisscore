@@ -4,6 +4,11 @@ include getenv('KISS_CORE');
 App::start();
 $Request = Request::create();
 $Response = Response::create(200);
+
+// Initiazliations
+$lang = config('common.lang_type') !== 'none' ? Lang::init($Request) : null;
+
+// Process action and get view template if have
 $View = App::process($Request, $Response)
   ->prepend('_head')
   ->append('_foot')
@@ -11,9 +16,7 @@ $View = App::process($Request, $Response)
 
 // Detect language and add compiler to the View
 // Language {
-$lang_type = config('common.lang_type');
-if ($lang_type !== 'none') {
-  $lang = Lang::init($Request);
+if ($lang) {
   $View->configure([
     'compile_dir' => config('view.compile_dir') . '/' . $lang,
   ])
