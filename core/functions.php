@@ -137,3 +137,27 @@ function bench(int|bool $level = 0, ?string $txt = null): void {
   }
   $t[$level][] = $n;
 }
+
+function array_cartesian(array $arrays): array {
+  $result = [];
+  $keys = array_keys($arrays);
+  $reverse_keys = array_reverse($keys);
+  $size = intval(sizeof($arrays) > 0);
+  foreach ($arrays as $array) {
+    $size *= sizeof($array);
+  }
+  for ($i = 0; $i < $size; $i ++) {
+    $result[$i] = [];
+    foreach ($keys as $j) {
+      $result[$i][$j] = current($arrays[$j]);
+    }
+    foreach ($reverse_keys as $j) {
+      if (next($arrays[$j])) {
+        break;
+      } elseif (isset ($arrays[$j])) {
+        reset($arrays[$j]);
+      }
+    }
+  }
+  return $result;
+}
