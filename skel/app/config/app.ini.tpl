@@ -35,12 +35,15 @@ strip_comments      = false
 merge_lines         = false
 
 [view:production]
-compile_dir    = '{{TMP_DIR}}/{{PROJECT_REV}}'
+compile_dir    = '{{TMP_DIR}}/{{PROJECT_REV}}/views'
 strip_comments = true
 merge_lines    = true
 
 [session]
 name          = 'KISS'
+save_handler  = 'files'
+save_depth    = 2 ; this config used only for handler=files
+save_path     = "{{TMP_DIR}}/{{PROJECT_REV}}/sessions"
 
 [nginx]
 port = 80

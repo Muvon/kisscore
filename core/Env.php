@@ -107,6 +107,11 @@ final class Env {
   }
 
   protected static function prepareDirs(): void {
+    static::createViewDirs();
+    static::createSessionDirs();
+  }
+
+  protected static function createViewDirs(): void {
     if (!is_dir(config('view.compile_dir'))) {
       mkdir(config('view.compile_dir'), 0700, true);
     }
@@ -117,6 +122,43 @@ final class Env {
         if (!is_dir($lang_dir)) {
           mkdir($lang_dir, 0700);
         }
+      }
+    }
+  }
+
+  protected static function createSessionDirs(): void {
+    $save_handler = config('session.save_handler');
+    if ($save_handler !== 'files') {
+      return;
+    }
+    $bits = ini_get('session.sid_bits_per_character');
+    $chars='0123456789abcdef';
+    if ($bits >= 5) {
+      $chars .= 'ghijklmnopqrstuv';
+    }
+
+    if ($bits >= 6) {
+      $chars .= 'wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-,';
+    }
+
+    $save_path = config('session.save_path');
+    $depth = config('session.save_depth');
+    if ($depth === 0) {
+      if (!is_dir($save_path)) {
+        mkdir($save_path, 0700, true);
+      }
+      return;
+    }
+
+    $arrays = [];
+    for ($i = 0; $i < $depth; $i++) {
+      $arrays[] = str_split($chars);
+    }
+
+    foreach (array_cartesian($arrays) as $paths) {
+      $dir_path = $save_path . '/' . implode('/', $paths);
+      if (!is_dir($dir_path)) {
+        mkdir($dir_path, 0700);
       }
     }
   }

@@ -218,7 +218,7 @@ clear_env = no
 php_admin_flag[log_errors] = on
 php_value[error_log] = {{LOG_DIR}}/php-fpm.errors.log
 php_value[session.save_handler] = {{SESSION_SAVE_HANDLER}}
-php_value[session.save_path] = {{SESSION_SAVE_PATH}}
+php_value[session.save_path] = "{{SESSION_SAVE_PATH}}"
 php_flag[session.cookie_secure] = {{SESSION_COOKIE_SECURE}}
 
 php_value[upload_max_filesize] = {{UPLOAD_MAX_FILESIZE}}
