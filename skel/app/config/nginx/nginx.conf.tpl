@@ -11,7 +11,7 @@ upstream {{PROJECT}}-fpm {
 server {
   error_log {{LOG_DIR}}/nginx-error.log;
 
-  listen   {{SERVER_PORT}} {{SERVER_PROTOCOL}};
+  listen   {{SERVER_PORT}};
   server_name  {{SERVER_NAME}};
   client_max_body_size {{UPLOAD_MAX_FILESIZE}};
 
