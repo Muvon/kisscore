@@ -103,13 +103,15 @@ final class App {
     if (file_exists($vendor_autoload_file)) {
       include_once $vendor_autoload_file;
     }
+
+    include_once getenv('APP_DIR') . '/start.php';
   }
 
   /**
    * Завершение исполнени приложени
    */
   public static function stop(): void {
-    // Todo some work here
+    include_once getenv('APP_DIR') . '/stop.php';
   }
 
   /**
