@@ -142,11 +142,12 @@ final class Env {
     }
 
     $save_path = config('session.save_path');
+    if (!is_dir($save_path)) {
+      mkdir($save_path, 0700, true);
+    }
+
     $depth = config('session.save_depth');
     if ($depth === 0) {
-      if (!is_dir($save_path)) {
-        mkdir($save_path, 0700, true);
-      }
       return;
     }
 
@@ -158,7 +159,7 @@ final class Env {
     foreach (array_cartesian($arrays) as $paths) {
       $dir_path = $save_path . '/' . implode('/', $paths);
       if (!is_dir($dir_path)) {
-        mkdir($dir_path, 0700);
+        mkdir($dir_path, 0700, true);
       }
     }
   }
