@@ -60,6 +60,8 @@ final class View {
     $this->template_extension = config('view.template_extension');
     $this->source_dir = config('view.source_dir');
     $this->compile_dir = config('view.compile_dir');
+
+    $this->initLanguage();
   }
 
   /**
@@ -419,6 +421,23 @@ final class View {
       file_put_contents($file_c, $content, LOCK_EX);
     }
     include $file_c;
+    return $this;
+  }
+
+  // This methods initialize and configure language if its required by config
+  protected function initLanguage(): static {
+    if (Lang::isEnabled()) {
+      $lang = Lang::current();
+      $this->configure([
+        'compile_dir' => config('view.compile_dir') . '/' . $lang,
+      ])
+        ->addCompiler(Lang::getViewCompiler($lang))
+        ->assign('LANGUAGE_LIST', Lang::getList($lang))
+        ->assign('CURRENT_LANGUAGE', Lang::getInfo($lang))
+        ->assign('LANG', $lang)
+      ;
+    }
+
     return $this;
   }
 

@@ -101,10 +101,15 @@ final class Request {
       }
     }
 
-    return (new static($url))
+    $Request = (new static($url))
       ->setRoute(Input::get('ROUTE'))
       ->setAction(Input::get('ACTION'))
     ;
+
+    // Init language
+    Lang::init($Request);
+
+    return $Request;
   }
 
   /**

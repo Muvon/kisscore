@@ -40,10 +40,16 @@ final class Lang {
   ];
 
   protected static string $current;
+  protected static bool $is_enabled = true;
 
   public static function init(Request $Request): string {
     $lang_type = config('common.lang_type');
-    assert(in_array($lang_type, ['path', 'domain']));
+    assert(in_array($lang_type, ['path', 'domain', 'none']));
+    if ($lang_type === 'none') {
+      static::$is_enabled = false;
+      static::$current = static::DEFAULT_LANG;
+      return static::$current;
+    }
 
     // Try to find current language from url match
     $lang = match($lang_type) {
@@ -72,6 +78,10 @@ final class Lang {
 
   public static function current(): string {
     return static::$current;
+  }
+
+  public static function isEnabled(): bool {
+    return static::$is_enabled;
   }
 
   public static function getUrlPrefix(): string {
