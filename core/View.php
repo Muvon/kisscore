@@ -71,7 +71,12 @@ final class View {
    */
   public static function registerFilterFunc(string $name, string $func): void {
     assert(!isset(static::$filter_funcs[$name]));
-    assert(function_exists($func));
+    if (str_contains($func, '::')) {
+      [$class, $method] = explode('::', $func);
+      assert(method_exists($class, $method));
+    } else {
+      assert(function_exists($func));
+    }
     static::$filter_funcs[$name] = $func;
   }
 
