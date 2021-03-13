@@ -330,7 +330,7 @@ final class View {
         }
 
         return
-          '<?php $param = ' . static::chunkVarExists($m[1], '$item') . ' ? ' . static::chunkVar($m[1], '$item') . ' : null;'
+          '<?php $param = ' . static::chunkVar($m[1], '$item') . ' ?: null;'
         . ($denial ? ' if (!isset($param)) $param = !( ' . static::chunkVarExists($key, '$item') . ' ? ' . static::chunkVar($key, '$item') . ' : null);' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
         . '$this->block(\'' . $key . '\', $param, $item, function ($item) { ?>'
           . $compiled
@@ -410,14 +410,13 @@ final class View {
   protected function compile(): self {
     $file_c = $this->getCompiledFile();
     if (App::$debug || !is_file($file_c)) {
-      $content = [];
+      // Init global context
+      $content = '<?php $item = &$this->data; ?>';
       foreach ($this->routes as $template) {
-        $content[] = $this->getChunkContent($template);
+        $content .= $this->getChunkContent($template);
       }
 
-      // Init global context
-      array_unshift($content, '<?php $item = &$this->data; ?>');
-      file_put_contents($file_c, implode($content), LOCK_EX);
+      file_put_contents($file_c, $content, LOCK_EX);
     }
     include $file_c;
     return $this;
