@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 if [ -e /.inited ]; then
-  >&2 echo 'KISS core already inited. Skipping'
-  exit 1
+  echo 'Skipping first initialization'
+else
+  echo "Running first initiazliation"
+
+  echo "Preparing env/* dirs"
+  mkdir -p /src/env/backup /src/env/etc /src/env/log /src/env/run /src/env/tmp /src/env/var
+
+  echo "Touch /.inited"
+  touch /.inited
 fi
 
 php=$(which php)
@@ -14,18 +21,11 @@ if [[ -f $config ]]; then
   echo "Found php config – $config"
 fi
 
-echo "Preparing env/* dirs"
-mkdir -p /src/env/backup /src/env/etc /src/env/log /src/env/run /src/env/tmp /src/env/var
-
 echo "Running Env::init()"
 $php $OPTS <<EOF
 <?php
   include getenv('KISS_CORE');
   Env::init()
 EOF
-
-echo "Touch /.inited"
-touch /.inited
-
 echo "Done"
 
