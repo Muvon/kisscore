@@ -332,7 +332,7 @@ final class View {
         }
 
         return
-          '<?php $param = ' . static::chunkVar($m[1], '$item') . ' ?: null;'
+        '<?php $param = ' . static::chunkVarExists($m[1], '$item') . ' ? ' . static::chunkVar($m[1], '$item') . ' : null;'
         . ($denial ? ' if (!isset($param)) $param = !( ' . static::chunkVarExists($key, '$item') . ' ? ' . static::chunkVar($key, '$item') . ' : null);' : '') // Блок с тегом отрицанием (no_ | not_) только если не существует переменной как таковой
         . '$this->block(\'' . $key . '\', $param, $item, function ($item) { ?>'
           . $compiled
