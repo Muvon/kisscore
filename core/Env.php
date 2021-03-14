@@ -23,6 +23,7 @@ final class Env {
    * @return void
    */
   public static function init(): void {
+    App::$debug = getenv('PROJECT_ENV') === 'dev';
     static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
     static::compileConfig();
     static::generateActionMap();
