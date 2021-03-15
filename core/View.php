@@ -499,19 +499,21 @@ final class View {
   }
 }
 
+
 // Filter function to format output
 function view_filter_date(string $v): string {
-  return date('Y-m-d', $v) ?: $v;
+  return date('Y-m-d', is_numeric($v) ? intval($v) : strtotime("$v UTC")) ?: $v;
 }
 
 function view_filter_time(string $v): string {
-  return date('H:i', $v) ?: $v;
+  return date('H:i', is_numeric($v) ? intval($v) : strtotime("$v UTC")) ?: $v;
 }
 
 function view_filter_datetime(string $v): string {
-  return date('Y-m-d H:i:s', $v) ?: $v;
+  return date('Y-m-d H:i:s', is_numeric($v) ? intval($v) : strtotime("$v UTC")) ?: $v;
 }
 
+
 function view_filter_timestamp(string $v): string {
-  return strval(strtotime($v) ?: $v);
+  return strval(strtotime(intval($v)) ?: $v);
 }
