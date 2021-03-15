@@ -82,6 +82,9 @@ final class App {
     // Locale settings
     setlocale(LC_ALL, 'ru_RU.UTF8');
 
+    // Timezone settings
+    date_default_timezone_set(timezone_name_from_abbr('', intval(Cookie::get('tz_offset')), 0) ?: 'UTC');
+
     // Error handler
     set_error_handler([static::class, 'handleError'], E_ALL);
 
