@@ -39,6 +39,10 @@ final class View {
     'md5' => 'md5',
     'nl2br' => 'nl2br',
     'base64' => 'base64_encode',
+    'date' => 'view_filter_date',
+    'time' => 'view_filter_time',
+    'datetime' => 'view_filter_datetime',
+    'timestamp' => 'view_filter_timestamp',
     'raw'  => '',
   ];
 
@@ -495,3 +499,19 @@ final class View {
   }
 }
 
+// Filter function to format output
+function view_filter_date(string $v): string {
+  return date('Y-m-d', $v) ?: $v;
+}
+
+function view_filter_time(string $v): string {
+  return date('H:i', $v) ?: $v;
+}
+
+function view_filter_datetime(string $v): string {
+  return date('Y-m-d H:i:s', $v) ?: $v;
+}
+
+function view_filter_timestamp(string $v): string {
+  return strval(strtotime($v) ?: $v);
+}
