@@ -60,8 +60,6 @@ final class View {
     $this->template_extension = config('view.template_extension');
     $this->source_dir = config('view.source_dir');
     $this->compile_dir = config('view.compile_dir');
-
-    $this->initLanguage();
   }
 
   /**
@@ -472,6 +470,8 @@ final class View {
    *   и возвращает ссылку на объект
    */
   public function render(bool $quiet = false): self {
+    $this->initLanguage();
+
     if (isset($this->body)) {
       return $this;
     }
