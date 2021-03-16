@@ -1,23 +1,10 @@
 {
-  "name": "webpack",
-  "version": "1.0.0",
-  "description": "Client side js built with webpack",
   "main": "webpack.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode production --progress",
     "watch": "webpack --mode development --watch --devtool eval --progress"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Muvon/kisscore.git"
-  },
-  "author": "Muvon Co. Ltd <contact@muvon.io> (https://muvon.io)",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Muvon/kisscore/issues"
-  },
-  "homepage": "https://github.com/Muvon/kisscore#readme",
   "devDependencies": {
     "@babel/core": "^7.13.10",
     "@babel/plugin-proposal-class-properties": "^7.13.0",
