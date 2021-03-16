@@ -4,9 +4,41 @@ const webpack = require('webpack')
 const postcssWillChange = require('postcss-will-change')
 const postcssAssets = require('postcss-assets')
 const autoprefixer = require('autoprefixer')
-const postcssPxtorem = require('postcss-pxtorem')
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
+
+// PostCSS
+const autoprefixerPlugin = require('autoprefixer')({
+  grid: 'autoplace'
+})
+const fix100vh = require('postcss-100vh-fix')()
+const rfs = require('rfs')({
+  twoDimensional: false,
+  baseValue: 16,
+  unit: 'rem',
+  breakpoint: 1230, // xl + gap
+  breakpointUnit: 'px',
+  factor: 10,
+  class: false,
+  unitPrecision: 6,
+  safariIframeResizeBugFix: false,
+  remValue: 16,
+})
+const postcssFlexbugsFixes = require('postcss-flexbugs-fixes')()
+const postcssPresetEnv = require('postcss-preset-env')({
+  autoprefixer: false,
+})
+const postcssSorting = require('postcss-sorting')({
+  'properties-order': 'alphabetical',
+})
+const cssnano = require('cssnano')({
+  preset: 'default',
+})
+const sortMediaQueries = require('postcss-sort-media-queries')({
+  sort: 'mobile-first',
+})
+const combineMediaQuery = require('postcss-combine-media-query')()
+const at2x = require('postcss-at2x')()
 
 module.exports = {
   cache: true,
@@ -25,7 +57,7 @@ module.exports = {
       app: path.resolve(__dirname, 'app/client'),
       component: path.resolve(__dirname, 'app/client/component'),
       lib: path.resolve(__dirname, 'app/client/lib'),
-      asset: path.resolve(__dirname, 'app/client/asset'),
+      asset: path.resolve(__dirname, 'app/static'),
     }
   },
   module: {
@@ -48,43 +80,58 @@ module.exports = {
         ]
       },
       {
-        test: /\.(png|jpe?g|gif|svg)$/,
+        test: /\.svg(\?.*)?$/, // match img.svg and img.svg?param=value
+        use: [
+          'svg-url-loader?iesafe', // or file-loader or svg-url-loader
+          'svg-transform-loader'
+        ]
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/,
         use: [
           {
-            loader: 'url-loader?limit=4096&name=asset/[name].[ext]'
+            loader: 'url-loader?limit=4096&name=/img/[name].[ext]'
+          }
+        ],
+      },
+      {
+        test: /\.(eot|ttf|woff|woff2)$/,
+        use: [
+          {
+            loader: 'file-loader?name=/font/[name].[ext]'
           }
         ]
       },
       {
-        test: /\.(eot|svg|ttf|woff|woff2)$/,
+        test: /\.(sa|sc|c)ss$/,
         use: [
-          {
-            loader: 'file-loader?name=asset/fonts/[name].[ext]'
-          }
-        ]
-      },
-      {
-        test: /\.(s?css|sass)/,
-        use: [
-          'style-loader',
           MiniCssExtractPlugin.loader,
-          'css-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 2,
+              esModule: false
+            }
+          },
           {
             loader: 'postcss-loader',
             options: {
-              plugins: [
-                postcssWillChange(),
-                postcssAssets({basePath: './app/static/img'}),
-                autoprefixer({browsers: [
-                  'last 2 versions',
-                  'IE >= 9',
-                  'opera 12',
-                  'safari 7',
-                  'Android >= 4',
-                  'iOS >= 7'
-                ]}),
-                postcssPxtorem()
-              ]
+              postcssOptions: {
+                plugins: [
+                  at2x,
+                  rfs,
+                  postcssAssets({basePath: './app/static/img'}),
+                  postcssFlexbugsFixes,
+                  postcssSorting,
+                  postcssPresetEnv,
+                  postcssWillChange(),
+                  combineMediaQuery,
+                  sortMediaQueries,
+                  // fix100vh(),
+                  autoprefixerPlugin,
+                  cssnano
+                ].filter(Boolean)
+              }
             }
           }, {
             loader: 'sass-loader'
@@ -103,11 +150,10 @@ module.exports = {
   optimization: {
     minimizer: [
       new TerserPlugin({
-        cache: true,
-        parallel: true,
-        sourceMap: true // set to true if you want JS source maps
+        parallel: true
       }),
-      new OptimizeCSSAssetsPlugin({})
+      new OptimizeCSSAssetsPlugin({}),
+      '...'
     ]
   },
   watchOptions: {
