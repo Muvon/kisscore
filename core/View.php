@@ -502,17 +502,19 @@ final class View {
 
 // Filter function to format output
 function view_filter_date(string $v): string {
-  return date('Y-m-d', is_numeric($v) ? intval($v) : strtotime("$v UTC")) ?: $v;
+  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
+  return $ts ? date('Y-m-d', $ts) : $v;
 }
 
 function view_filter_time(string $v): string {
-  return date('H:i', is_numeric($v) ? intval($v) : strtotime("$v UTC")) ?: $v;
+  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
+  return $ts ? date('H:i', $ts) : $v;
 }
 
 function view_filter_datetime(string $v): string {
-  return date('Y-m-d H:i:s', is_numeric($v) ? intval($v) : strtotime("$v UTC")) ?: $v;
+  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
+  return $ts ? date('Y-m-d H:i:s', $ts) : $v;
 }
-
 
 function view_filter_timestamp(string $v): string {
   return strval(strtotime(intval($v)) ?: $v);
