@@ -35,6 +35,7 @@
     "postcss-combine-media-query": "^1.0.1",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^5.2.0",
+    "postcss-move-props-to-bg-image-query": "^4.0.0",
     "postcss-preset-env": "^6.7.0",
     "postcss-sort-media-queries": "^3.6.5",
     "postcss-sorting": "^6.0.0",

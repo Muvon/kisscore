@@ -1,9 +1,7 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
-const webpack = require('webpack')
 const postcssWillChange = require('postcss-will-change')
 const postcssAssets = require('postcss-assets')
-const autoprefixer = require('autoprefixer')
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
 
@@ -23,6 +21,13 @@ const rfs = require('rfs')({
   unitPrecision: 6,
   safariIframeResizeBugFix: false,
   remValue: 16,
+})
+const moveProps = require('postcss-move-props-to-bg-image-query')({
+  match: '-svg-*',
+  transform: ({ name, value }) => ({
+    name: name.replace(/^-svg-/, ''),
+    value,
+  }),
 })
 const postcssFlexbugsFixes = require('postcss-flexbugs-fixes')()
 const postcssPresetEnv = require('postcss-preset-env')({
@@ -122,6 +127,7 @@ module.exports = {
                   rfs,
                   postcssAssets({basePath: './app/static/img'}),
                   postcssFlexbugsFixes,
+                  moveProps,
                   postcssSorting,
                   postcssPresetEnv,
                   postcssWillChange(),
