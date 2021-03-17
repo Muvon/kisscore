@@ -84,3 +84,22 @@ server {
     fastcgi_pass {{PROJECT}}-fpm;
   }
 }
+
+# Default server
+server {
+  listen {{SERVER_PORT}} default_server;
+  server_name  _;
+
+  # Stub status
+  location = /nginx_status {
+    allow 127.0.0.1;
+    deny all;
+
+    stub_status on;
+    access_log off;
+  }
+
+  location / {
+    return 444;
+  }
+}
