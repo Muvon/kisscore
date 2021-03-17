@@ -30,5 +30,7 @@ $php $OPTS <<EOF
   include getenv('KISS_CORE');
   Env::init();
 EOF
-echo "Done"
 
+"$APP_DIR/scripts/view-compile"
+
+echo 'Done'

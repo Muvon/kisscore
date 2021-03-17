@@ -42,7 +42,7 @@ final class Lang {
   protected static string $current;
   protected static bool $is_enabled = true;
 
-  public static function init(Request $Request): string {
+  public static function init(Request|string $Request): string {
     $lang_type = config('common.lang_type');
     assert(in_array($lang_type, ['path', 'domain', 'none']));
     if ($lang_type === 'none') {
@@ -52,11 +52,15 @@ final class Lang {
     }
 
     // Try to find current language from url match
-    $lang = match($lang_type) {
-      'domain' => strtok(getenv('HTTP_HOST'), '.'),
-      'path' => strtok(substr($Request->getUrlPath(), 1), '/'),
-      default => ''
-    };
+    if (is_string($Request)) {
+      $lang = $Request;
+    } else {
+      $lang = match($lang_type) {
+        'domain' => strtok(getenv('HTTP_HOST'), '.'),
+        'path' => strtok(substr($Request->getUrlPath(), 1), '/'),
+        default => ''
+      };
+    }
 
     // If we find current language we return as string
     if (isset(static::LANGUAGE_MAP[$lang]) && in_array($lang, config('common.languages'))) {
