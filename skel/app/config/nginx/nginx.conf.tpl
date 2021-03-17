@@ -93,7 +93,9 @@ server {
   # Stub status
   location = /nginx_status {
     allow 127.0.0.1;
-    allow 10.0.0.0/24;
+    allow 10.0.0.0/8;
+    allow 192.168.0.0/16;
+    allow 172.16.0.0/12;
     deny all;
 
     stub_status on;
@@ -102,7 +104,9 @@ server {
 
   location = /php_status {
     allow 127.0.0.1;
-    allow 10.0.0.0/24;
+    allow 10.0.0.0/8;
+    allow 192.168.0.0/16;
+    allow 172.16.0.0/12;
     deny all;
     access_log off;
 
