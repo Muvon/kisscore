@@ -93,10 +93,22 @@ server {
   # Stub status
   location = /nginx_status {
     allow 127.0.0.1;
+    allow 10.0.0.0/24;
     deny all;
 
     stub_status on;
     access_log off;
+  }
+
+  location = /php_status {
+    allow 127.0.0.1;
+    allow 10.0.0.0/24;
+    deny all;
+    access_log off;
+
+    include      {{CONFIG_DIR}}/nginx_fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $fastcgi_script_name;
+    fastcgi_pass {{PROJECT}}-fpm;
   }
 
   location / {
