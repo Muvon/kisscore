@@ -30,6 +30,7 @@ final class View {
   $prefix = 'c';
 
   protected static array $filter_funcs = [
+    'view' => 'View::includeChunk',
     'html' => 'htmlspecialchars',
     'url'  => 'rawurlencode',
     'json' => 'json_encode',
@@ -442,6 +443,11 @@ final class View {
     }
 
     return $this;
+  }
+
+  // This method is for filter variable and dynamic includes by variable value
+  public function includeChunk(string $template): void {
+    include $this->compileChunk($template);
   }
 
   protected function getChunkContent(string $template): string {
