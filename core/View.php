@@ -30,7 +30,6 @@ final class View {
   $prefix = 'c';
 
   protected static array $filter_funcs = [
-    'view' => 'View::includeChunk',
     'html' => 'htmlspecialchars',
     'url'  => 'rawurlencode',
     'json' => 'json_encode',
@@ -401,6 +400,16 @@ final class View {
       return static::chunkParseParams($matches[2]) . $this->getChunkContent($matches[1]);
     }, $str);
 
+    // Замена динамичных подключений файлов
+    $str = preg_replace_callback('#\{\>\>([a-z\_0-9\.]+)(.*?)\}#ium', function ($matches) {
+      $route = static::chunkVar($matches[1], '$item');
+      return '<?php '
+        . '$this->compileChunk(' . $route . ');'
+        .'include $this->getCompiledFile([' . $route . ']);'
+        .'?>'
+      ;
+    }, $str);
+
     // Переменные: {array.index}
     $str = static::chunkTransformVars($str);
 
@@ -443,11 +452,6 @@ final class View {
     }
 
     return $this;
-  }
-
-  // This method is for filter variable and dynamic includes by variable value
-  public function includeChunk(string $template): void {
-    include $this->compileChunk($template);
   }
 
   protected function getChunkContent(string $template): string {
@@ -504,25 +508,4 @@ final class View {
   public static function flush(): void {
     system('for file in `find ' . escapeshellarg(config('view.compile_dir')) . ' -name \'view-*\'`; do rm -f $file; done');
   }
-}
-
-
-// Filter function to format output
-function view_filter_date(string $v): string {
-  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
-  return $ts ? date('Y-m-d', $ts) : $v;
-}
-
-function view_filter_time(string $v): string {
-  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
-  return $ts ? date('H:i', $ts) : $v;
-}
-
-function view_filter_datetime(string $v): string {
-  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
-  return $ts ? date('Y-m-d H:i:s', $ts) : $v;
-}
-
-function view_filter_timestamp(string $v): string {
-  return strval(strtotime(intval($v)) ?: $v);
 }
