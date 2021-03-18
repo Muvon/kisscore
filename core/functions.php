@@ -161,3 +161,23 @@ function array_cartesian(array $arrays): array {
   }
   return $result;
 }
+
+// Filter function to format output
+function view_filter_date(string $v): string {
+  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
+  return $ts ? date('Y-m-d', $ts) : $v;
+}
+
+function view_filter_time(string $v): string {
+  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
+  return $ts ? date('H:i', $ts) : $v;
+}
+
+function view_filter_datetime(string $v): string {
+  $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
+  return $ts ? date('Y-m-d H:i:s', $ts) : $v;
+}
+
+function view_filter_timestamp(string $v): string {
+  return strval(strtotime(intval($v)) ?: $v);
+}
