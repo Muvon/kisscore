@@ -125,9 +125,9 @@ final class Lang {
    * @return Callable
    */
   public static function getViewCompiler(string $lang): Callable {
-    return function ($body, $template) {
-      return preg_replace_callback('#\#([A-Za-z0-9_]+)\##ius', function ($matches) use ($template) {
-        return Lang::translate($template . '.' . $matches[1]);
+    return function ($body, $template) use ($lang) {
+      return preg_replace_callback('#\#([A-Za-z0-9_]+)\##ius', function ($matches) use ($template, $lang) {
+        return static::translate($template . '.' . $matches[1], $lang);
       }, $body);
     };
   }
@@ -157,11 +157,11 @@ final class Lang {
     return $list;
   }
 
-  public static function translate(string $key): string {
+  public static function translate(string $key, ?string $lang = null): string {
     assert(str_contains($key, '.'));
     static $map = [];
     if (!$map) {
-      $lang_file = getenv('APP_DIR') . '/lang/' . static::$current . '.yml';
+      $lang_file = getenv('APP_DIR') . '/lang/' . ($lang ?: static::$current) . '.yml';
       assert(is_file($lang_file));
       $map = yaml_parse_file($lang_file);
     }
