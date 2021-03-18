@@ -39,6 +39,7 @@ final class View {
     'md5' => 'md5',
     'nl2br' => 'nl2br',
     'base64' => 'base64_encode',
+    'lang' => 'Lang::translate',
     'date' => 'view_filter_date',
     'time' => 'view_filter_time',
     'datetime' => 'view_filter_datetime',

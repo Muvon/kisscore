@@ -125,17 +125,10 @@ final class Lang {
    * @return Callable
    */
   public static function getViewCompiler(string $lang): Callable {
-    $lang_file = getenv('APP_DIR') . '/lang/' . $lang . '.yml';
-    assert(is_file($lang_file));
-    $LANG = yaml_parse_file($lang_file);
-    return function ($body, $template) use ($LANG) {
-      if (isset($LANG[$template])) {
-        return preg_replace_callback('#\#([A-Za-z0-9_]+)\##ius', function ($matches) use ($LANG, $template) {
-          return $LANG[$template][$matches[1]] ?? ($LANG['common'][$matches[1]] ?? $matches[0]);
-        }, $body);
-      }
-
-      return $body;
+    return function ($body, $template) {
+      return preg_replace_callback('#\#([A-Za-z0-9_]+)\##ius', function ($matches) use ($template) {
+        return Lang::translate($template . '.' . $matches[1]);
+      }, $body);
     };
   }
 
@@ -162,5 +155,18 @@ final class Lang {
     }
 
     return $list;
+  }
+
+  public static function translate(string $key): string {
+    assert(str_contains($key, '.'));
+    static $map = [];
+    if (!$map) {
+      $lang_file = getenv('APP_DIR') . '/lang/' . static::$current . '.yml';
+      assert(is_file($lang_file));
+      $map = yaml_parse_file($lang_file);
+    }
+
+    [$template, $translation] = explode('.', $key);
+    return $map[$template][$translation] ?? ($map['common'][$translation] ?? '[missing:' . $translation . ']');
   }
 }
