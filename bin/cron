@@ -27,6 +27,7 @@ while true; do
   ts="$(date +%s)"
   "$file" 1> /dev/stdout 2> /dev/stderr & job_pid=$!
   wait "$job_pid"
+  job_pid=
   job_time=$(( $(date +%s) - ts ))
   datetime="$(date +%Y-%m-%d\ %T)"
   echo "[$datetime] Job took ${job_time}s"
