@@ -31,7 +31,7 @@ $php $OPTS <<EOF
 
     $code;
     App::stop();
-  } catch (Exception \$E) {
+  } catch (Throwable \$E) {
     echo 'Error: ' . \$E->getMessage() . PHP_EOL . PHP_EOL;
     echo \$E->getTraceAsString() . PHP_EOL . PHP_EOL;
     echo 'More info: tail -f $LOG_DIR/' . gmdate('Ymd') . '-error.log';
