@@ -162,6 +162,22 @@ function array_cartesian(array $arrays): array {
   return $result;
 }
 
+/**
+ * This is simple helper in case we need to throw exception when has error
+ *
+ * @param $response
+ *   Stanadrd array in presentation [err, result]
+ *   Where err should be string and result mixed
+ */
+function result(array $response, string $error = 'result'): mixed {
+  [$err, $result] = $response;
+  if ($err) {
+    throw new Error('Error while ' . $error . ': ' . $err . ' . Got result: ' . var_export($result));
+  }
+
+  return $result;
+}
+
 // Filter function to format output
 function view_filter_date(string $v): string {
   $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
