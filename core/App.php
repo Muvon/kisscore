@@ -155,7 +155,11 @@ final class App {
       case is_array($response):
       case is_object($response):
         $Response->header('Content-type', 'application/json;charset=utf-8');
-        return View::fromString(json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        $encoded = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if (false === $encoded) {
+          throw new Error('Failed to encode JSON response');
+        }
+        return View::fromString($encoded);
         break;
 
       default:
