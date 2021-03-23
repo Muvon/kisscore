@@ -19,7 +19,7 @@ final class Cli {
   }
 
   public static function print(string $line): void {
-    echo gmdate('[Y-m-d H:i:s T]') . ' ' . trim($line) . PHP_EOL;
+    echo gmdate('[Y-m-d H:i:s T]') . ' ' . rtrim($line) . PHP_EOL;
   }
 
   public static function printList(array $list): void {
