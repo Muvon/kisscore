@@ -19,7 +19,8 @@ fi
 job_pid=
 trap quit SIGSEGV SIGINT SIGTERM SIGQUIT
 quit() {
-  echo 'STOP signal received. Waiting for jobs to finish...'
+  datetime="$(date +%Y-%m-%d\ %T)"
+  echo "[$datetime] STOP signal received. Waiting for jobs to finish..."
   test -n "$job_pid" && wait "$_"
 }
 
