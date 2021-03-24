@@ -195,12 +195,15 @@ function array_cartesian(array $arrays): array {
  *   Where err should be string and result mixed
  */
 function result(array $response, string $error = 'result'): mixed {
-  if (is_array($response[0])) {
-    return array_map('result', $response);
+  if (isset($response[0]) && is_array($response[0])) {
+    if ($errors = array_filter(array_column($response, 0))) {
+      throw new Error('Errors while ' . $error . ' in multiple result: ' . var_export($errors, true));
+    }
+    return array_column($response, 1);
   } else {
     [$err, $result] = $response;
     if ($err) {
-      throw new Error('Error while ' . $error . ': ' . $err . '. Got result: ' . var_export($result));
+      throw new Error('Error while ' . $error . ': ' . $err . '. Got result: ' . var_export($result, true));
     }
     return $result;
   }
