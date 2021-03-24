@@ -38,6 +38,7 @@ final class View {
     'ucfirst' => 'ucfirst',
     'md5' => 'md5',
     'nl2br' => 'nl2br',
+    'count' => 'sizeof',
     'base64' => 'base64_encode',
     'lang' => 'Lang::translate',
     'date' => 'view_filter_date',
