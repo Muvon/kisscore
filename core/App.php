@@ -79,10 +79,6 @@ final class App {
       static::$debug = getenv('PROJECT_ENV') === 'dev';
     }
 
-    if (Input::isCLI()) {
-      ini_set('error_reporting', E_ALL | E_STRICT);
-    }
-
     // Locale settings
     setlocale(LC_ALL, 'ru_RU.UTF8');
 
