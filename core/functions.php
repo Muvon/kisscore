@@ -87,6 +87,31 @@ function trigger_event(string $event, array $payload = []): mixed {
     });
   }
 }
+/**
+ * This is helper function to control dependencies in one container
+ *
+ * @param string $name
+ * @param mixed $value if not set we do get container if set we do set container value
+ * @return mixed
+ */
+function container(string $name, mixed $value = null): mixed {
+  static $container = [];
+
+  // Set container logic
+  if (isset($value)) {
+    assert(!isset($container[$name]));
+    $container[$name] = $value;
+    return true;
+  }
+
+  // Get container logic
+  assert(isset($container[$name]));
+  $res = &$container[$name];
+  if (is_callable($res)) {
+    $res = $res();
+  }
+  return $res;
+}
 
 /**
  * Get short name for full qualified class name
