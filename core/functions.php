@@ -172,7 +172,7 @@ function array_cartesian(array $arrays): array {
 function result(array $response, string $error = 'result'): mixed {
   [$err, $result] = $response;
   if ($err) {
-    throw new Error('Error while ' . $error . ': ' . $err . ' . Got result: ' . var_export($result));
+    throw new Error('Error while ' . $error . ': ' . $err . '. Got result: ' . var_export($result));
   }
 
   return $result;
