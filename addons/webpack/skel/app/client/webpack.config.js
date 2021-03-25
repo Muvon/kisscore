@@ -49,7 +49,7 @@ module.exports = {
   cache: true,
   devtool: 'source-map',
   entry: {
-    bundle: ['./app/client/main.js', './app/client/main.sass'],
+    bundle: ['./main.js', './main.sass'],
   },
   output: {
     path: path.resolve(__dirname, 'env/var'),
@@ -59,10 +59,10 @@ module.exports = {
   resolve: {
     mainFiles: ['index'],
     alias: {
-      app: path.resolve(__dirname, 'app/client'),
-      component: path.resolve(__dirname, 'app/client/component'),
-      lib: path.resolve(__dirname, 'app/client/lib'),
-      asset: path.resolve(__dirname, 'app/static'),
+      app: path.resolve(__dirname, '.'),
+      component: path.resolve(__dirname, './component'),
+      lib: path.resolve(__dirname, './lib'),
+      asset: path.resolve(__dirname, './asset'),
     }
   },
   module: {
@@ -125,7 +125,7 @@ module.exports = {
                 plugins: [
                   at2x,
                   rfs,
-                  postcssAssets({basePath: './app/static/img'}),
+                  postcssAssets({basePath: './asset/img'}),
                   postcssFlexbugsFixes,
                   moveProps,
                   postcssSorting,
