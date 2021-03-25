@@ -6,6 +6,6 @@
  ;
 +$View->assign('BUNDLE_HASH', filemtime(getenv('VAR_DIR') . '/bundle.css'));
 +
- $Response
-   ->header('X-Frame-Options', 'DENY')
-   ->header('X-XSS-Protection', '1; mode=block')
+$Response
+  ->header('Referrer-Policy', 'origin-when-cross-origin')
+  ->header('X-Frame-Options', 'DENY')
