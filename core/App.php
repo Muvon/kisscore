@@ -185,10 +185,16 @@ final class App {
     $exception = get_class($Exception);
     do {
       if (isset(static::$e_handlers[$exception])) {
-        $func = static::$e_handlers[$exception];
-        return $func($Exception);
+        return static::$e_handlers[$exception]($Exception);
       }
     } while (false !== $exception = get_parent_class($exception));
+
+    $implements = class_implements($Exception);
+    while($implement = array_pop($implements)) {
+      if (isset(static::$e_handlers[$implement])) {
+        return static::$e_handlers[$implement]($Exception);
+      }
+    }
   }
 
   public static function createExceptionHandler(int $code = 500, string $type = null, Callable $format_func = null): Callable {
