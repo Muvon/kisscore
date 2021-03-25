@@ -24,4 +24,4 @@ done
 popd
 
 sed  -i.bak '/^  env\-storage\:[^$]*$/a\
-  npm-storage:'$'\n' "$1/docker/containers/compose.yml"
+  npm-storage:'$'\n' "$1/docker/containers/compose.yml" && rm -f "$_.bak"
