@@ -8,6 +8,7 @@ RUN cd /src && yarn install && yarn cache clean
 
 COPY app/client /src/app/client
 COPY .babelrc /src/.babelrc
+COPY .browserlistrc /src/.browserlistrc
 COPY webpack.config.js /src/webpack.config.js
 COPY docker /src/docker
 WORKDIR /src
