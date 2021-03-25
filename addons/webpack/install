@@ -12,8 +12,13 @@ fi
 
 ADDON_PATH=$(cd `dirname $0` && pwd)
 cp -r $ADDON_PATH/skel/* $1/
-pushd $1
+
+pushd "$1/app/client"
+ln -s ../static asset
+popd
+
+pushd "$1"
 for file in $ADDON_PATH/patches/*; do
-  patch -p1 < $file;
+  patch -p1 < "$file"
 done
 popd
