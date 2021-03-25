@@ -12,7 +12,6 @@ fi
 
 ADDON_PATH=$(cd `dirname $0` && pwd)
 cp -r $ADDON_PATH/skel/* $1/
-cp $ADDON_PATH/{.babelrc,.eslintrc.js,.browserslistrc} $1/
 
 pushd $1
 for file in $ADDON_PATH/patches/*; do
