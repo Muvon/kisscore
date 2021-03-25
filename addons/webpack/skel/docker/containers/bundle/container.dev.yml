@@ -1,6 +1,7 @@
 volumes:
-  - ${SOURCE_PATH}/app:/src/app
+  - ${SOURCE_PATH}/app/client:/src
   - env-storage:/src/env:rw
+  - npm-storage:/src/node_modules:rw
 entrypoint: ["yarn"]
 command:
   - run

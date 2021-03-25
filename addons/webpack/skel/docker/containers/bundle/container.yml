@@ -7,6 +7,7 @@ cap_drop:
   - ALL
 volumes:
   - env-storage:/src/env:rw
+  - npm-storage:/src/node_modules:rw
 entrypoint: ["yarn"]
 command:
   - run
