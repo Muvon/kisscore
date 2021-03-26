@@ -1,5 +1,4 @@
 <?php
-$start_ts = microtime(true);
 include getenv('KISS_CORE');
 App::start();
 $Request = Request::create();
@@ -17,7 +16,7 @@ $Response
   ->header('X-XSS-Protection', '1; mode=block')
   ->header('X-Content-Type-Options', 'nosniff')
   ->header('Content-Security-Policy', "frame-ancestors 'none'")
-  ->header('X-Response-Time', bcmul(microtime(true) - $start_ts, 1000, 0))
+  ->header('X-Response-Time', intval((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000))
   ->send((string) $View->render())
 ;
 App::stop();
