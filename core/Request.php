@@ -23,13 +23,12 @@ final class Request {
    * @property bool $is_ajax запрос посылается через ajax
    */
 
-  private array
-  $params       = [];
+  private array $params = [];
 
   private string
-  $action  = '',
-  $route   = '',
-  $url     = '';
+    $action  = '',
+    $route   = ''
+  ;
 
   public static int
   $time        = 0;
@@ -53,54 +52,45 @@ final class Request {
   /**
    * @param string|bool $url адрес текущего запроса
    */
-  final protected function __construct(string|bool $url) {
-    $this->url  = $url;
-  }
+  final protected function __construct(protected string $url) {}
 
   /**
    * Получение ссылки на экземпляр объекта исходного запроса
    *
    * @static
-   * @access public
-   * @param $url
    * @return Request ссылка на объекта запроса
    */
-  public static function create(string|bool $url = true): self {
-    self::$time = time();
-    if (filter_input(INPUT_SERVER, 'argc')) {
-      self::$protocol = 'CLI';
-    } else {
-      self::$protocol = filter_input(INPUT_SERVER, 'HTTPS') ? 'HTTPS' : 'HTTP';
-      self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
-      self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER') ?? '';
-      self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR') ?? '';
+  final protected static function create(): self {
+    assert(!filter_input(INPUT_SERVER, 'argc'));
+    self::$time = $_SERVER['REQUEST_TIME'];
 
-      // Эти переменные всегда определены в HTTP-запросе
-      self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-      self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
-      self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+    self::$protocol = filter_input(INPUT_SERVER, 'HTTPS') ? 'HTTPS' : 'HTTP';
+    self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
+    self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER') ?? '';
+    self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR') ?? '';
 
-      static::parseRealIp();
-      if ($http_accept_lang = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE')) {
-        preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', $http_accept_lang, $lang);
-        if ($lang && sizeof($lang[1]) > 0) {
-          $langs = array_combine($lang[1], $lang[4]);
+    // Эти переменные всегда определены в HTTP-запросе
+    self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+    self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
+    self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 
-          foreach ($langs as $k => $v) {
-            if ($v === '') {
-              $langs[$k] = 1;
-            }
+    static::parseRealIp();
+    if ($http_accept_lang = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE')) {
+      preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', $http_accept_lang, $lang);
+      if ($lang && sizeof($lang[1]) > 0) {
+        $langs = array_combine($lang[1], $lang[4]);
+
+        foreach ($langs as $k => $v) {
+          if ($v === '') {
+            $langs[$k] = 1;
           }
-          arsort($langs, SORT_NUMERIC);
-          static::$languages = $langs;
         }
-      }
-
-      if ($url === true && $url = filter_input(INPUT_SERVER, 'REQUEST_URI')) {
-        $url = rtrim($url, ';&?') ?: '/';
+        arsort($langs, SORT_NUMERIC);
+        static::$languages = $langs;
       }
     }
 
+    $url = rtrim(filter_input(INPUT_SERVER, 'REQUEST_URI'), ';&?') ?: '/';
     $Request = (new static($url))
       ->setRoute(Input::get('ROUTE'))
       ->setAction(Input::get('ACTION'))
@@ -110,6 +100,18 @@ final class Request {
     Lang::init($Request);
 
     return $Request;
+  }
+
+  /**
+   * Return current instance or initialize and parse
+   */
+  public static function current(): self {
+    static $instance;
+    if (!isset($instance)) {
+      $instance = static::create();
+    }
+
+    return $instance;
   }
 
   /**

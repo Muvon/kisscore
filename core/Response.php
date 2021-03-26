@@ -82,14 +82,19 @@ final class Response {
   final protected function __construct(int $status = 200) {
     $this->status($status);
   }
+
   /**
-   * Create new response
-   * @param int $status HTTP status of response
-   * @return $this
+   * Return current instance or initialize and parse
    */
-  public static function create(int $status = 200): self {
-    return new static($status);
+  public static function current(): self {
+    static $instance;
+    if (!isset($instance)) {
+      $instance = new static(200);
+    }
+
+    return $instance;
   }
+
 
   /**
    * Change HTTP status of response
@@ -190,6 +195,7 @@ final class Response {
     }
 
     // Send header with execution time
+    header('X-Server-Time: ' . intval($_SERVER['REQUEST_TIME_FLOAT'] * 1000));
     header('X-Response-Time: ' . intval((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000), true);
     return $this;
   }

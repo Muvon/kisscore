@@ -121,10 +121,13 @@ final class App {
    * @param Request $Request
    * @return View
    */
-  public static function process(Request $Request, Response $Response): View {
+  public static function process(): View {
     if (!isset(static::$action_map)) {
       static::$action_map = Env::load(config('common.action_map_file'));
     }
+
+    $Request = Request::current();
+    $Response = Response::current();
 
     $process = function (&$_RESPONSE) use ($Request, $Response) {
       $_ACTION = static::$action_map[$Request->getAction()];
@@ -206,8 +209,8 @@ final class App {
 
     if (!isset($type)) {
       $type = match(true) {
-        Input::isJSON() => 'json',
-        Input::isCLI() => 'text',
+        Input::isJson() => 'json',
+        Input::isCli() => 'text',
         default => 'html'
       };
     }
@@ -247,7 +250,8 @@ final class App {
           }
       }
 
-      return Response::create($code)
+      return Response::current()
+        ->status($code)
         ->header('Content-type', $types[$type] . ';charset=utf8')
         ->send($response)
       ;

@@ -1,11 +1,9 @@
 <?php
 include getenv('KISS_CORE');
 App::start();
-$Request = Request::create();
-$Response = Response::create(200);
 
 // Process action and get view template if have
-$View = App::process($Request, $Response)
+$View = App::process()
   ->prepend('_head')
   ->append('_foot')
 ;
