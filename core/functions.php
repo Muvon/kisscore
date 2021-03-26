@@ -101,7 +101,7 @@ function container(string $name, mixed $value = null): mixed {
   if (isset($value)) {
     assert(!isset($container[$name]));
     $container[$name] = $value;
-    return true;
+    return $value;
   }
 
   // Get container logic
