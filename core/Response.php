@@ -16,7 +16,13 @@ final class Response {
    * @property array $messages возможные статусы и сообщения HTTP-ответов
    */
   protected array
-  $headers  = [];
+  $headers  = [
+    'Referrer-Policy' => 'origin-when-cross-origin',
+    'X-Frame-Options' => 'DENY',
+    'X-XSS-Protection' => '1; mode=block',
+    'X-Content-Type-Options' => 'nosniff',
+    'Content-Security-Policy' => "frame-ancestors 'none'",
+  ];
 
   protected string
   $body     = '';
@@ -182,6 +188,9 @@ final class Response {
     foreach ($this->headers as $header=>$value) {
       header($header . ': ' . $value, true);
     }
+
+    // Send header with execution time
+    header('X-Response-Time: ' . intval((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000), true);
     return $this;
   }
 

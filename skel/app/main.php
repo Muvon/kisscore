@@ -10,13 +10,5 @@ $View = App::process($Request, $Response)
   ->append('_foot')
 ;
 
-$Response
-  ->header('Referrer-Policy', 'origin-when-cross-origin')
-  ->header('X-Frame-Options', 'DENY')
-  ->header('X-XSS-Protection', '1; mode=block')
-  ->header('X-Content-Type-Options', 'nosniff')
-  ->header('Content-Security-Policy', "frame-ancestors 'none'")
-  ->header('X-Response-Time', intval((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000))
-  ->send((string) $View->render())
-;
+$Response->send((string) $View->render());
 App::stop();
