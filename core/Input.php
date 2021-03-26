@@ -3,12 +3,16 @@ final class Input {
   public static bool $is_parsed = false;
   public static array $params = [];
 
-  public static function isCLI(): bool {
+  public static function isCli(): bool {
     return !!filter_input(INPUT_SERVER, 'argc');
   }
 
-  public static function isJSON(): bool {
+  public static function isJson(): bool {
     return str_starts_with(filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '', 'application/json');
+  }
+
+  public static function isHtml(): bool {
+    return filter_has_var(INPUT_SERVER, 'REQUEST_URI') && !static::isJson();
   }
 
   /**
@@ -18,12 +22,12 @@ final class Input {
    * @return $this
    */
   protected static function parse(): void {
-    if (static::isCLI()) {
+    if (static::isCli()) {
       $argv = filter_input(INPUT_SERVER, 'argv');
       array_shift($argv); // file
       static::$params['ACTION'] = array_shift($argv);
       static::$params += $argv;
-    } elseif (static::isJSON()) {
+    } elseif (static::isJson()) {
       static::$params = (array) filter_input_array(INPUT_GET) + (array) json_decode(file_get_contents('php://input'), true);
     } else {
       static::$params = (array) filter_input_array(INPUT_POST) + (array) filter_input_array(INPUT_GET);
