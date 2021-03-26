@@ -11,7 +11,7 @@ final class Input {
     return str_starts_with(filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '', 'application/json');
   }
 
-  public static function isHtml(): bool {
+  public static function isRaw(): bool {
     return filter_has_var(INPUT_SERVER, 'REQUEST_URI') && !static::isJson();
   }
 
