@@ -34,7 +34,7 @@ final class Input {
     } elseif (static::isJson()) {
       static::$params = (array) filter_input_array(INPUT_GET) + (array) json_decode(file_get_contents('php://input'), true);
     } elseif (static::isMsgpack()) {
-      static::$params = (array) filter_input_array(INPUT_GET) + (array) msgpack_unpack(file_get_contents('php://input'), true);
+      static::$params = (array) filter_input_array(INPUT_GET) + (array) msgpack_unpack(file_get_contents('php://input'));
     } else {
       static::$params = (array) filter_input_array(INPUT_POST) + (array) filter_input_array(INPUT_GET);
     }
