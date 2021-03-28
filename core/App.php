@@ -157,10 +157,17 @@ final class App {
 
       case is_array($response):
       case is_object($response):
-        $Response->header('Content-type', 'application/json;charset=utf-8');
-        $encoded = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $accept = filter_input(INPUT_SERVER, 'HTTP_ACCEPT') ?? '';
+        $type = match (true) {
+          str_contains('application/json', $accept) => 'json',
+          str_contains('application/msgpack', $accept) => 'msgpack',
+          default => Input::isMsgpack() ? 'msgpack' : 'json',
+        };
+
+        $Response->header('Content-type', 'application/' . $type . ';charset=utf-8');
+        $encoded = $type === 'msgpack' ? msgpack_pack($response) : json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if (false === $encoded) {
-          throw new Error('Failed to encode JSON response');
+          throw new Error('Failed to encode ' . $type  . ' response');
         }
         return View::fromString($encoded);
         break;

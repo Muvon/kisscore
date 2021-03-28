@@ -11,6 +11,10 @@ final class Input {
     return str_starts_with(filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '', 'application/json');
   }
 
+  public static function isMsgpack(): bool {
+    return str_starts_with(filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '', 'application/msgpack');
+  }
+
   public static function isRaw(): bool {
     return filter_has_var(INPUT_SERVER, 'REQUEST_URI') && !static::isJson();
   }
@@ -29,6 +33,8 @@ final class Input {
       static::$params += $argv;
     } elseif (static::isJson()) {
       static::$params = (array) filter_input_array(INPUT_GET) + (array) json_decode(file_get_contents('php://input'), true);
+    } elseif (static::isMsgpack()) {
+      static::$params = (array) filter_input_array(INPUT_GET) + (array) msgpack_unpack(file_get_contents('php://input'), true);
     } else {
       static::$params = (array) filter_input_array(INPUT_POST) + (array) filter_input_array(INPUT_GET);
     }
