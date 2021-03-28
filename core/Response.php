@@ -148,7 +148,7 @@ final class Response {
       $url = Lang::getUrlPrefix() . $url;
     }
 
-    static::create($code)
+    (new static($code))
       ->header('Content-type', '')
       ->header('Location', $url)
       ->sendHeaders()
