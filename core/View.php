@@ -496,7 +496,7 @@ final class View {
       ob_start();
       $this->compile();
       $this->body = ob_get_clean();
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
       if ($quiet) {
         $this->body = '';
       } else {

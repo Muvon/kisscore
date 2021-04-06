@@ -1,5 +1,5 @@
 --- docker/Envfile	2017-02-15 08:29:43.000000000 +0700
 +++ new/docker/Envfile	2017-09-16 13:06:32.000000000 +0700
 @@ -1 +1 @@
--dev: nginx php watcher
-+dev: nginx php watcher bundle
+-dev: nginx php
++dev: nginx php bundle

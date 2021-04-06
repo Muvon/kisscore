@@ -8,5 +8,5 @@ $View = App::process()
   ->append('_foot')
 ;
 
-$Response->send((string) $View->render());
+Response::current()->send((string) $View->render());
 App::stop();

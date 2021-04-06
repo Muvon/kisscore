@@ -1,11 +1,10 @@
 --- app/main.php	2017-09-16 13:00:32.000000000 +0700
 +++ new/app/main.php	2017-09-16 13:02:30.000000000 +0700
-@@ -7,6 +7,8 @@
-   ->prepend('_head')
+@@ -8,5 +8,7 @@
    ->append('_foot')
  ;
+
 +$View->assign('BUNDLE_HASH', filemtime(getenv('VAR_DIR') . '/bundle.css'));
 +
-$Response
-  ->header('Referrer-Policy', 'origin-when-cross-origin')
-  ->header('X-Frame-Options', 'DENY')
+ Response::current()->send((string) $View->render());
+ App::stop();

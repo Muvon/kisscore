@@ -23,5 +23,5 @@ for file in $ADDON_PATH/patches/*; do
 done
 popd
 
-sed  -i.bak '/^  env\-storage\:[^$]*$/a\
-  npm-storage:'$'\n' "$1/docker/containers/compose.yml" && rm -f "$_.bak"
+# sed  -i.bak '/^  env\-storage\:[^$]*$/a\
+#   npm-storage:'$'\n' "$1/docker/containers/compose.yml" && rm -f "$_.bak"
