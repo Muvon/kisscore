@@ -1,6 +1,6 @@
 last 2 versions
-IE >= 9
-opera 12
-safari 7
-Android >= 4
-iOS >= 7
+IE >= 10
+opera >= 44
+safari >= 10
+Android >= 5
+iOS >= 10.3
