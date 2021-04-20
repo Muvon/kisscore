@@ -1,0 +1,15 @@
+:root {
+  --selection: #{$selection-color};
+  --links: #{$primary-color};
+  --highlight: #{$primary-color};
+  --focus: #{$primary-color};
+  --border: #{$primary-color};
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --links: #{$dark-primary-color};
+    --highlight: #{$dark-primary-color};
+    --focus: #{$dark-primary-color};
+    --border: #{$dark-primary-color};
+  }
+}

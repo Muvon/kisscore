@@ -1,0 +1,33 @@
+*
+  font-family: 'Roboto Mono'
+  box-sizing: border-box
+
+body
+  max-width: 1280px
+
+input
+  border: 2px solid transparent
+  &:focus,  &:active
+    box-shadow: none
+    border: 2px solid $selection-color
+
+.input-group
+  input
+    width: 100%
+
+  cell:first-child>input
+    border-top-right-radius: 0
+    border-bottom-right-radius: 0
+
+  cell:last-child>input
+    border-top-left-radius: 0
+    border-bottom-left-radius: 0
+
+@media only screen and (max-width: 600px)
+  body
+    width: 100%
+
+  table
+    width: auto
+    max-width: 100%
+    overflow-x: auto
