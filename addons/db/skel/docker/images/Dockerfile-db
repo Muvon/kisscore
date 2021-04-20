@@ -1,0 +1,9 @@
+FROM mariadb:10.5.9-focal
+LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
+
+RUN apt-get update -y && \
+  apt-get install -y mariadb-plugin-rocksdb && \
+  apt-get clean && apt-get purge && \
+  mkdir -p /var/log/mysql/binlog && chown mysql:mysql /var/log/mysql/binlog
+COPY config/rocksdb.cnf /etc/mysql/conf.d/my.cnf
+COPY initdb /docker-entrypoint-initdb.d

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e
+if [[ -z "$1" ]]; then
+  echo 'Usage '$0' [path-to-project]'
+  exit 1
+fi
+
+if [[ ! -d "$1" ]]; then
+  echo "Path '$1' does not exist or its not a directory"
+  exit 1
+fi
+
+ADDON_PATH=$(cd `dirname $0` && pwd)
+cp -r $ADDON_PATH/skel/* $1/
+
+
+sed  -i.bak '/^  env\-storage\:[^$]*$/a\
+  db-storage:'$'\n' "$1/docker/containers/compose.yml" && rm -f "$_.bak"
+
+db_revision='10.5.9-a'
+echo 'db[docker/containers/db]: -t ${COMPOSE_PROJECT_NAME}/db:'$db_revision >> "$1/docker/Buildfile"
+
+echo "export DB_IP=0.0.0.0 \\
+  DB_NAME=db \\
+  DB_USER=user \\
+  DB_PASSWORD=$(pwgen -Cs 20 1 | tr -d ' ' | tr -d '\n') \\
+  DB_ROOT_PASSWORD=$(pwgen -Cs 20 1 | tr -d ' ' | tr -d '\n') \\
+  DB_REVISION=$db_revision \\
+  DB_PORT=3306
+" >> "$1/docker/env.sh"
