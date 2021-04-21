@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -e
+if [[ -z "$1" ]]; then
+  echo 'Usage '$0' [path-to-project]'
+  exit 1
+fi
+
+if [[ ! -d "$1" ]]; then
+  echo "Path '$1' does not exist or its not a directory"
+  exit 1
+fi
+
+ADDON_PATH=$(cd `dirname $0` && pwd)
+cp -r $ADDON_PATH/skel/* $1/
+
+
+revision='1.11-a'
+echo 'queue[docker/containers/queue]: -t ${COMPOSE_PROJECT_NAME}/queue:'$revision >> "$1/docker/Buildfile"
+
+pushd "$1/app"
+composer require davidpersson/beanstalk:^2.0
+popd
+
+echo "
+[queue]
+host = 'queue'
+port = 5140
+
+[queue:production]
+host = '127.0.0.1'
+" >> "$1/config/app.ini.tpl"
