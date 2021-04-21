@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e
+if [[ -z "$1" ]]; then
+  echo 'Usage '$0' [path-to-project]'
+  exit 1
+fi
+
+if [[ ! -d "$1" ]]; then
+  echo "Path '$1' does not exist or its not a directory"
+  exit 1
+fi
+
+ADDON_PATH=$(cd `dirname $0` && pwd)
+cp -r $ADDON_PATH/skel/* $1/
+
+sed  -i.bak '/^  env\-storage\:[^$]*$/a\
+  ardb-storage:'$'\n' "$1/docker/containers/compose.yml" && rm -f "$_.bak"
+
+revision='0.10-a'
+echo 'ardb[docker/containers/ardb]: -t ${COMPOSE_PROJECT_NAME}/ardb:'$revision >> "$1/docker/Buildfile"
+
+echo "
+STORAGE_HOST=127.0.0.1
+STORAGE_PORT=2112
+
+export STORAGE_HOST \\
+  STORAGE_PORT \\
+  STORAGE_BIND=\"\${STORAGE_HOST}:\${STORAGE_PORT}\"
+
+" >> "$1/docker/env.sh"

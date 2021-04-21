@@ -1,0 +1,5 @@
+image: ardb
+labels:
+  - role=storage
+volumes:
+  - ardb-storage:/data:rw

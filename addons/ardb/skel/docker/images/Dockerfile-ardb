@@ -1,0 +1,6 @@
+FROM muvon/ardb:0.10.0-rocksdb
+LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
+
+COPY config/ardb.conf /etc/ardb.conf
+ENTRYPOINT [ "/usr/bin/ardb-server" ]
+CMD ["/etc/ardb.conf"]
