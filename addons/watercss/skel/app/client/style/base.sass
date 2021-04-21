@@ -1,9 +1,21 @@
 *
   font-family: 'Roboto Mono'
+  font-size: 15px
   box-sizing: border-box
 
 body
+  max-width: 100%
+  margin: 0
+  padding: 0
+
+header, footer
+  background-color: $primary-color
+
+container
+  padding: 20px
   max-width: 1280px
+  margin: 0 auto
+  display: block
 
 input
   border: 2px solid transparent
@@ -23,11 +35,18 @@ input
     border-top-left-radius: 0
     border-bottom-left-radius: 0
 
+table
+  tbody
+    display: block
+    overflow: auto
+    width: 100%
+
+  thead, tbody tr
+    display: table
+    min-width: 100%
+    table-layout: fixed
+    overflow: auto
+
 @media only screen and (max-width: 600px)
   body
     width: 100%
-
-  table
-    width: auto
-    max-width: 100%
-    overflow-x: auto
