@@ -4,4 +4,3 @@
  php: -t ${COMPOSE_PROJECT_NAME}/php:${REVISION}
  nginx: -t ${COMPOSE_PROJECT_NAME}/nginx:${REVISION}
 +webpack[app/client]: -t ${COMPOSE_PROJECT_NAME}/webpack:${REVISION}
-\ No newline at end of file
