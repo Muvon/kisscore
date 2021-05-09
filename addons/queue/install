@@ -28,4 +28,4 @@ port = 5140
 
 [queue:production]
 host = '127.0.0.1'
-" >> "$1/config/app.ini.tpl"
+" >> "$1/app/config/app.ini.tpl"

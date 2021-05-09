@@ -4,6 +4,8 @@ namespace App\Lib;
 use Beanstalk\Client;
 
 class Queue {
+  const RELEASE_DELAY = 5;
+
   protected static function client() {
     static $Client;
 
@@ -26,12 +28,14 @@ class Queue {
       $Client->put(0, 0, 300, base64_encode(msgpack_pack($job)));
     };
 
-    register_shutdown_function(function() use($func) {
-      if (function_exists('fastcgi_finish_request')) {
+    if (function_exists('fastcgi_finish_request')) {
+      register_shutdown_function(function() use($func) {
+        $func();
         fastcgi_finish_request();
-      }
+      });
+    } else {
       $func();
-    });
+    }
   }
 
   public static function process($ns, Callable $func) {
@@ -58,7 +62,7 @@ class Queue {
     $result = $func($payload);
 
     if (false === $result) {
-      $Client->bury($job['id']);
+      $Client->release($job['id'], 0, static::RELEASE_DELAY);
     } else {
       $Client->delete($job['id']);
     }
