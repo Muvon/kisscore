@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+if [[ -z "$1" ]]; then
+  echo 'Usage '$0' [path-to-project]'
+  exit 1
+fi
+
+if [[ ! -d "$1" ]]; then
+  echo "Path '$1' does not exist or its not a directory"
+  exit 1
+fi
+
+ADDON_PATH=$(cd `dirname $0` && pwd)
+cp -r $ADDON_PATH/skel/* $1/
