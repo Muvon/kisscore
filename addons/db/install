@@ -10,8 +10,11 @@ if [[ ! -d "$1" ]]; then
   exit 1
 fi
 
+PROJECT_PATH=$(cd `dirname $1` && pwd)
+PROJECT_NAME=${PROJECT_PATH##*\/}
 ADDON_PATH=$(cd `dirname $0` && pwd)
 cp -r $ADDON_PATH/skel/* $1/
+
 
 
 sed  -i.bak '/^  env\-storage\:[^$]*$/a\
@@ -20,11 +23,26 @@ sed  -i.bak '/^  env\-storage\:[^$]*$/a\
 db_revision='10.5.9-a'
 echo 'db[docker/containers/db]: -t ${COMPOSE_PROJECT_NAME}/db:'$db_revision >> "$1/docker/Buildfile"
 
-echo "export DB_IP=0.0.0.0 \\
-  DB_NAME=db \\
-  DB_USER=user \\
-  DB_PASSWORD=$(pwgen -Cs 20 1 | tr -d ' ' | tr -d '\n') \\
-  DB_ROOT_PASSWORD=$(pwgen -Cs 20 1 | tr -d ' ' | tr -d '\n') \\
+db_name=$PROJECT_NAME
+db_user=$PROJECT_NAME
+db_user_pw=$(pwgen -Cs 20 1 | tr -d ' ' | tr -d '\n')
+db_root_pw=$(pwgen -Cs 20 1 | tr -d ' ' | tr -d '\n')
+echo "
+export DB_IP=0.0.0.0 \\
+  DB_NAME=$db_name \\
+  DB_USER=$db_user \\
+  DB_PASSWORD=$db_user_pw \\
+  DB_ROOT_PASSWORD=$db_root_pw \\
   DB_REVISION=$db_revision \\
   DB_PORT=3306
 " >> "$1/docker/env.sh"
+
+
+echo "
+[mysql]
+connect_timeout=1
+shard[0] = 'mysql:host=db;port=3306;dbname=$db_name;user=$db_user;password=$db_user_pw'
+
+[mysql:production]
+shard[0] = 'mysql:host=10.0.0.1;port=3306;dbname=$db_name;user=$db_user;password=production_pw'
+" >> "$1/app/config/app.ini.tpl"
