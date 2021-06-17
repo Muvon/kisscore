@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+if [[ -n "$GIT_SECRET_PASSWORD" ]]; then
+  git secret reveal -p "$GIT_SECRET_PASSWORD"
+else
+  echo 'No GIT_SECRET_PASSWORD set. Skipping git secret reveal'
+fi
+
+yoda start "$@"

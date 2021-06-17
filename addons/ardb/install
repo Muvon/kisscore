@@ -29,5 +29,8 @@ export STORAGE_HOST \\
 
 " >> "$1/docker/env.sh"
 
-sed  -i.bak '/^  \- PROJECT_REV=$REVISION$/a\
-  - STORAGE_HOST=$STORAGE_HOST'$'\n''  - STORAGE_PORT=$STORAGE_PORT'$'\n' "$1/app/config/app.ini.tpl" && rm -f "$_.bak"
+sed  -i.bak '/^environment\:[^$]*$/a\
+\ \ \-\ STORAGE_PORT=\$STORAGE_PORT'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"
+
+sed  -i.bak '/^environment\:[^$]*$/a\
+\ \ \-\ STORAGE_HOST=\$STORAGE_HOST'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"

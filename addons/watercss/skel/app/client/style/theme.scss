@@ -1,13 +1,20 @@
 :root {
+  --background-body: #{$background-color};
+  --text-main: #{$text-color};
+  --text-bright: #{$dark-secondary-color};
   --selection: #{$selection-color};
-  --links: #{$primary-color};
+  --links: #{$link-color};
   --highlight: #{$primary-color};
   --focus: #{$primary-color};
   --border: #{$primary-color};
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --links: #{$dark-primary-color};
+    --background-body: #{$dark-background-color};
+    --text-main: #{$dark-text-color};
+    --text-bright: #{$dark-secondary-color};
+    --selection: #{$dark-selection-color};
+    --links: #{$dark-link-color};
     --highlight: #{$dark-primary-color};
     --focus: #{$dark-primary-color};
     --border: #{$dark-primary-color};
