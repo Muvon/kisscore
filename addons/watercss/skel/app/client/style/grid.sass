@@ -32,3 +32,12 @@ grid>row
   @for $i from 1 through 12
     grid>cell[m-start="#{$i}"]
       --grid-b: #{$i}
+
+@media only screen and (max-width: 1200px)
+  @for $i from 1 through 12
+    grid>cell[t-span="#{$i}"]
+      --grid-e: #{$i}
+
+  @for $i from 1 through 12
+    grid>cell[t-start="#{$i}"]
+      --grid-b: #{$i}
