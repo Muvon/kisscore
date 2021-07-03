@@ -1,0 +1,5 @@
+image: redis
+labels:
+  - role=redis
+volumes:
+  - redis-storage:/data:rw

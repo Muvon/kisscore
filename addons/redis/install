@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -e
+if [[ -z "$1" ]]; then
+  echo 'Usage '$0' [path-to-project]'
+  exit 1
+fi
+
+if [[ ! -d "$1" ]]; then
+  echo "Path '$1' does not exist or its not a directory"
+  exit 1
+fi
+
+ADDON_PATH=$(cd `dirname $0` && pwd)
+cp -r $ADDON_PATH/skel/* $1/
+
+sed  -i.bak '/^  env\-storage\:[^$]*$/a\
+  redis-storage:'$'\n' "$1/docker/containers/compose.yml" && rm -f "$_.bak"
+
+revision='6.2.4-a'
+echo 'redis[docker/containers/redis]: -t ${COMPOSE_PROJECT_NAME}/redis:'$revision >> "$1/docker/Buildfile"
+
+echo "
+REDIS_HOST=127.0.0.1
+REDIS_PORT=4000
+
+export REDIS_HOST \\
+  REDIS_PORT \\
+  REDIS_BIND_HOST=\"\${REDIS_HOST}\"
+
+" >> "$1/docker/env.sh"
+
+echo "
+REDIS_HOST=redis
+export REDIS_BIND_HOST=0.0.0.0
+
+" >> "$1/docker/env.dev.sh"
+
+sed  -i.bak '/^environment\:[^$]*$/a\
+\ \ \-\ REDIS_PORT=\$REDIS_PORT'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"
+
+sed  -i.bak '/^environment\:[^$]*$/a\
+\ \ \-\ REDIS_HOST=\$REDIS_HOST'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"

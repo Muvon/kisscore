@@ -1,0 +1,6 @@
+FROM redis:6.2.4-alpine
+LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
+
+COPY config/redis.conf /etc/redis.conf
+ENTRYPOINT [ "docker-entrypoint.sh" ]
+CMD ["redis-server", "/etc/redis.conf"]
