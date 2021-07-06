@@ -41,7 +41,8 @@ abstract class RedisClient {
     return $this;
   }
 
-  public function listen(): static {
+  public function listen(int $timeout = 60): static {
+    $this->Client->setOption(Redis::OPT_READ_TIMEOUT, $timeout);
     $this->Client->subscribe(array_keys($this->subscribers), [$this, 'listenProcessor']);
     return $this;
   }
