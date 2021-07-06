@@ -22,6 +22,11 @@ final class Cli {
     echo gmdate('[Y-m-d H:i:s T]') . ' ' . rtrim($line) . PHP_EOL;
   }
 
+  public static function error(string $line, int $error_code = 1): void {
+    static::print($line);
+    exit($error_code);
+  }
+
   public static function printList(array $list): void {
     foreach ($list as $item) {
       static::print($item);
