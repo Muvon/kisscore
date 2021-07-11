@@ -1,7 +1,8 @@
 :root {
   --background-body: #{$background-color};
+  --background-alt: #{$background-alt-color};
   --text-main: #{$text-color};
-  --text-bright: #{$dark-secondary-color};
+  --text-bright: #{$text-color};
   --selection: #{$selection-color};
   --links: #{$link-color};
   --highlight: #{$primary-color};
@@ -11,8 +12,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background-body: #{$dark-background-color};
+    --background-alt: #{$dark-background-alt-color};
     --text-main: #{$dark-text-color};
-    --text-bright: #{$dark-secondary-color};
+    --text-bright: #{$dark-text-color};
     --selection: #{$dark-selection-color};
     --links: #{$dark-link-color};
     --highlight: #{$dark-primary-color};
