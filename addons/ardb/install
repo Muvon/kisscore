@@ -20,17 +20,17 @@ revision='0.10-a'
 echo 'ardb[docker/containers/ardb]: -t ${COMPOSE_PROJECT_NAME}/ardb:'$revision >> "$1/docker/Buildfile"
 
 echo "
-STORAGE_HOST=127.0.0.1
-STORAGE_PORT=2112
+ARDB_HOST=127.0.0.1
+ARDB_PORT=2112
 
-export STORAGE_HOST \\
-  STORAGE_PORT \\
-  STORAGE_BIND=\"\${STORAGE_HOST}:\${STORAGE_PORT}\"
+export ARDB_HOST \\
+  ARDB_PORT \\
+  ARDB_BIND=\"\${ARDB_HOST}:\${ARDB_PORT}\"
 
 " >> "$1/docker/env.sh"
 
 sed  -i.bak '/^environment\:[^$]*$/a\
-\ \ \-\ STORAGE_PORT=\$STORAGE_PORT'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"
+\ \ \-\ ARDB_PORT=\$ARDB_PORT'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"
 
 sed  -i.bak '/^environment\:[^$]*$/a\
-\ \ \-\ STORAGE_HOST=\$STORAGE_HOST'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"
+\ \ \-\ ARDB_HOST=\$ARDB_HOST'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"

@@ -1,2 +1,2 @@
 ports:
-  - '${STORAGE_PORT}:${STORAGE_PORT}'
+  - '${ARDB_PORT}:${ARDB_PORT}'

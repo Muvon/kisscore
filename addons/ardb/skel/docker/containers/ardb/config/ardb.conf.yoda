@@ -26,7 +26,7 @@ pidfile /var/run/ardb.pid
 thread-pool-size              2
 
 #Accept connections on the specified host&port/unix socket, default is 0.0.0.0:16379.
-server[0].listen              %{STORAGE_BIND}
+server[0].listen              %{ARDB_BIND}
 # If current qps exceed the limit, Ardb would return an error.
 #server[0].qps-limit           1000
 
