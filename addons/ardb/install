@@ -29,6 +29,17 @@ export ARDB_HOST \\
 
 " >> "$1/docker/env.sh"
 
+if [[ ! -f "$1/docker/env.dev.sh" ]]; then
+  echo '#!/usr/bin/env bash' > "$1/docker/env.dev.sh"
+fi
+
+echo "
+ARDB_HOST=ardb
+export ARDB_HOST \\
+  ARDB_BIND=\"0.0.0.0:\${ARDB_PORT}\"
+
+" >> "$1/docker/env.dev.sh"
+
 sed  -i.bak '/^environment\:[^$]*$/a\
 \ \ \-\ ARDB_PORT=\$ARDB_PORT'$'\n' "$1/docker/containers/php/container.yml" && rm -f "$_.bak"
 
