@@ -6,7 +6,7 @@ use Beanstalk\Client;
 class Queue {
   const RELEASE_DELAY = 5;
 
-  protected static function client() {
+  protected static function client(): Client {
     static $Client;
 
     if (!$Client) {
@@ -17,7 +17,7 @@ class Queue {
     return $Client;
   }
 
-  public static function add($ns, $job) {
+  public static function add(string $ns, mixed $job): bool {
     $func = function () use ($ns, $job) {
       $Client = static::client();
       if (!$Client->connected) {
@@ -26,6 +26,7 @@ class Queue {
 
       $Client->useTube($ns);
       $Client->put(0, 0, 300, base64_encode(msgpack_pack($job)));
+      return true;
     };
 
     if (function_exists('fastcgi_finish_request')) {
@@ -33,12 +34,13 @@ class Queue {
         $func();
         fastcgi_finish_request();
       });
+      return true;
     } else {
-      $func();
+      return $func();
     }
   }
 
-  public static function process($ns, Callable $func) {
+  public static function process(string $ns, Callable $func): bool {
     if (!static::client()->connected) {
       return false;
     }
@@ -52,7 +54,7 @@ class Queue {
     }
   }
 
-  public static function fetch(Callable $func) {
+  public static function fetch(Callable $func): bool {
     $Client = static::client();
     $job = $Client->reserve();
     if ($job === false) {
@@ -66,6 +68,8 @@ class Queue {
     } else {
       $Client->delete($job['id']);
     }
+
+    return true;
   }
 
   public function __destruct() {
