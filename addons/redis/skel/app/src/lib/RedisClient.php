@@ -14,6 +14,9 @@ abstract class RedisClient {
 
   protected static $Instance;
   protected int $db = 0;
+
+  protected static $Instance;
+
   protected array $subscribers = [];
 
   protected function __construct(string $dsn) {
@@ -41,6 +44,14 @@ abstract class RedisClient {
 
   public static function create(): static {
     return new static(getenv('REDIS_SOCK') ?: getenv('REDIS_HOST') . ':' . getenv('REDIS_PORT'));
+  }
+
+  public static function instance(): static {
+    if (!isset(static::$Instance)) {
+      static::$Instance = static::create();
+    }
+
+    return static::$Instance;
   }
 
   public static function instance(): static {
@@ -85,5 +96,4 @@ abstract class RedisClient {
   public function __call(string $method, array $args = []): mixed {
     return $this->Client->$method(...$args);
   }
-
 }
