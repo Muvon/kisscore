@@ -4,21 +4,30 @@ namespace App\Lib;
 use Redis;
 
 abstract class RedisClient {
+  const CONNECT_TIMEOUT = 1;
+  const RECONNECT_TIMEOUT_MS = 100;
+  const READ_TIMEOUT = 1;
   protected Redis $Storage;
   protected Redis $Multi;
 
+  protected static $Instance;
   protected int $db = 0;
-
   protected array $subscribers = [];
 
   protected function __construct(string $host, int $port) {
+    $connect_timeout = getenv('REDIS_CONNECT_TIMEOUT') ?: static::CONNECT_TIMEOUT;
+    $reconnect_timeout_ms = getenv('REDIS_RECONNECT_TIMEOUT_MS') ?: static::RECONNECT_TIMEOUT_MS;
+    $read_timeout = getenv('REDIS_READ_TIMEOUT') ?: static::READ_TIMEOUT;
+
     $this->Client = new Redis();
-    $this->Client->connect($host, $port);
+    $this->Client->connect($host, $port, $connect_timeout, null, $reconnect_timeout_ms);
     $this->Client->select($this->db);
+    $this->Client->setOption(Redis::OPT_READ_TIMEOUT, $read_timeout);
 
     $this->Multi = new Redis();
-    $this->Multi->connect($host, $port);
+    $this->Multi->connect($host, $port, $connect_timeout, null, $reconnect_timeout_ms);
     $this->Multi->select($this->db);
+    $this->Multi->setOption(Redis::OPT_READ_TIMEOUT, $read_timeout);
     $this->Multi->multi();
   }
 
@@ -56,5 +65,8 @@ abstract class RedisClient {
     return $this;
   }
 
+  public function __call(string $method, array $args = []): mixed {
+    return $this->Client->$method(...$args);
+  }
 
 }
