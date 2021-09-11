@@ -142,14 +142,24 @@ function bcdechex(string $dec): string {
   return $hex;
 }
 
-function bench(int|bool $level = 0, ?string $txt = null): void {
+
+// bench("a") -> start benching labeled
+// bench() -> return array with results
+// bench("reset") -> reset data (reserved)
+function bench(?string $txt = null): ?array {
   static $t = [], $r = [];
-  if ($level === true) {
+  if ($txt === null) {
+    $lines = [];
     foreach ($r as $txt => $vals) {
-      echo $txt . ': ' . sprintf('%f', array_sum($vals) / sizeof($vals)) . 's' . PHP_EOL;
+      $lines[$txt] = sprintf('%.3f', (array_sum($vals) / sizeof($vals)) * 1000) . 'ms';
     }
     $t = $r = [];
-    return;
+    return $lines;
+  }
+
+  if ($txt === 'reset') {
+    $t = $r = [];
+    return null;
   }
   $n = microtime(true);
 
@@ -157,10 +167,12 @@ function bench(int|bool $level = 0, ?string $txt = null): void {
     $r[$txt] = [];
   }
 
-  if ($txt && isset($t[$level])) {
-    $r[$txt][] = $n - $t[$level][sizeof($t[$level]) - 1];
+  if ($txt && isset($t[$txt])) {
+    $r[$txt][] = $n - $t[$txt][array_key_last($t[$txt])];
   }
-  $t[$level][] = $n;
+  $t[$txt][] = $n;
+
+  return null;
 }
 
 function array_cartesian(array $arrays): array {
