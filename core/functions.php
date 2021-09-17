@@ -221,6 +221,23 @@ function result(array $response, string $error = 'result'): mixed {
   }
 }
 
+function defer(?SplStack &$ctx, callable $cb): void {
+  $ctx = $ctx ?? new SplStack();
+
+  $ctx->push(
+    new class($cb) {
+      protected $cb;
+      public function __construct(callable $cb) {
+        $this->cb = $cb;
+      }
+
+      public function __destruct() {
+        \call_user_func($this->cb);
+      }
+    }
+  );
+}
+
 // Filter function to format output
 function view_filter_date(string $v): string {
   $ts = is_numeric($v) ? intval($v) : strtotime("$v UTC");
