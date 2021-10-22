@@ -9,6 +9,8 @@ abstract class ArdbClient {
 
   protected int $db = 0;
 
+  protected static $Instance;
+
   protected array $subscribers = [];
 
   protected function __construct(string $host, int $port) {
@@ -23,7 +25,15 @@ abstract class ArdbClient {
   }
 
   public static function create(): static {
-    return new static(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
+    return new static(getenv('ARDB_HOST'), getenv('ARDB_PORT'));
+  }
+
+  public static function instance(): static {
+    if (!isset(static::$Instance)) {
+      static::$Instance = static::create();
+    }
+
+    return static::$Instance;
   }
 
   public function commit(): bool {
