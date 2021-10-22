@@ -17,15 +17,15 @@ class Queue {
     return $Client;
   }
 
-  public static function add(string $ns, mixed $job): bool {
-    $func = function () use ($ns, $job) {
+  public static function add(string $ns, mixed $job, int $delay = 0, int $ttr = 300): bool {
+    $func = function () use ($ns, $job, $delay, $ttr) {
       $Client = static::client();
       if (!$Client->connected) {
         return false;
       }
 
       $Client->useTube($ns);
-      $Client->put(0, 0, 300, base64_encode(msgpack_pack($job)));
+      $Client->put(0, $delay, $ttr, base64_encode(msgpack_pack($job)));
       return true;
     };
 
