@@ -8,7 +8,7 @@ DOCKER_ROOT=$(cd "${BASH_SOURCE%/*}" && pwd)
 ENV=${ENV:-dev}
 
 export \
-  YODA_VERSION="2.0" \
+  YODA_VERSION="2.1" \
   YODA_VAR_REGEX='%(\{[A-Z_]+\})' \
   REVISION=${REVISION:-$commit} \
   REVISION_TAG \
