@@ -9,7 +9,7 @@ dispatcher.on('page_content_loaded', (ev, {ajax}) => {
     const cn = mount_point.getAttribute('data-component')
     try {
       const cc = require('./component/' + cn + '/index.js').default
-      new cc(mount_point)
+      cc(mount_point)
     } catch (e) {
       console.warn('Failed to initialize component ' + cn + '. ' + e)
     }
