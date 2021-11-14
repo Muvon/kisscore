@@ -1,5 +1,9 @@
 <?php
 final class Cli {
+  const LEVEL_DEBUG = 0;
+  const LEVEL_WARNING = 1;
+  const LEVEL_INFO = 2;
+
   /**
    * This function reads hidden input (password) from stdin
    *
@@ -18,7 +22,11 @@ final class Cli {
     return $secret;
   }
 
-  public static function print(string|array $lines): void {
+  public static function print(string|array $lines, int $level = 2): void {
+    if (config('cli_level') < $level) {
+      return;
+    }
+
     if (is_string($lines)) {
       $lines = [$lines];
     }

@@ -18,6 +18,12 @@ domain = '{{PROJECT}}.lo'
 lang_type = 'path' ; path or domain or none depends what we use for split
 languages[] = 'en'
 
+; 0 - debug
+; 1 - warning
+; 2 - info
+; 3 - no output at all
+cli_level = 2
+
 [common:test]
 domain = '{{PROJECT}}.dev'
 
