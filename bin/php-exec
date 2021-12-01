@@ -18,6 +18,9 @@ $php $OPTS <<EOF
 
   // Получаем ответ   и выполняем запрос
   try {
+    // Wait for config to be processed in fpm container
+    Env::waitInit();
+
     App::start();
 
     \$opt_string = trim('${@:2}');

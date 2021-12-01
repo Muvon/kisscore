@@ -34,6 +34,24 @@ final class Env {
     static::prepareDirs();
   }
 
+  // This method should be called in CLI only
+  public static function waitInit(int $timeout = 5): void {
+    $t = time();
+    $cnf_file = getenv('CONFIG_DIR') . '/config.php';
+    do {
+      $tpl_ts = filemtime(getenv('APP_DIR') . '/config/app.ini.tpl');
+      $cnf_ts = file_exists($cnf_file) ? filemtime($cnf_file) : 0;
+
+      if ($cnf_ts > $tpl_ts) {
+        return;
+      } else {
+        usleep(250000); // 25ms
+      }
+    } while ((time() - $t) <= $timeout);
+
+    Cli::error('Env: wait init timeouted');
+  }
+
   /**
    * Configure all config tempaltes in dir $template or special $template file
    *
