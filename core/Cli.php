@@ -23,7 +23,7 @@ final class Cli {
   }
 
   public static function print(string|array $lines, int $level = 2): void {
-    if (config('cli_level') < $level) {
+    if (config('cli_level') > $level) {
       return;
     }
 
