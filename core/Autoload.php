@@ -40,7 +40,7 @@ final class Autoload {
     }
 
     foreach (static::$prefixes[$prefix] as $dir) {
-      $file = $dir . str_replace('\\', '/', $class) . '.php';
+      $file = $dir . strtr($class, ['\\' => '/']) . '.php';
       if (is_file($file)) {
         include $file;
         return $file;

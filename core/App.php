@@ -2,6 +2,7 @@
 final class App {
   /** @property bool $debug */
   public static bool $debug;
+  public static int $log_level;
   protected static array $e_handlers = [];
   protected static array $action_map;
 
@@ -77,10 +78,11 @@ final class App {
 
     if (!isset(static::$debug)) {
       static::$debug = getenv('PROJECT_ENV') === 'dev';
+      static::$log_level = intval(config('common.cli_level'));
     }
 
     // Locale settings
-    setlocale(LC_ALL, 'ru_RU.UTF8');
+    setlocale(LC_ALL, 'en_US.UTF8');
 
     // Timezone settings
     date_default_timezone_set(timezone_name_from_abbr('', intval(Cookie::get('tz_offset')), 0) ?: 'UTC');
@@ -99,6 +101,7 @@ final class App {
     Autoload::register('App\Model', getenv('APP_DIR') . '/src/model');
     Autoload::register('App\Component', getenv('APP_DIR') . '/src/component');
     Autoload::register('App\Lib', getenv('APP_DIR') . '/src/lib');
+    Autoload::register('App\Error', getenv('APP_DIR') . '/src/error');
 
     // If we have vendor dir with autoload file load it
     // This is required for composer packages
@@ -110,11 +113,26 @@ final class App {
     include_once getenv('APP_DIR') . '/start.php';
   }
 
+  public static function logException(Throwable $T, string $type = 'error'): string {
+    return App::log($T->getMessage(), ['trace' => $T->getTraceAsString()], $type);
+  }
+
   /**
    * Завершение исполнени приложени
    */
   public static function stop(): void {
     include_once getenv('APP_DIR') . '/stop.php';
+  }
+
+  public static function checkExit(?Callable $fn = null): void {
+    pcntl_signal_dispatch();
+    if (container('exit')) {
+      Cli::print('[exit] request to stop app received');
+      if (isset($fn)) {
+        $fn();
+      }
+      exit(0);
+    }
   }
 
   /**
@@ -165,7 +183,7 @@ final class App {
         };
 
         $Response->header('Content-type', 'application/' . $type . ';charset=utf-8');
-        $encoded = $type === 'msgpack' ? msgpack_pack($response) : json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $encoded = $type === 'msgpack' ? msgpack_pack($response) : json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE);
         if (false === $encoded) {
           throw new Error('Failed to encode ' . $type  . ' response');
         }
@@ -181,7 +199,7 @@ final class App {
   /**
    * Замена стандартного обработчика ошибок на эксепшены
    */
-  public static function handleError(int $errno, string $errstr, string $errfile, string $errline): void {
+  public static function handleError(int $errno, string $errstr, string $errfile, int $errline): void {
     static::error($errstr);
   }
 

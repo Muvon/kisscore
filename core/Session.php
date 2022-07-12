@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class Session
  * Work with sessions

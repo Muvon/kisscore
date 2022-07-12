@@ -199,6 +199,24 @@ function array_cartesian(array $arrays): array {
   return $result;
 }
 
+// $state_map = array_order_by($state_map, 'created_at', SORT_DESC, SORT_NUMERIC/*, 'id', SORT_DESC, SORT_NUMERIC*/);
+function array_order_by() {
+  $args = func_get_args();
+  $data = array_shift($args);
+  foreach ($args as $n => $field) {
+    if (is_string($field)) {
+      $tmp = array();
+      foreach ($data as $key => $row) {
+        $tmp[$key] = $row[$field];
+      }
+      $args[$n] = $tmp;
+    }
+  }
+  $args[] = &$data;
+  call_user_func_array('array_multisort', $args);
+  return array_pop($args);
+}
+
 /**
  * This is simple helper in case we need to throw exception when has error
  *

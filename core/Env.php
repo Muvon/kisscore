@@ -24,6 +24,7 @@ final class Env {
    */
   public static function init(): void {
     App::$debug = getenv('PROJECT_ENV') === 'dev';
+    App::$log_level = Cli::LEVEL_DEBUG;
     static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
     static::compileConfig();
     static::generateActionMap();
@@ -93,8 +94,21 @@ final class Env {
       }
 
       // Make dot.notation for group access
-      foreach ($config[$group] as $key => &$val) {
-        $config[$group . '.' . $key] = &$val;
+      foreach ($config[$group] as $key => $val) {
+        $parts = explode('.', $key);
+        $ref = &$config;
+        for ($i = 0, $max_i = sizeof($parts) - 1; $i <= $max_i; $i++) {
+          $key = ($i === 0 ? $group . '.' : '') . $parts[$i];
+
+          if ($i === $max_i) {
+            $ref[$key] = $val;
+            $config[$group . '.' . $key] = &$ref[$key];
+            unset($ref);
+          } else {
+            $ref[$key] = $ref[$key] ?? [];
+            $ref = &$ref[$key];
+          }
+        }
       }
     }
 
