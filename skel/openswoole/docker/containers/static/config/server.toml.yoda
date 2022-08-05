@@ -1,0 +1,65 @@
+[general]
+
+#### Address & Root dir
+host = "0.0.0.0"
+port = 8797
+root = "/static"
+
+#### Logging
+log-level = "error"
+
+#### Cache Control headers
+cache-control-headers = true
+
+#### Auto Compression
+compression = true
+
+#### Error pages
+page404 = "/static/404.html"
+page50x = "/static/50x.html"
+
+#### HTTP/2 + TLS
+http2 = false
+# http2-tls-cert = "some.cert"
+# http2-tls-key = "some.key"
+
+#### Security headers
+security-headers = true
+
+#### CORS
+cors-allow-origins = ""
+cors-allow-headers = ""
+
+#### Directoy listing
+directory-listing = false
+directory-listing-order = 6
+
+#### Basich Authentication
+basic-auth = ""
+
+#### File descriptor binding
+# fd = ""
+
+#### Worker threads
+threads-multiplier = 1
+
+#### Grace period after a graceful shutdown
+grace-period = 0
+
+#### Page fallback for 404s
+# page-fallback = "some_page.html"
+
+#### Log request Remote Address if available
+log-remote-address = false
+
+
+### Windows Only
+
+#### Run the web server as a Windows Service
+# windows-service = false
+
+
+
+[advanced]
+
+#### ...

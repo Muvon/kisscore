@@ -49,17 +49,15 @@ foreach ($routes as $route => $action) {
 	$rewrites[] = "rewrite '(*UTF8)^/$route/?$' '$uri';";
 }
 
-Env::configure(
-	__DIR__, [
-		'{{UPLOAD_MAX_FILESIZE}}' => config('common.upload_max_filesize'),
-		'{{SERVER_NAME}}' => config('common.domain'),
-		'{{SERVER_PORT}}' => config('nginx.port'),
-		'{{AUTH}}' => config('nginx.auth'),
-		'{{REWRITE_RULES}}' => implode(PHP_EOL, $rewrites),
-		'{{CORS_ORIGIN}}' => config('cors.origin'),
-		'{{CORS_METHODS}}' => config('cors.methods'),
-		'{{CORS_HEADERS}}' => config('cors.headers'),
-		'{{CORS_CREDENTIALS}}' => config('cors.credentials'),
-		'{{OPEN_FILE_CACHE}}' => config('nginx.open_file_cache'),
-	]
-);
+Env::configure(__DIR__, [
+  '{{UPLOAD_MAX_FILESIZE}}' => config('common.upload_max_filesize'),
+  '{{SERVER_NAME}}' => config('common.domain'),
+  '{{SERVER_PORT}}' => config('server.port'),
+  '{{AUTH}}' => config('nginx.auth'),
+  '{{REWRITE_RULES}}' => implode(PHP_EOL, $rewrites),
+  '{{CORS_ORIGIN}}' => config('cors.origin'),
+  '{{CORS_METHODS}}' => config('cors.methods'),
+  '{{CORS_HEADERS}}' => config('cors.headers'),
+  '{{CORS_CREDENTIALS}}' => config('cors.credentials'),
+  '{{OPEN_FILE_CACHE}}' => config('nginx.open_file_cache'),
+]);

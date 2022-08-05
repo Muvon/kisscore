@@ -14,8 +14,9 @@ upload_max_filesize = '10M'
 
 proto = 'http'
 domain = '{{PROJECT}}.lo'
+type = '{{KISS_PROJECT_TYPE}}'
 
-lang_type = 'path' ; path or domain or none depends what we use for split
+lang_type = 'none' ; path or domain or none depends what we use for split
 languages[] = 'en'
 
 ; 0 - debug
@@ -28,7 +29,7 @@ cli_level = 2
 domain = '{{PROJECT}}.dev'
 
 [common:production]
-domain = '{{PROJECT}}.ru'
+domain = '{{PROJECT}}.com'
 
 [default]
 action = 'home'
@@ -51,8 +52,10 @@ save_handler  = 'files'
 save_depth    = 2 ; this config used only for handler=files
 save_path     = "{{TMP_DIR}}/{{PROJECT_REV}}/sessions"
 
-[nginx]
+[server]
 port = 80
+
+[nginx]
 auth_name = 'test'
 auth_pass = 'test'
 ; auth_basic nginx param: off, Restricted

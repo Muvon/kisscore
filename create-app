@@ -8,12 +8,17 @@ project_dir=$1
 
 kc_dir=$(cd "$(dirname $0)" && pwd)
 
+# Set default type to openswoole due to fpm is deprecated but still possible to use
+project_type=${2:-"openswoole"}
+[[ "$project_type" != "fpm" && "$project_type" != "openswoole" ]] && echo 'The type '$project_type' is not supported' && exit 255
+
 # shellcheck source=./func.sh
-source $kc_dir/func.sh
+source "$kc_dir/func.sh"
 
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
-mkdir $project_dir
-cp -vr $kc_dir/skel/. $project_dir
+mkdir "$project_dir"
+cp -vr $kc_dir/skel/base/. $project_dir
+cp -vr $kc_dir/skel/$project_type/. $project_dir
 cp -vr $kc_dir/bin/. $project_dir/bin
 cp -vr $kc_dir/env.sh $project_dir
 mkdir -p $project_dir/env/{tmp,var,run,log,etc,backup}
@@ -24,20 +29,17 @@ app_dir=$project_dir'/app'
 epoch=$(date +%s)'000'
 secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 # Copy yoda folder for containerization
-cat $kc_dir/skel/docker/.yodarc \
+cat "$kc_dir/skel/base/docker/.yodarc" \
   | sed "s|{{KISS_PROJECT}}|${project_dir##*/}|g" \
-  > $project_dir/docker/.yodarc
+  > "$project_dir/docker/.yodarc"
 # Replace global static variables for init project
-cat $kc_dir/skel/app/config/app.ini.tpl \
+cat "$kc_dir/skel/base/app/config/app.ini.tpl" \
   | sed "s|{{KISS_EPOCH}}|$epoch|g" \
   | sed "s|{{KISS_SECRET_KEY}}|$secret_key|g" \
-  > $app_dir/config/app.ini.tpl
+  | sed "s|{{KISS_PROJECT_TYPE}}|$project_type|g" \
+  > "$app_dir/config/app.ini.tpl"
 echo '...done'
 
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'
-$kc_dir/install-core $1
-echo '...done'
-
-echo -e '\e[1;35mInitializing new application\e[0m'
-( cd $1; ./bin/php-exec 'Env::init()' )
+$kc_dir/install-core "$1"
 echo '...done'

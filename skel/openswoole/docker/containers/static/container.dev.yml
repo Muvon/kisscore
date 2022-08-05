@@ -1,0 +1,4 @@
+volumes:
+  - ${SOURCE_PATH}/app/static:/static
+ports:
+  - 8787:8787

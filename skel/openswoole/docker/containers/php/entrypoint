@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+/src/bin/init
+exec php /src/app/main.php

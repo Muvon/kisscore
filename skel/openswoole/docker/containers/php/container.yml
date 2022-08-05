@@ -1,0 +1,24 @@
+image: php
+labels:
+  - role=php
+working_dir: /src
+cap_drop:
+  - ALL
+cap_add:
+  - CHOWN
+volumes:
+  - env-storage:/src/env:rw
+environment:
+  - PROJECT=$COMPOSE_PROJECT_NAME
+  - PROJECT_ENV=$ENV
+  - PROJECT_REV=$REVISION
+  - KISS_CORE=/src/app/core.php
+  - APP_DIR=/src/app
+  - STATIC_DIR=/src/app/static
+  - CONFIG_DIR=/src/env/etc
+  - ENV_DIR=/src/env
+  - BIN_DIR=/src/env/bin
+  - RUN_DIR=/src/env/run
+  - LOG_DIR=/src/env/log
+  - VAR_DIR=/src/env/var
+  - TMP_DIR=/src/env/tmp
