@@ -75,7 +75,7 @@ final class Cookie {
   /**
    * Send cookies headers
    */
-  public static function send(?Closure $fn = null): void {
+  public static function send(?Callable $fn = null): void {
     $fn ??= setcookie(...);
     foreach (static::$update as $cookie) {
       $options = array_merge($cookie['options'], [

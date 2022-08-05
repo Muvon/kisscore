@@ -216,7 +216,7 @@ $server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
     ->append('_foot')
   ;
 
-  Cookie::send(fn($name, $value, $options) => $Response->cookie(
+  Response::current()->sendHeaders($Response->header(...), fn($name, $value, $options) => $Response->cookie(
     key: $name,
     value: $value,
     expire: $options['expires'],
@@ -225,8 +225,6 @@ $server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
     secure: $options['secure'],
     httponly: $options['httponly']
   ));
-
-  Response::current()->sendHeaders($Response->header(...));
   $Response->end((string) $View->render());
 });
 

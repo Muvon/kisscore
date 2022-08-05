@@ -181,13 +181,13 @@ final class Response {
    * Send stacked headers to output
    * @return Response
    */
-  public function sendHeaders(?Callable $fn = null): self {
-    if (!$fn) {
-      $fn = function (string $key, string $value, bool $replace = true) {
+  public function sendHeaders(?Callable $header_fn = null, ?Callable $cookie_fn = null): self {
+    if (!$header_fn) {
+      $header_fn = function (string $key, string $value, bool $replace = true) {
         return header($key . ': ' . $value, $replace);
       };
     }
-    Cookie::send(); // This is not good but fuck it :D
+    Cookie::send($cookie_fn); // This is not good but fuck it :D
     if (headers_sent()) {
       return $this;
     }
@@ -196,12 +196,12 @@ final class Response {
     http_response_code($this->status);
 
     foreach ($this->headers as $header=>$value) {
-      $fn($header, $value, true);
+      $header_fn($header, $value, true);
     }
 
     // Send header with execution time
-    $fn('X-Server-Time', strval(intval(Request::$time_float * 1000)));
-    $fn('X-Response-Time', strval(intval((microtime(true) - Request::$time_float) * 1000)));
+    $header_fn('X-Server-Time', strval(intval(Request::$time_float * 1000)));
+    $header_fn('X-Response-Time', strval(intval((microtime(true) - Request::$time_float) * 1000)));
     return $this;
   }
 
