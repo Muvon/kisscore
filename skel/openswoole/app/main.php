@@ -187,6 +187,8 @@ $server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
     };
   });
 
+  Cookie::setParser(fn() => $Request->cookie);
+
   Request::current(function() use ($Request) {
     Request::$time = $Request->server['request_time'];
     Request::$time_float = $Request->server['request_time_float'];
@@ -213,6 +215,16 @@ $server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
     ->prepend('_head')
     ->append('_foot')
   ;
+
+  Cookie::send(fn($name, $value, $options) => $Response->cookie(
+    key: $name,
+    value: $value,
+    expire: $options['expires'],
+    path: $options['path'],
+    domain: $options['domain'],
+    secure: $options['secure'],
+    httponly: $options['httponly']
+  ));
 
   Response::current()->sendHeaders($Response->header(...));
   $Response->end((string) $View->render());

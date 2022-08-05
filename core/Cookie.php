@@ -14,7 +14,25 @@
  * </code>
  */
 final class Cookie {
-  protected static $cookies = [];
+  public static bool $is_parsed = false;
+
+  protected static array $update = [];
+  protected static array $cookies = [];
+  protected static Closure $parse_fn;
+
+  public static function setParser(Closure $fn): void {
+    static::$is_parsed = false;
+    static::$parse_fn = $fn;
+  }
+
+  protected static function parse(): void {
+    $fn = static::$parse_fn ?? function() {
+      return filter_input_array(INPUT_COOKIE);
+    };
+    $fn();
+
+    static::$is_parsed = true;
+  }
 
   /**
    * Get cookie by name
@@ -22,7 +40,8 @@ final class Cookie {
    * @param mixed $default
    */
   public static function get(string $name, mixed $default = null): mixed {
-    return filter_has_var(INPUT_COOKIE, $name) ? filter_input(INPUT_COOKIE, $name) : $default;
+    static::$is_parsed || static::parse();
+    return static::$cookies[$name] ?? $default;
   }
 
   /**
@@ -33,7 +52,7 @@ final class Cookie {
    * @return void
    */
   public static function set(string $name, string $value, array $options = []): void {
-    static::$cookies[$name] = [
+    static::$update[$name] = [
       'name' => $name,
       'value' => $value,
       'options' => $options
@@ -48,7 +67,7 @@ final class Cookie {
    * @return void
    */
   public static function add(string $name, string $value, array $options = []): void {
-    if (!filter_has_var(INPUT_COOKIE, $name)) {
+    if (!isset(static::$cookies[$name])) {
       static::set($name, $value, $options);
     }
   }
@@ -56,8 +75,9 @@ final class Cookie {
   /**
    * Send cookies headers
    */
-  public static function send(): void {
-    foreach (static::$cookies as $cookie) {
+  public static function send(?Closure $fn = null): void {
+    $fn ??= setcookie(...);
+    foreach (static::$update as $cookie) {
       $options = array_merge($cookie['options'], [
         'domain' => $cookie['domain'] ?? config('common.domain'),
         'path' => $cookie['path'] ?? '/',
@@ -65,7 +85,7 @@ final class Cookie {
         'secure' => $cookie['secure'] ?? config('common.proto') === 'https',
         'httponly' => $cookie['httponly'] ?? str_starts_with(Request::$protocol, 'HTTP'),
       ]);
-      setcookie($cookie['name'], $cookie['value'], $options);
+      $fn($cookie['name'], $cookie['value'], $options);
     }
   }
 }
