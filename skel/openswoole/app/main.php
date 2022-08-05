@@ -15,16 +15,16 @@ $server->set([
   // 'pid_file' => __DIR__.'/server.pid',
 
   // Server
-  // 'reactor_num' => 4,
-  // 'worker_num' => 8,
+  'reactor_num' => intval(swoole_cpu_num() * 1.4), // No more than cpu * 2
+  'worker_num' => swoole_cpu_num() * 2.5, // Can stick to cpu * 2 or cpu * 4
   // 'message_queue_key' => 'mq1',
-  // 'dispatch_mode' => 2,
+  'dispatch_mode' => 1, // 1 for async and 3 for blocking (for stateless)
   // 'discard_timeout_request' => true,
   // 'dispatch_func' => 'my_dispatch_function',
 
   // Worker
-  // 'max_request' => 0,
-  // 'max_request_grace' => $max_request / 2,
+  'max_request' => 1024,
+  'max_request_grace' => 512, // max_request / 2
 
   // HTTP Server max execution time, since v4.8.0
   'max_request_execution_time' => 15, // 30s
@@ -130,7 +130,7 @@ $server->set([
 
   // Source File Reloading
   'reload_async' => false,
-  // 'max_wait_time' => 30,
+  'max_wait_time' => 5,
 
   // HTTP Server
   'http_parse_post' => true,
@@ -139,7 +139,7 @@ $server->set([
 
   // Compression
   'http_compression' => true,
-  'http_compression_level' => 6, // 1 - 9
+  'http_compression_level' => 5, // 1 - 9
   'compression_min_length' => 20,
 
 
