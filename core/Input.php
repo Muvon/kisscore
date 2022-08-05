@@ -50,10 +50,8 @@ final class Input {
     }
   }
 
-  public static function setParser(?Callable $fn = null): void {
-    if (!$fn) {
-      $fn = static::parseFn(...);
-    }
+  public static function setParser(Callable $fn): void {
+    static::$is_parsed = false;
     static::$parse_fn = $fn;
   }
 
