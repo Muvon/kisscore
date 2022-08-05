@@ -27,9 +27,9 @@ final class Cookie {
 
   protected static function parse(): void {
     $fn = static::$parse_fn ?? function() {
-      return filter_input_array(INPUT_COOKIE);
+      return (array) filter_input_array(INPUT_COOKIE);
     };
-    $fn();
+    static::$cookies = $fn();
 
     static::$is_parsed = true;
   }
