@@ -354,7 +354,7 @@ final class View {
   protected function chunkMinify(string $str): string {
     // Remove tabs and merge into single line
     if (config('view.merge_lines')) {
-      $str = preg_replace(['#^\s+#ium', "|\s*\r?\n|ius"], '', $str);
+      $str = preg_replace(['#^\s+#ium', "|\>\s*\r?\n\<|ius", "|\s*\r?\n|ius"], ['', '><', ' '], $str);
     }
 
     // Remove comments
