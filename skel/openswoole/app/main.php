@@ -2,7 +2,7 @@
 include getenv('KISS_CORE');
 App::start();
 
-$server = new Swoole\Server("0.0.0.0", config('server.port'));
+$server = new Swoole\Server("0.0.0.0", config('server.port'), SWOOLE_BASE);
 
 $server->set([
   // Process
