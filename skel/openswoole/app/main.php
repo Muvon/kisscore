@@ -165,6 +165,7 @@ $server->set([
   // 'enable_object' => true,
 ]);
 
+
 $server->on('connect', function ($server, $fd) {
   Cli::print("New connection established: #{$fd}.", Cli::LEVEL_DEBUG);
 });
@@ -226,6 +227,13 @@ $server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
     httponly: $options['httponly']
   ));
   $Response->end((string) $View->render());
+});
+
+// This solves issue with worker exit timeout ERRNO 9012
+// @see https://bytepursuits.com/swoole-solve-warning-worker_reactor_try_to_exit-errno-9012-worker-exit-timeout-forced-termination
+$server->on('workerExit', function (Swoole\Server $server, int $worker_id) {
+  \Swoole\Timer::clearAll();
+  \Swoole\Event::exit();
 });
 
 $server->on('close', function ($server, $fd) {
