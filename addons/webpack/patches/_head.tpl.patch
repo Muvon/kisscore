@@ -10,9 +10,9 @@
    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.png"/>
 -  <title>KISS Core</title>
 +  <script type="text/javascript">
-+    //<![CDATA[
++    /*<![CDATA[*/
 +    if (window.top !== window.self) {document.write = '';window.top.location = window.self.location; setTimeout(function(){document.body.innerHTML='';},1);window.self.onload=function(evt){document.body.innerHTML='';};}
-+    //]]>
++    /*]]>*/
 +    document.addEventListener('DOMContentLoaded', function () {
 +      var script = document.createElement('script');
 +      script.src = '/bundle-{BUNDLE_HASH}.js';
