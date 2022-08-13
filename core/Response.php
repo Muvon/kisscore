@@ -132,8 +132,8 @@ final class Response {
    * Send all staff to output: headers, body and so on
    * @return $this
    */
-  public function send(string $content = ''): self {
-    return $this->sendHeaders()->setBody($content)->sendBody();
+  public function send(string $content = '', ?Callable $header_fn = null, ?Callable $cookie_fn = null): self {
+    return $this->sendHeaders($header_fn, $cookie_fn)->setBody($content)->sendBody();
   }
 
   /**
