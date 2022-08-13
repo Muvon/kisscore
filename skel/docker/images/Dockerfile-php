@@ -1,4 +1,4 @@
-FROM muvon/php:8.0.8-fpm
+FROM muvon/php:8.1.9-fpm
 LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
 
 RUN apk add --update bash openssl && \
