@@ -5,4 +5,6 @@ if [[ ! -f "./vendor/bin/noverify" ]]; then
 fi
 
 # --exclude-checks='undefined'
-./vendor/bin/noverify check --allow-all-checks --exclude-checks=useExitOrDie --fix .
+./vendor/bin/noverify check --allow-all-checks \
+	--exclude-checks=useExitOrDie \
+	--fix .
