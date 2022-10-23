@@ -247,6 +247,7 @@ final class Env {
   /**
    * Generate nginx URI map for route request to special file
 	 *
+	 *
 	 * @return void
    */
 	protected static function generateURIMap(): void {
