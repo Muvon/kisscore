@@ -40,7 +40,7 @@ class Queue {
     }
   }
 
-  public static function process(string $ns, Callable $func): bool {
+  public static function process(string $ns, callable $func): bool {
     if (!static::client()->connected) {
       return false;
     }
@@ -54,7 +54,7 @@ class Queue {
     }
   }
 
-  public static function fetch(Callable $func): bool {
+  public static function fetch(callable $func): bool {
     $Client = static::client();
     $job = $Client->reserve();
     if ($job === false) {

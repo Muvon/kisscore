@@ -8,7 +8,7 @@ kc_dir=$(cd "$(dirname "$0")" && pwd)
 core_file=$1/app/core.php
 echo '<?php declare(strict_types=1);' > "$core_file"
 echo -e '\e[1;35mInstall kiss core to '"$1"'\e[0m'
-for file in "$kc_dir/core"/*; do
+for file in "$kc_dir/app/core"/*; do
   echo "Add file $file";
   tail -n +2 "$file" >> "$core_file"
   echo >> "$core_file"
