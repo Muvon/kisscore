@@ -23,7 +23,7 @@ abstract class RedisClient {
     // First find out we use socket or port
     [$host, $port] = match ($dsn[0]) {
       '/' => [$dsn, 0],
-      default => [strtok($dsn, ':'), intval(strtok(':'))],
+      default => [strtok($dsn, ':'), (int)strtok(':')],
     };
 
     $connect_timeout = getenv('REDIS_CONNECT_TIMEOUT') ?: static::CONNECT_TIMEOUT;
@@ -72,7 +72,7 @@ abstract class RedisClient {
     return true;
   }
 
-  public function subscribe(string $channel, Callable $func, string $type = 'raw'): static {
+  public function subscribe(string $channel, callable $func, string $type = 'raw'): static {
     $this->subscribers[$channel] = [$func, $type];
     return $this;
   }
