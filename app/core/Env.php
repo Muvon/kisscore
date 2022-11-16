@@ -299,7 +299,7 @@ final class Env {
 			$map = [];
 			foreach (static::getPHPFiles(getenv('APP_DIR') . '/' . $folder) as $file) {
 				$content = file_get_contents($file);
-				if (!preg_match_all('/^\s*\*\s*@param\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
+				if (!preg_match_all('/^\s*\*\s*@(?:param|var)\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
 					continue;
 				}
 
