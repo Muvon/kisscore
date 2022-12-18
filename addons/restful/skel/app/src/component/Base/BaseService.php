@@ -31,6 +31,12 @@ abstract class BaseService {
 	abstract public static function list(): array;
 
 	/**
+	 * @return string
+	 */
+	abstract public static function generateId(): string;
+
+
+	/**
 	 * This is main entry point that will process the request to the endpoint
 	 *
 	 * @param string $method
@@ -47,7 +53,7 @@ abstract class BaseService {
 
 		$id = Input::get('id');
 		if ($method === 'POST') {
-			$id = uniqid(); // TODO: generate new id here
+			$id = static::generateId();
 		}
 
 		if ($method === 'GET' && !$id) {

@@ -18,3 +18,4 @@ cp -r "$ADDON_PATH/skel/"* "$1/"
 sed  -i.bak "/  ->prepend('_head')/d" "$1/app/main.php" && rm -f "$_.bak"
 sed  -i.bak "/  ->append('_foot');/d" "$1/app/main.php" && rm -f "$_.bak"
 sed -E -i.bak 's/^(\$View = App::process\(\))$/\1\;/g' "$1/app/main.php" && rm -f "$_.bak"
+b

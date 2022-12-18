@@ -6,6 +6,15 @@ use App\Component\Base\BaseService;
 
 final class UserService extends BaseService {
 	/**
+	 * Generate new identificator
+	 *
+	 * @return string
+	 */
+	public static function generateId(): string {
+		return uniqid();
+	}
+
+	/**
 	 * @param string $id
 	 * @param array<string,mixed> $item
 	 * @return UserItem

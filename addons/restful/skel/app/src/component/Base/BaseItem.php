@@ -16,5 +16,7 @@ abstract class BaseItem {
 	 *
 	 * @return array<string,mixed>
 	 */
-	abstract public function __toArray(): array;
+	public function asArray(): array {
+		return get_object_vars($this);
+	}
 }

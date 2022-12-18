@@ -1,0 +1,23 @@
+#!/usr/bin/env /src/bin/php-exec-one
+<?php
+Cli::print('Generate model fields schema');
+foreach (glob(getenv('APP_DIR') . '/src/component/*/*Model.php') as $file) {
+	$parts = explode('/', $file);
+	$name = basename(array_pop($parts), 'Model.php');
+	$component = array_pop($parts);
+  $class = "App\\Component\\$component\\{$name}Model";
+  Cli::print(' ' . $class);
+  $Reflection = new ReflectionClass($class);
+  if ($Reflection->isAbstract()) {
+    Cli::print('  skipping abstract');
+    continue;
+  }
+
+  if (!is_a($class, '\Plugin\Model\Model', true)) {
+    Cli::print('  skipping non model');
+    continue;
+  }
+
+  $class::generateFieldsCache();
+}
+Cli::print('done');

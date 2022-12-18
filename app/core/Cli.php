@@ -29,7 +29,7 @@ final class Cli {
 	 * @return void
 	 */
 	public static function print(string|array $lines, int $level = 2): void {
-		if (App::$log_level > $level) {
+		if (isset(App::$log_level) && App::$log_level > $level) {
 			return;
 		}
 
