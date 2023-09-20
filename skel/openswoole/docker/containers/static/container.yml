@@ -1,8 +1,0 @@
-image: static
-labels:
-  - role=web-server
-command:
-  - --config-file
-  - /etc/server.toml
-volumes:
-  - static-storage:/static:rw

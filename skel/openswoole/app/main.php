@@ -15,8 +15,8 @@ $server->set([
   // 'pid_file' => __DIR__.'/server.pid',
 
   // Server
-  'reactor_num' => intval(swoole_cpu_num() * 1.4), // No more than cpu * 2
-  'worker_num' => swoole_cpu_num() * 2.5, // Can stick to cpu * 2 or cpu * 4
+  'reactor_num' => (int)(swoole_cpu_num() * 1.4), // No more than cpu * 2
+  'worker_num' => (int)(swoole_cpu_num() * 2.5), // Can stick to cpu * 2 or cpu * 4
   // 'message_queue_key' => 'mq1',
   'dispatch_mode' => 1, // 1 for async and 3 for blocking (for stateless)
   // 'discard_timeout_request' => true,
@@ -123,8 +123,8 @@ $server->set([
   // ],
 
   // Static Files
-  // 'document_root' => __DIR__ . '/public',
-  // 'enable_static_handler' => true,
+  'document_root' => getenv('STATIC_DIR'),
+  'enable_static_handler' => true,
   // 'static_handler_locations' => ['/static', '/app/images'],
   // 'http_index_files' => ['index.html', 'index.txt'],
 
@@ -202,7 +202,7 @@ $server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
 
     // Эти переменные всегда определены в HTTP-запросе
     Request::$method = $Request->server['request_method'];
-    Request::$user_agent = $Request->header['user-agent'];
+    Request::$user_agent = $Request->header['user-agent'] ?? '';
     Request::$ip = $Request->server['remote_addr'];
 
     Request::$request_uri = $Request->server['request_uri'];

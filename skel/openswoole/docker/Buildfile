@@ -1,2 +1,1 @@
 php: -t ${COMPOSE_PROJECT_NAME}/php:${REVISION}
-static[docker/containers/static]: -t ${COMPOSE_PROJECT_NAME}/static:${REVISION}
