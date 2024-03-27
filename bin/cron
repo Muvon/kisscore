@@ -29,7 +29,11 @@ while true; do
   echo "[$datetime] Starting the job"
 
   ts="$(date +%s)"
-  "$file" 1> /dev/stdout 2> /dev/stderr & job_pid=$!
+  if "$file" 1> /dev/stdout 2> /dev/stderr; then
+    :  # Do nothing if the command succeeds
+  else
+    echo "Command failed, but continuing."
+  fi & job_pid=$!
   wait "$job_pid"
   job_pid=
   job_time=$(( $(date +%s) - ts ))
