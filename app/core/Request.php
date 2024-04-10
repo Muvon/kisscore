@@ -26,7 +26,11 @@ final class Request {
 	private string $route = '';
 
 	public static int $time = 0;
+	public static float $time_float = 0;
 
+	public static string $request_uri = '';
+	public static string $content_type = '';
+	public static string $accept_lang = '';
 	public static string $method = 'GET';
 	public static string $protocol = 'HTTP';
 	public static string $referer = '';
@@ -54,63 +58,67 @@ final class Request {
    * @return self ссылка на объекта запроса
    */
 	final protected static function create(): self {
-		assert(!filter_input(INPUT_SERVER, 'argc'));
-		self::$time = $_SERVER['REQUEST_TIME'];
+    if (self::$accept_lang) {
+      preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', self::$accept_lang, $lang);
+      if ($lang && sizeof($lang[1]) > 0) {
+        $langs = array_combine($lang[1], $lang[4]);
 
-		self::$protocol = filter_input(INPUT_SERVER, 'HTTPS') ? 'HTTPS' : 'HTTP';
-		self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
-		self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER') ?? '';
-		self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR') ?? '';
+        foreach ($langs as $k => $v) {
+          if ($v === '') {
+            $langs[$k] = 1;
+          }
+        }
+        arsort($langs, SORT_NUMERIC);
+        static::$languages = $langs;
+      }
+    }
 
-	  // Эти переменные всегда определены в HTTP-запросе
-		self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-		self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
-		self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+    $url = rtrim(static::$request_uri, ';&?') ?: '/';
+    $Request = (new static($url))
+      ->setRoute(Input::get('ROUTE'))
+      ->setAction(Input::get('ACTION'))
+    ;
 
-		static::parseRealIp();
-		$http_accept_lang = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE');
-		if ($http_accept_lang) {
-			preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.\d+))?/i', $http_accept_lang, $lang);
-			if ($lang && sizeof($lang[1]) > 0) {
-				$langs = array_combine($lang[1], $lang[4]);
+    // Init language
+    Lang::init($Request);
 
-				foreach ($langs as $k => $v) {
-					if ($v !== '') {
-						continue;
-					}
-
-					$langs[$k] = 1;
-				}
-				arsort($langs, SORT_NUMERIC);
-				static::$languages = $langs;
-			}
-		}
-
-		$url = rtrim(filter_input(INPUT_SERVER, 'REQUEST_URI'), ';&?') ?: '/';
-		$Request = (new static($url))
-			->setRoute(Input::get('ROUTE'))
-			->setAction(Input::get('ACTION'));
-
-	  // Init language
-		Lang::init($Request);
-
-		return $Request;
-	}
+    return $Request;
+  }
 
   /**
    * Return current instance or initialize and parse
-	 *
-	 * @static
-	 * @return self
    */
-	public static function current(): self {
-		static $instance;
-		if (!isset($instance)) {
-			$instance = static::create();
-		}
+  public static function current(?Closure $init_fn = null): self {
+    static $instance;
+    if (!isset($instance) || isset($init_fn)) {
+      $init_fn ??= static::init(...);
+      $init_fn();
+      static::parseRealIp();
+      $instance = static::create();
+    }
 
-		return $instance;
-	}
+    return $instance;
+  }
+
+  protected static function init(): void {
+    self::$time = $_SERVER['REQUEST_TIME'];
+    self::$time_float = $_SERVER['REQUEST_TIME_FLOAT'];
+    self::$protocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL') ?? 'HTTP/1.1';
+    self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
+    self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER') ?? '';
+    self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR') ?? '';
+
+    // Эти переменные всегда определены в HTTP-запросе
+    self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+    self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
+    self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+
+    self::$request_uri = filter_input(INPUT_SERVER, 'REQUEST_URI') ?? '';
+    self::$content_type = filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '';
+
+    self::$accept_lang = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE') ?? '';
+  }
+
 
   /**
    * Parse IPS to prepare request

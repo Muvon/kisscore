@@ -15,7 +15,32 @@
  * </code>
  */
 final class Cookie {
-	protected static $cookies = [];
+  public static bool $is_parsed = false;
+
+  protected static array $update = [];
+  protected static array $cookies = [];
+  protected static Closure $parse_fn;
+
+  /**
+   * Set parser for the cookie
+   * @param Closure $fn [description]
+   */
+  public static function setParser(Closure $fn): void {
+    static::$is_parsed = false;
+    static::$parse_fn = $fn;
+  }
+
+  protected static function parse(): void {
+  	$fn = static::$parse_fn ?? function () {
+  		$cookies = (array)filter_input_array(INPUT_COOKIE);
+  		foreach ($cookies as $name => $value) {
+  			static::set($name, $value);
+  		}
+  		return static::$cookies;
+  	};
+  	static::$cookies = $fn();
+  	static::$is_parsed = true;
+  }
 
   /**
    * Get cookie by name
@@ -23,6 +48,7 @@ final class Cookie {
    * @param mixed $default
    */
 	public static function get(string $name, mixed $default = null): mixed {
+		static::$is_parsed || static::parse();
 		return filter_has_var(INPUT_COOKIE, $name) ? filter_input(INPUT_COOKIE, $name) : $default;
 	}
 

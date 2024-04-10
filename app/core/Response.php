@@ -171,28 +171,32 @@ final class Response {
 		return $this;
 	}
 
-  /**
-   * Send stacked headers to output
-   * @return Response
-   */
-	protected function sendHeaders(): self {
-		Cookie::send(); // This is not good but fuck it :D
-		if (headers_sent()) {
-			return $this;
-		}
-		$protocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL') ?: 'HTTP/1.1';
+	/**
+	 * Send stacked headers to output
+	 * @return Response
+	 */
+	public function sendHeaders(?Callable $header_fn = null, ?Callable $cookie_fn = null): self {
+	  if (!$header_fn) {
+	    $header_fn = function (string $key, string $value, bool $replace = true) {
+	      return header($key . ': ' . $value, $replace);
+	    };
+	  }
+	  Cookie::send($cookie_fn); // This is not good but fuck it :D
+	  if (headers_sent()) {
+	    return $this;
+	  }
 
 	  // HTTP-строка статуса
-		header($protocol . ' ' . $this->status . ' ' . self::$messages[$this->status], true);
+	  http_response_code($this->status);
 
-		foreach ($this->headers as $header => $value) {
-			header($header . ': ' . $value, true);
-		}
+	  foreach ($this->headers as $header=>$value) {
+	    $header_fn($header, $value, true);
+	  }
 
 	  // Send header with execution time
-		header('X-Server-Time: ' . (int)($_SERVER['REQUEST_TIME_FLOAT'] * 1000));
-		header('X-Response-Time: ' . (int)((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000), true);
-		return $this;
+	  $header_fn('X-Server-Time', strval(intval(Request::$time_float * 1000)));
+	  $header_fn('X-Response-Time', strval(intval((microtime(true) - Request::$time_float) * 1000)));
+	  return $this;
 	}
 
   /**

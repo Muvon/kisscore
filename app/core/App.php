@@ -235,7 +235,7 @@ final class App {
    * @param Throwable $Exception
    */
 	public static function handleException(Throwable $Exception) {
-		$Exception->id = static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
+		static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
 
 		$exception = $Exception::class;
 		do {

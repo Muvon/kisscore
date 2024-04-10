@@ -1,10 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 include getenv('KISS_CORE');
 App::start();
 
-$server = new Swoole\Server("0.0.0.0", config('server.port'), SWOOLE_BASE);
+$Server = new Swoole\HTTP\Server("0.0.0.0", (int)config('server.port'), SWOOLE_BASE);
 
-$server->set([
+$cpu_num = swoole_cpu_num();
+$Server->set([
   // Process
   'daemonize' => 0,
   // 'user' => 'www-data',
@@ -15,19 +16,16 @@ $server->set([
   // 'pid_file' => __DIR__.'/server.pid',
 
   // Server
-  'reactor_num' => (int)(swoole_cpu_num() * 1.4), // No more than cpu * 2
-  'worker_num' => (int)(swoole_cpu_num() * 2.5), // Can stick to cpu * 2 or cpu * 4
+  'reactor_num' => (int)($cpu_num * 0.9), // No more than cpu * 2
+  'worker_num' => (int)($cpu_num * 1.8), // Can stick to cpu * 2 or cpu * 4
   // 'message_queue_key' => 'mq1',
-  'dispatch_mode' => 1, // 1 for async and 3 for blocking (for stateless)
+  'dispatch_mode' => 3, // 1 for async and 3 for blocking (for stateless)
   // 'discard_timeout_request' => true,
   // 'dispatch_func' => 'my_dispatch_function',
 
   // Worker
-  'max_request' => 1024,
-  'max_request_grace' => 512, // max_request / 2
-
-  // HTTP Server max execution time, since v4.8.0
-  'max_request_execution_time' => 15, // 30s
+  'max_request' => 0,
+  // 'max_request_grace' => 4096, // max_request / 2
 
   // Task worker
   // 'task_ipc_mode' => 1,
@@ -39,7 +37,7 @@ $server->set([
 
   // Logging
   // 'log_level' => 1,
-  // 'log_file' => '/data/swoole.log',
+  // 'log_file' => '/dev/null',
   // 'log_rotation' => SWOOLE_LOG_ROTATION_DAILY,
   // 'log_date_format' => '%Y-%m-%d %H:%M:%S',
   // 'log_date_with_microseconds' => false,
@@ -49,18 +47,18 @@ $server->set([
   // 'trace_flags' => SWOOLE_TRACE_ALL,
 
   // TCP
-  // 'input_buffer_size' => 2097152,
-  // 'buffer_output_size' => 32 * 1024*1024, // byte in unit
-  // 'tcp_fastopen' => true,
-  // 'max_conn' => 1000,
-  // 'tcp_defer_accept' => 5,
-  // 'open_tcp_keepalive' => true,
-  // 'open_tcp_nodelay' => true,
+  'input_buffer_size' => 2097152,
+  'buffer_output_size' => 32 * 1024*1024, // byte in unit
+  'tcp_fastopen' => true,
+  'max_conn' => 8192,
+  'tcp_defer_accept' => 3,
+  'open_tcp_keepalive' => true,
+  'open_tcp_nodelay' => true,
   // 'pipe_buffer_size' => 32 * 1024*1024,
-  // 'socket_buffer_size' => 128 * 1024*1024,
+  'socket_buffer_size' => 128 * 1024*1024,
 
   // Kernel
-  'backlog' => 4096,
+  'backlog' => 8192,
   // 'kernel_socket_send_buffer_size' => 65535,
   // 'kernel_socket_recv_buffer_size' => 65535,
 
@@ -72,7 +70,7 @@ $server->set([
   // 'package_length_type' => 'N',
   // 'package_body_offset' => 8,
   // 'package_length_offset' => 8,
-  // 'package_max_length' => 2 * 1024 * 1024, // 2MB
+  'package_max_length' => 8192,
   // 'package_length_func' => 'my_package_length_func',
 
   // Coroutine
@@ -84,7 +82,7 @@ $server->set([
   // 'heartbeat_idle_time' => 600,
   // 'heartbeat_check_interval' => 60,
   // 'enable_delay_receive' => true,
-  // 'enable_reuse_port' => true,
+  'enable_reuse_port' => true,
   // 'enable_unsafe_event' => true,
 
   // Protocol
@@ -166,16 +164,16 @@ $server->set([
 ]);
 
 
-$server->on('connect', function ($server, $fd) {
+$Server->on('connect', function ($Server, $fd) {
   Cli::print("New connection established: #{$fd}.", Cli::LEVEL_DEBUG);
 });
 
-$server->on('receive', function(Swoole\Server $server, int $fd, int $reactorId, string $data) {
-  $server->send($fd, "Echo to #{$fd}: \n".$data);
-  $server->close($fd);
+$Server->on('receive', function(Swoole\Server $Server, int $fd, int $reactor_id, string $data) {
+  $Server->send($fd, "Echo to #{$fd}: \n".$data);
+  $Server->close($fd);
 });
 
-$server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Response $Response) {
+$Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Response $Response) {
   // TODO: Find proper way to organize fpm + swoole support
   // But till that time this is just fast migration from FPM to not break most things
   Input::setParser(function() use ($Request) {
@@ -217,29 +215,25 @@ $server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
     ->append('_foot')
   ;
 
-  Response::current()->sendHeaders($Response->header(...), fn($name, $value, $options) => $Response->cookie(
-    key: $name,
-    value: $value,
-    expire: $options['expires'],
-    path: $options['path'],
-    domain: $options['domain'],
-    secure: $options['secure'],
-    httponly: $options['httponly']
-  ));
+  Response::current()->sendHeaders(
+  	$Response->header(...),
+  	fn($name, $value, $options) =>
+  		$Response->cookie($name, $value, ...$options)
+  );
   $Response->end((string) $View->render());
 });
 
 // This solves issue with worker exit timeout ERRNO 9012
 // @see https://bytepursuits.com/swoole-solve-warning-worker_reactor_try_to_exit-errno-9012-worker-exit-timeout-forced-termination
-$server->on('workerExit', function (Swoole\Server $server, int $worker_id) {
-  \Swoole\Timer::clearAll();
-  \Swoole\Event::exit();
+$Server->on('workerExit', function (Swoole\Server $Server, int $worker_id) {
+  Swoole\Timer::clearAll();
+  Swoole\Event::exit();
 });
 
-$server->on('close', function ($server, $fd) {
+$Server->on('close', function ($Server, $fd) {
   Cli::print("Connection closed: #{$fd}.", Cli::LEVEL_DEBUG);
 });
 
-$server->start();
+$Server->start();
 // TODO: This is useless fire on exit process but now its just empty
 App::stop();

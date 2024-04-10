@@ -1,10 +1,10 @@
-FROM muvon/php:8.2.10
+FROM muvon/php:8.3.4
 LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
 
-RUN apk add --update curl bash openssl composer && \
+RUN apk add --update curl bash openssl && \
   rm -fr /var/cache/apk/* && \
   rm -fr /tmp/*
-RUN php-ext add msgpack yaml openswoole sodium
+RUN php-ext add msgpack yaml swoole sodium
 
 COPY . /src
 RUN ln -fs /src/docker/containers/php/config/php.ini /etc/php/php.ini && \

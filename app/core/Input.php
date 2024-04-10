@@ -2,9 +2,11 @@
 
 final class Input {
 	public static bool $is_parsed = false;
+
 	/** @var array<string,mixed> */
 	public static array $params = [];
 
+	protected static Closure $parse_fn;
 	/**
 	 * @return bool
 	 */
@@ -63,12 +65,22 @@ final class Input {
 	}
 
 	/**
+	 * Set parser
+	 * @param Callable $fn [description]
+	 * @return void
+	 */
+	public static function setParser(Callable $fn): void {
+	  static::$is_parsed = false;
+	  static::$parse_fn = $fn;
+	}
+
+	/**
 	 * @param string $key
 	 * @param mixed $value
 	 * @return void
 	 */
 	public static function set(string $key, mixed $value): void {
-		static::parse();
+		static::$is_parsed || static::parse();
 		static::$params[$key] = $value;
 	}
 
@@ -85,7 +97,7 @@ final class Input {
 	 * @return mixed
    */
 	public static function get(...$args): mixed {
-		static::parse();
+		static::$is_parsed || static::parse();
 
 		if (!isset($args[0])) {
 			return static::$params;

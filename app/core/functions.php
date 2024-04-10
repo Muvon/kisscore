@@ -277,26 +277,28 @@ function result(array $response, string $error = 'result'): mixed {
 	return $result;
 }
 
-/**
- * @param ?SplStack $ctx
- * @param callable $cb
- * @return void
- */
-function defer(?SplStack &$ctx, callable $cb): void {
-	$ctx ??= new SplStack();
+if (!function_exists('defer')) {
+	/**
+	 * @param ?SplStack $ctx
+	 * @param callable $cb
+	 * @return void
+	 */
+  function defer(?SplStack &$ctx, callable $cb): void {
+    $ctx = $ctx ?? new SplStack();
 
-	$ctx->push(
-		new class($cb) {
-			protected $cb;
-			public function __construct(callable $cb) {
-				$this->cb = $cb;
-			}
+    $ctx->push(
+      new class($cb) {
+        protected $cb;
+        public function __construct(callable $cb) {
+          $this->cb = $cb;
+        }
 
-			public function __destruct() {
-				\call_user_func($this->cb);
-			}
-		}
-	);
+        public function __destruct() {
+          \call_user_func($this->cb);
+        }
+      }
+    );
+  }
 }
 
 // Filter function to format output
