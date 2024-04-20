@@ -128,8 +128,8 @@ Just run install-core and enjoy!
 
 ## Plugins
 
-There are special plugins to use DB, Cache and other cool staff in KISSCore.  
-You can find plugins and help on my github page: <https://github.com/KISSCore>  
+There are special plugins to use DB, Cache and other cool staff in KISSCore.
+You can find plugins and help on my github page: <https://github.com/KISSCore>
 All plugins named in pattern plugin-{{name}}
 
 ## Actions
@@ -145,11 +145,11 @@ All actions are in app/actions folder. You should just create any file, for exam
 return 'Hello';
 ```
 
-If action returns 1 as integer or no return statement then kisscore will try to include same name template and render it using View.  
-If action returns string then it will be rendered as is.  
-If action returns object or array then it will be rendered as json encoded string.  
+If action returns 1 as integer or no return statement then kisscore will try to include same name template and render it using View.
+If action returns string then it will be rendered as is.
+If action returns object or array then it will be rendered as json encoded string.
 
-Reinit your app and open in project <http://myproj/test> that will execute this action.  
+Reinit your app and open in project <http://myproj/test> that will execute this action.
 
 ## Triggers
 
@@ -194,6 +194,38 @@ And also some linux knowledge ;)
 Just use lib dir into your application folder.
 You can put there any external module and use it into your project,
 KISS core allow you to start MVC fast application in just couple of minutes with minimum dependencies. But you can extends it infinite for sure :) Just try Keep It Simple as possible!
+
+## Nginx + FPM vs Swoole
+
+Nginx + FPM:
+
+```bash
+$ wrk -t4 -c1000 -d60s http://localhost:8081
+Running 1m test @ http://localhost:8081
+  4 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    64.85ms    7.30ms 152.15ms   75.87%
+    Req/Sec     3.87k   212.05     4.33k    79.25%
+  924571 requests in 1.00m, 672.74MB read
+Requests/sec:  15390.93
+Transfer/sec:     11.20MB
+```
+
+Swoole:
+
+```bash
+$ wrk -t4 -c1000 -d60s http://localhost:8082
+Running 1m test @ http://localhost:8082
+  4 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    50.70ms    7.43ms 221.96ms   72.00%
+    Req/Sec     4.96k   303.62     5.63k    80.38%
+  1183738 requests in 1.00m, 0.91GB read
+Requests/sec:  19705.32
+Transfer/sec:     15.47MB
+```
+
+As compared to `wrk`, the Swoole version is around `28%` faster than Nginx with FPM, and it also requires fewer services to run.
 
 ## More?
 

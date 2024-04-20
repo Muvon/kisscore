@@ -19,12 +19,12 @@ $Server->set([
 	'reactor_num' => $cpu_num * 4,
 	'worker_num' => (int)($cpu_num / 2),
 	// 'message_queue_key' => 'mq1',
-	'dispatch_mode' => 1, // 1 for async and 3 for blocking (for stateless)
+	'dispatch_mode' => 3, // 1 for async and 3 for blocking (for stateless)
 	// 'discard_timeout_request' => true,
 	// 'dispatch_func' => 'my_dispatch_function',
 
 	// Worker
-	'max_request' => 1024,
+	'max_request' => 0,
 	// 'max_request_grace' => 4096, // max_request / 2
 	'discard_timeout_request' => 20,
 
