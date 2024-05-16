@@ -252,29 +252,49 @@ function array_order_by(): array {
 	return array_pop($args);
 }
 
+// Helpers for Result class
 /**
  * This is simple helper in case we need to throw exception when has error
  *
- * @param array{0:?string,1:mixed} $response
- *   Stanadrd array in presentation [err, result]
- *   Where err should be string and result mixed
- * @param string $error
+ * @param Result $Result
  * @return mixed
  */
-function result(array $response, string $error = 'result'): mixed {
-	if (isset($response[0]) && is_array($response[0])) {
-		$errors = array_filter(array_column($response, 0));
-		if ($errors) {
-			throw new Error('Errors while ' . $error . ' in multiple result: ' . var_export($errors, true));
-		}
-		return array_column($response, 1);
+function result(Result $Result): mixed {
+	if ($Result->err) {
+		throw new ResultError($Result->err);
 	}
+	return $Result->res;
+}
 
-	[$err, $result] = $response;
-	if ($err) {
-		throw new Error('Error while ' . $error . ': ' . $err . '. Got result: ' . var_export($result, true));
-	}
-	return $result;
+/**
+ * Shortcut for Result::ok()
+ *
+ * @param mixed $res
+ * @return Result
+ */
+function ok(mixed $res = null): Result {
+	return Result::ok($res);
+}
+
+
+/**
+ * Shortcut for Result::err()
+ *
+ * @param string $err
+ * @param mixed $res
+ * @return Result
+ */
+function err(string $err, mixed $res = null): Result {
+	return Result::err($err, $res);
+}
+
+/**
+ * Multiple errors creation for single response
+ * @param array<string> $errs
+ * @return Result
+ */
+function errs(array $errs): Result {
+	return Result::err('e_errors', $errs);
 }
 
 if (!function_exists('defer')) {
