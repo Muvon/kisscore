@@ -1,11 +1,9 @@
 // Markup example
 // <tabset>
-//   <labels>
-//     <span>Show as</span> <input type="radio" name="tabset" id="tab1" aria-controls="investor" checked/>
-//     <label for="tab1">Investor</label>
-//     <input type="radio" name="tabset" id="tab2" aria-controls="creator"/>
-//     <label for="tab2">Creator</label>
-//   </labels>
+//   <span>Show as</span> <input type="radio" name="tabset" id="tab1" checked/>
+//   <label for="tab1">Investor</label>
+//   <input type="radio" name="tabset" id="tab2" />
+//   <label for="tab2">Creator</label>
 //   <tabs>
 //     <tab id="investor">
 //       tab1 content
@@ -16,7 +14,7 @@
 //   </tabs>
 // </tabset>
 
-tabset 
+tabset
   padding-right: -1px
   overflow: hidden
 
@@ -26,7 +24,6 @@ tabset
 
   tab
     display: none
-
 
   label
     margin-right: 6px
@@ -51,6 +48,10 @@ tabset
     cursor: pointer
     font-weight: 600
 
-  & > input:checked + label
+  & > input:checked + label, & > label.selected
     border-color: var(--text-color)
     border-bottom: 1px solid
+
+  label a
+    font-weight: normal
+    text-decoration: none
