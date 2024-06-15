@@ -109,6 +109,11 @@ final class Lang {
 			'none' => config('common.domain')
 		};
 
+		$port = config('server.port');
+		if ($port !== 80) {
+			$lang_domain .= ':' . $port;
+		}
+
 		return config('common.proto') . '://' . $lang_domain;
 	}
   /**

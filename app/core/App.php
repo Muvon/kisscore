@@ -202,6 +202,9 @@ final class App {
 					str_contains('application/msgpack', $accept) => 'msgpack',
 					default => Input::isMsgpack() ? 'msgpack' : 'json',
 				};
+				if ($response instanceof Result) {
+					$response = $response->toArray();
+				}
 
 				$Response->header('Content-type', 'application/' . $type . ';charset=utf-8');
 				$encoded = $type === 'msgpack'

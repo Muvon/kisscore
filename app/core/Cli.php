@@ -8,12 +8,12 @@ final class Cli {
   /**
    * This function reads hidden input (password) from stdin
    *
-   * @param string|null $promt
+   * @param string|null $prompt
    * @return string
    */
-	public static function readSecret(?string $promt = null): string {
-		if ($promt) {
-			echo $promt;
+	public static function readSecret(?string $prompt = null): string {
+		if ($prompt) {
+			echo $prompt;
 		}
 
 		system('stty -echo');
