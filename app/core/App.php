@@ -63,13 +63,14 @@ final class App {
    * @return string идентификатор исключения
    */
 	public static function log(string $message, array $dump = [], string $type = 'error'): string {
-		$id = hash('sha256', $message . ':' . implode('.', array_keys($dump)) . ':' . $type);
+		$encoded_dump = json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+		$id = hash('sha256', $message . ':' . $encoded_dump . ':' . $type);
 		$log_file = getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-' . $type . '.log';
 		$message =
 		gmdate('[Y-m-d H:i:s T]')
 		. "\t" . $id
 		. "\t" . $message
-		. "\t" . json_encode($dump, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\t"
+		. "\t" . $encoded_dump . "\t"
 		. json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
 		;
 		error_log($message, 3, $log_file);
