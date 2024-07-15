@@ -1,78 +1,150 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace App\Lib;
 
 use Beanstalk\Client;
 
 class Queue {
-  const RELEASE_DELAY = 5;
+	const RELEASE_DELAY = 5;
 
-  protected static function client(): Client {
-    static $Client;
+	/**
+	 *
+	 * @return Client
+	 */
+	protected static function client(): Client {
+		static $Client;
 
-    if (!$Client) {
-      $Client = new Client(config('queue'));
-      $Client->connect();
-    }
+		if (!$Client) {
+			$Client = new Client(config('queue'));
+			$Client->connect();
+		}
 
-    return $Client;
-  }
+		return $Client;
+	}
 
-  public static function add(string $ns, mixed $job, int $delay = 0, int $ttr = 300): bool {
-    $func = function () use ($ns, $job, $delay, $ttr) {
-      $Client = static::client();
-      if (!$Client->connected) {
-        return false;
-      }
+	/**
+	 *
+	 * @param string $ns
+	 * @param mixed $job
+	 * @param int $delay
+	 * @param int $ttr
+	 * @param int $priority
+	 * @return bool
+	 */
+	public static function add(string $ns, mixed $job, int $delay = 0, int $ttr = 300, int $priority = 0): bool {
+		$func = function () use ($ns, $job, $delay, $ttr, $priority) {
+			$Client = static::client();
+			if (!$Client->connected) {
+				return false;
+			}
 
-      $Client->useTube($ns);
-      $Client->put(0, $delay, $ttr, base64_encode(msgpack_pack($job)));
-      return true;
-    };
+			$Client->useTube($ns);
+			$Client->put($priority, $delay, $ttr, json_encode($job));
+			return true;
+		};
 
-    if (function_exists('fastcgi_finish_request')) {
-      register_shutdown_function(function() use($func) {
-        $func();
-        fastcgi_finish_request();
-      });
-      return true;
-    } else {
-      return $func();
-    }
-  }
+		if (function_exists('fastcgi_finish_request')) {
+			register_shutdown_function(
+				function () use ($func) {
+					$func();
+					fastcgi_finish_request();
+				}
+			);
+			return true;
+		}
 
-  public static function process(string $ns, callable $func): bool {
-    if (!static::client()->connected) {
-      return false;
-    }
-    static::client()->watch($ns);
+		return $func();
+	}
 
-    while (true) {
-      if (false === static::fetch($func)) {
-        return false;
-      }
-      usleep(200000);
-    }
-  }
+	/**
+	 *
+	 * @param string $ns
+	 * @param callable $func
+	 * @return bool
+	 */
+	public static function process(string $ns, callable $func): bool {
+		declare(ticks=1);
+		// Install the signal handler
+		pcntl_signal(SIGTERM, [static::class, 'sigHandler']);
+		pcntl_signal(SIGHUP, [static::class, 'sigHandler']);
 
-  public static function fetch(callable $func): bool {
-    $Client = static::client();
-    $job = $Client->reserve();
-    if ($job === false) {
-      return false;
-    }
-    $payload = msgpack_unpack(base64_decode($job['body']));
-    $result = $func($payload);
+		if (!static::client()->connected) {
+			return false;
+		}
+		static::client()->watch($ns);
 
-    if (false === $result) {
-      $Client->release($job['id'], 0, static::RELEASE_DELAY);
-    } else {
-      $Client->delete($job['id']);
-    }
+		while (true) {
+			if (false === static::fetch($func)) {
+				return false;
+			}
+			// Check if a signal has been received
+			pcntl_signal_dispatch();
 
-    return true;
-  }
+			usleep(200000);
+		}
+	}
 
-  public function __destruct() {
-    $this->Client->disconnect();
-  }
+	/**
+	 * Get stats of the queue
+	 * @param ?string $ns
+	 * @return array{queued:int,total:int}
+	 */
+	public static function stats(?string $ns = null): array {
+		$Client = static::client();
+		/** @var array */
+		$stats = $ns ? $Client->statsTube($ns) : $Client->stats();
+		return [
+			'queued' => $stats['current-jobs-ready'],
+			'total' => $stats['total-jobs'],
+		];
+	}
+
+	/**
+	 *
+	 * @param callable $func
+	 * @return bool
+	 */
+	public static function fetch(callable $func): bool {
+		$Client = static::client();
+		$job = $Client->reserve();
+		if ($job === false) {
+			return false;
+		}
+		$payload = json_decode($job['body'], true);
+		$result = $func($payload);
+
+		if (false === $result) {
+			$Client->release($job['id'], 0, static::RELEASE_DELAY);
+		} else {
+			$Client->delete($job['id']);
+		}
+
+		return true;
+	}
+
+	/**
+	 *
+	 * @param int $signo
+	 * @return void
+	 */
+	public static function sigHandler(int $signo): void {
+		switch ($signo) {
+			case SIGTERM:
+			case SIGHUP:
+				// Stop the script here
+				exit;
+				break;
+			default:
+				// Handle all other signals here
+				exit;
+		}
+	}
+
+	/**
+	 *
+	 * @return void
+	 */
+	public function __destruct() {
+		static::client()->disconnect();
+	}
 }
