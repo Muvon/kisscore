@@ -1,5 +1,5 @@
 FROM node:18.18-alpine3.18
-LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
+LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
 RUN mkdir -p /src
 COPY package.json /src

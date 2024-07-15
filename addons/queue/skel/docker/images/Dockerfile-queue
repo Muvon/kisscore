@@ -1,5 +1,5 @@
 FROM alpine:3.13
-LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
+LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
 RUN apk add --update beanstalkd && rm -fr /var/cache/apk
 

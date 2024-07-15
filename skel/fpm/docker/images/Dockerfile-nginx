@@ -1,5 +1,5 @@
 FROM nginx:1.25.1-alpine
-LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
+LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
 RUN mkdir /var/cache/nginx/client_temp /var/cache/nginx/fastcgi_temp \
   /var/cache/nginx/proxy_temp /var/cache/nginx/scgi_temp /var/cache/nginx/uwsgi_temp

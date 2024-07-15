@@ -1,5 +1,5 @@
 FROM mariadb:10.5.9-focal
-LABEL maintainer="Muvon Co. Ltd <contact@muvon.io>"
+LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
 RUN apt-get update -y && \
   apt-get install -y mariadb-plugin-rocksdb && \
