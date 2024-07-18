@@ -4,24 +4,24 @@ set -e
 [[ -z "$1" ]] && echo 'Enter path of project to create. Example: ./create-app ~/app' && exit 255
 
 project_dir=$1
-[[ -e "$project_dir" ]] && echo 'Project dir '$project_dir' already exist' && exit 255
+[[ -e "$project_dir" ]] && echo "Project dir '$project_dir' already exist" && exit 255
 
-kc_dir=$(cd "$(dirname $0)" && pwd)
+kc_dir=$(cd "$(dirname "$0")" && pwd)
 
 # Set default type to swoole due to fpm is deprecated but still possible to use
 project_type=${2:-"swoole"}
-[[ "$project_type" != "fpm" && "$project_type" != "swoole" ]] && echo 'The type '$project_type' is not supported' && exit 255
+[[ "$project_type" != "fpm" && "$project_type" != "swoole" ]] && echo "The type '$project_type' is not supported" && exit 255
 
 # shellcheck source=./func.sh
 source "$kc_dir/func.sh"
 
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
 mkdir "$project_dir"
-cp -vr $kc_dir/skel/base/. $project_dir
-cp -vr $kc_dir/skel/$project_type/. $project_dir
-cp -vr $kc_dir/bin/. $project_dir/bin
-cp -vr $kc_dir/env.sh $project_dir
-mkdir -p $project_dir/env/{tmp,var,run,log,etc,backup}
+cp -vr "$kc_dir"/skel/base/. "$project_dir"
+cp -vr "$kc_dir"/skel/"$project_type"/. "$project_dir"
+cp -vr "$kc_dir"/bin/. "$project_dir"/bin
+cp -vr "$kc_dir"/env.sh "$project_dir"
+mkdir -p "$project_dir"/env/{tmp,var,run,log,etc,backup}
 echo '...done'
 
 echo -e '\e[1;35mConfigure etc templates\e[0m'
@@ -29,17 +29,16 @@ app_dir=$project_dir'/app'
 epoch=$(date +%s)'000'
 secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 # Copy yoda folder for containerization
-cat "$kc_dir/skel/base/docker/.yodarc" \
-  | sed "s|{{KISS_PROJECT}}|${project_dir##*/}|g" \
+sed "s|{{KISS_PROJECT}}|${project_dir##*/}|g" "$kc_dir/skel/base/docker/.yodarc" \
   > "$project_dir/docker/.yodarc"
 # Replace global static variables for init project
-cat "$kc_dir/skel/base/app/config/app.ini.tpl" \
-  | sed "s|{{KISS_EPOCH}}|$epoch|g" \
+sed "s|{{KISS_EPOCH}}|$epoch|g" "$kc_dir/skel/base/app/config/app.ini.tpl" \
   | sed "s|{{KISS_SECRET_KEY}}|$secret_key|g" \
   | sed "s|{{KISS_PROJECT_TYPE}}|$project_type|g" \
   > "$app_dir/config/app.ini.tpl"
 echo '...done'
 
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'
-$kc_dir/install-core "$1"
+"$kc_dir"/install-core "$1"
 echo '...done'
+
