@@ -1,4 +1,4 @@
-FROM nginx:1.25.1-alpine
+FROM nginx:1.26.0-alpine
 LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
 RUN mkdir /var/cache/nginx/client_temp /var/cache/nginx/fastcgi_temp \
