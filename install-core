@@ -6,12 +6,49 @@ set -e
 
 kc_dir=$(cd "$(dirname "$0")" && pwd)
 core_file=$1/app/core.php
-echo '<?php declare(strict_types=1);' > "$core_file"
+# Currently we inject into global namespace
+# but it's subject to thing to improve in the future
+# cuz global is more easier to use and write code faster
+cat << 'EOF' > "$core_file"
+<?php declare(strict_types=1);
+// Copyright (c) 2024 Muvon Un Limited <hello@muvon.io>. All rights reserved.
+// namespace Core;
+// use ArrayAccess;
+// use Closure;
+// use Error;
+// use Exception;
+// use InvalidArgumentException;
+// use JsonSerializable;
+// use Memcached;
+// use RecursiveArrayIterator;
+// use RecursiveIteratorIterator;
+// use ReflectionClass;
+// use SplStack;
+// use Throwable;
+// use mysqli;
+// use mysqli_result;
+// use mysqli_sql_exception;
+EOF
 echo -e '\e[1;35mInstall kiss core to '"$1"'\e[0m'
-for file in "$kc_dir/app/core"/*; do
-  echo "Add file $file";
-  tail -n +2 "$file" >> "$core_file"
-  echo >> "$core_file"
-done
+merge_files() {
+	local directory="$1"
+	local output_file="$2"
+
+	for file in "$directory"/*; do
+		if [ -d "$file" ]; then
+			merge_files "$file" "$output_file"
+		elif [ -f "$file" ]; then
+			echo "Add file $file"
+			tail -n +2 "$file" >> "$output_file"
+			echo >> "$output_file"
+		fi
+	done
+}
+
 echo "Write into $core_file"
+echo "Merging core"
+merge_files "$kc_dir/app/core" "$core_file"
+echo "Merging plugins"
+merge_files "$kc_dir/app/plugin" "$core_file"
 echo '...done'
+

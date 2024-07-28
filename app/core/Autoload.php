@@ -5,20 +5,20 @@ final class Autoload {
 	/** @var string[] $prefixed */
 	protected static array $prefixes = [];
 
-  /**
-   * Init autoload mecahnism
+	/**
+	 * Init autoload mechanism
 	 *
 	 * @return void
-   */
+	 */
 	protected static function init(): void {
 		spl_autoload_register([static::class, 'load']);
 		static::$inited = true;
 	}
 
-  /**
-   * @param string $class Class to be loaded
-   * @return bool|string
-   */
+	/**
+	 * @param string $class Class to be loaded
+	 * @return bool|string
+	 */
 	protected static function load(string $class): bool|string {
 		$prefix = $class;
 		while (false !== $pos = strrpos($prefix, '\\')) {
@@ -34,10 +34,10 @@ final class Autoload {
 		return false;
 	}
 
-  /**
-   * @param string $prefix
-   * @param string $class
-   */
+	/**
+	 * @param string $prefix
+	 * @param string $class
+	 */
 	protected static function loadMapped(string $prefix, string $class): false|string {
 		if (!isset(static::$prefixes[$prefix])) {
 			return false;
@@ -53,12 +53,12 @@ final class Autoload {
 		return false;
 	}
 
-  /**
-   * Register new namespace and folder to be loaded from
-   * @param string $prefix
-   * @param string $dir
-   * @param bool $prepend Priority for this
-   */
+	/**
+	 * Register new namespace and folder to be loaded from
+	 * @param string $prefix
+	 * @param string $dir
+	 * @param bool $prepend Priority for this
+	 */
 	public static function register(string $prefix, string $dir, bool $prepend = false): void {
 		assert(is_dir($dir) /* Dir $dir does not exist */);
 
