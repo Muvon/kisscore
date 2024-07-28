@@ -7,7 +7,7 @@ Kiss Core Microframework on PHP 7+ is the lightweight single file packed end-pro
 1. Single core file in project you create
 2. Simple and very fast template engine that allows you only use blocks and iterations (easy to learn for designers)
 3. Fast routes that converts to nginx rewrite on init. Live route table in action files just with single comment
-4. Minimum dependecy and maximum profit
+4. Minimum dependency and maximum profit
 5. Plugins with nice approach for easy extend
 6. Deploy script to production servers in parallels!
 

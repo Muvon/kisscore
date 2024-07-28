@@ -5,12 +5,12 @@ final class Cli {
 	const LEVEL_WARNING = 1;
 	const LEVEL_INFO = 2;
 
-  /**
-   * This function reads hidden input (password) from stdin
-   *
-   * @param string|null $prompt
-   * @return string
-   */
+	/**
+	 * This function reads hidden input (password) from stdin
+	 *
+	 * @param string|null $prompt
+	 * @return string
+	 */
 	public static function readSecret(?string $prompt = null): string {
 		if ($prompt) {
 			echo $prompt;
@@ -29,7 +29,7 @@ final class Cli {
 	 * @return void
 	 */
 	public static function print(string|array $lines, int $level = 2): void {
-		if (App::$log_level > $level) {
+		if (isset(App::$log_level) && App::$log_level > $level) {
 			return;
 		}
 

@@ -107,14 +107,14 @@ function trigger_event(string $event, array $payload = []): void {
 function container(string $name, mixed $value = null): mixed {
 	static $container = [];
 
-  // Set container logic
+	// Set container logic
 	if (isset($value)) {
 		assert(!isset($container[$name]));
 		$container[$name] = $value;
 		return $value;
 	}
 
-  // Get container logic
+	// Get container logic
 	assert(isset($container[$name]));
 	$res = &$container[$name];
 	if (is_callable($res)) {
@@ -198,6 +198,33 @@ function bench(?string $txt = null): ?array {
 }
 
 /**
+ * @param object $obj
+ * @return array
+ */
+function as_array(object $obj): array {
+	return (array)$obj;
+}
+
+/**
+ * Get ref to the value in the array by list of keys or dot notation
+ * @param array<mixed> $container
+ * @param array<string|int>|string $keys
+ * @return &mixed
+ */
+function &array_value_ref(array &$container, array|string $keys): mixed {
+	if (is_string($keys)) {
+		$keys = explode('.', $keys);
+	}
+	$reference = &$container;
+	foreach ($keys as $key) {
+		if (!isset($reference[$key])) {
+			$reference[$key] = [];
+		}
+		$reference = &$reference[$key];
+	}
+	return $reference;
+}
+/**
  * @param array $arrays
  * @return array
  */
@@ -254,23 +281,11 @@ function array_order_by(): array {
 
 // Helpers for Result class
 /**
- * This is simple helper in case we need to throw exception when has error
- *
- * @param Result $Result
- * @return mixed
- */
-function result(Result $Result): mixed {
-	if ($Result->err) {
-		throw new ResultError($Result->err);
-	}
-	return $Result->res;
-}
-
-/**
  * Shortcut for Result::ok()
  *
- * @param mixed $res
- * @return Result
+ * @template T
+ * @param T $res
+ * @return Result<T>
  */
 function ok(mixed $res = null): Result {
 	return Result::ok($res);
@@ -280,9 +295,10 @@ function ok(mixed $res = null): Result {
 /**
  * Shortcut for Result::err()
  *
+ * @template U
  * @param string $err
- * @param mixed $res
- * @return Result
+ * @param U $res
+ * @return Result<never>
  */
 function err(string $err, mixed $res = null): Result {
 	return Result::err($err, $res);
@@ -290,11 +306,12 @@ function err(string $err, mixed $res = null): Result {
 
 /**
  * Multiple errors creation for single response
+ * @template U
  * @param array<string> $errs
- * @return Result
+ * @return Result<U>
  */
-function errs(array $errs): Result {
-	return Result::err('e_errors', $errs);
+function err_list(array $errs): Result {
+	return Result::err('e_error_list', $errs);
 }
 
 if (!function_exists('defer')) {
@@ -303,22 +320,22 @@ if (!function_exists('defer')) {
 	 * @param callable $cb
 	 * @return void
 	 */
-  function defer(?SplStack &$ctx, callable $cb): void {
-    $ctx = $ctx ?? new SplStack();
+	function defer(?SplStack &$ctx, callable $cb): void {
+		$ctx = $ctx ?? new SplStack();
 
-    $ctx->push(
-      new class($cb) {
-        protected $cb;
-        public function __construct(callable $cb) {
-          $this->cb = $cb;
-        }
+		$ctx->push(
+			new class($cb) {
+				protected $cb;
+				public function __construct(callable $cb) {
+					$this->cb = $cb;
+				}
 
-        public function __destruct() {
-          \call_user_func($this->cb);
-        }
-      }
-    );
-  }
+				public function __destruct() {
+					\call_user_func($this->cb);
+				}
+			}
+		);
+	}
 }
 
 // Filter function to format output
