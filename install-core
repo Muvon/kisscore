@@ -1,11 +1,35 @@
 #!/usr/bin/env bash
 set -e
 
-[[ -z "$1" ]] && echo 'Enter path of project to create. Example: ./install-core ./app' && exit 255
-[[ ! -e "$1" ]] && echo "Cant find project dir $1. Use ./create-app $1" && exit 255
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--with-plugins)
+			WITH_PLUGINS=true
+			shift
+			;;
+		--*)
+			KEY="${1#--}"
+			KEY="${KEY^^}"
+			VALUE="$2"
+			declare -g "$KEY=$VALUE"
+			shift 2
+			;;
+		*)
+			PROJECT_PATH="$1"
+			shift
+			;;
+	esac
+done
+
+# Check if project path is provided
+[[ -z "$PROJECT_PATH" ]] && echo 'Enter path of project to create. Example: ./install-core ./app' && exit 255
+
+# Check if project directory exists
+[[ ! -e "$PROJECT_PATH" ]] && echo "Can't find project dir $PROJECT_PATH. Use ./create-app $PROJECT_PATH" && exit 255
 
 kc_dir=$(cd "$(dirname "$0")" && pwd)
-core_file=$1/app/core.php
+core_file=$PROJECT_PATH/app/core.php
 # Currently we inject into global namespace
 # but it's subject to thing to improve in the future
 # cuz global is more easier to use and write code faster
@@ -29,7 +53,7 @@ cat << 'EOF' > "$core_file"
 // use mysqli_result;
 // use mysqli_sql_exception;
 EOF
-echo -e '\e[1;35mInstall kiss core to '"$1"'\e[0m'
+echo -e '\e[1;35mInstall kiss core to '"$PROJECT_PATH"'\e[0m'
 merge_files() {
 	local directory="$1"
 	local output_file="$2"
@@ -48,7 +72,9 @@ merge_files() {
 echo "Write into $core_file"
 echo "Merging core"
 merge_files "$kc_dir/app/core" "$core_file"
-echo "Merging plugins"
-merge_files "$kc_dir/app/plugin" "$core_file"
+if [[ "$WITH_PLUGINS" == "true" ]]; then
+	echo "Merging plugins"
+	merge_files "$kc_dir/app/plugin" "$core_file"
+fi
 echo '...done'
 

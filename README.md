@@ -2,14 +2,14 @@
 
 ## What is it?
 
-Kiss Core Microframework on PHP 7+ is the lightweight single file packed end-project framework for rapid development of very fast projects.
+KISSCore Microframework on PHP 8+ is the lightweight single file packed end-project framework for rapid development of very fast projects.
 
 1. Single core file in project you create
-2. Simple and very fast template engine that allows you only use blocks and iterations (easy to learn for designers)
-3. Fast routes that converts to nginx rewrite on init. Live route table in action files just with single comment
+2. Simple and very fast template engine that allows you to use only blocks and iterations (easy to learn for designers)
+3. Fast routes that convert to nginx rewrite on init. Live route table in action files just with a single comment
 4. Minimum dependency and maximum profit
-5. Plugins with nice approach for easy extend
-6. Deploy script to production servers in parallels!
+5. Plugins with a nice approach for easy extension
+6. Deploy script to production servers in parallel!
 
 ## Installation guide
 
@@ -68,7 +68,11 @@ You also can update compiled KISSCore file in your application.
 Just run install-core and enjoy!
 
 ```bash
-./install-core ~/Work/myproj
+./install-core [arguments] ~/Work/myproj
+
+Where arguments are:
+
+--with-plugins - Install core plugins
 ```
 
 ## Folder structure
@@ -92,7 +96,6 @@ Just run install-core and enjoy!
 | frontend.php   | That files handle all nginx dynamic requests (front point)     |                               |
 | lib            | Library sources that does not depend on KISSCore               | Lib                           |
 | main.php       | Thats is type of front controller, but just a simple flat file |                               |
-| plugin         | Plugins made special for KISSCore under Plugin namespace       | Plugin                        |
 | src            | All your source code, structured as you want                   | App                           |
 | static         | Root nginx dir for static files                                |                               |
 | triggers       | Special triggers. It contains flat files with some annotation  |                               |
@@ -128,9 +131,10 @@ Just run install-core and enjoy!
 
 ## Plugins
 
-There are special plugins to use DB, Cache and other cool staff in KISSCore.
-You can find plugins and help on my github page: <https://github.com/KISSCore>
-All plugins named in pattern plugin-{{name}}
+
+There are core plugins that may be purged at the stage of installing core.
+You can simply pass the `--with-plugins` flag to the install-core script to install them.
+We are working on making them more modular and easy to use.
 
 ## Actions
 All actions are in app/actions folder. You should just create any file, for example test.php and put code in it.
