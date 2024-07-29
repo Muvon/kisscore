@@ -1,10 +1,32 @@
 #!/usr/bin/env bash
 set -e
 
-[[ -z "$1" ]] && echo 'Enter path of project to create. Example: ./create-app ~/app' && exit 255
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--with-plugins)
+			WITH_PLUGINS=true
+			shift
+			;;
+		--*)
+			KEY="${1#--}"
+			KEY="${KEY^^}"
+			VALUE="$2"
+			declare -g "$KEY=$VALUE"
+			shift 2
+			;;
+		*)
+			PROJECT_DIR="$1"
+			shift
+			;;
+	esac
+done
 
-project_dir=$1
-[[ -e "$project_dir" ]] && echo "Project dir '$project_dir' already exist" && exit 255
+# Check if project path is provided
+[[ -z "$PROJECT_DIR" ]] && echo 'Enter path of project to create. Example: ./create-app ./app' && exit 255
+
+# Check if project directory exists
+[[ -e "$PROJECT_DIR" ]] && echo "Project dir '$PROJECT_DIR' already exist" && exit 255
 
 kc_dir=$(cd "$(dirname "$0")" && pwd)
 
@@ -16,21 +38,21 @@ project_type=${2:-"swoole"}
 source "$kc_dir/func.sh"
 
 echo -e '\e[1;35mCopy skeleton to project dir\e[0m'
-mkdir "$project_dir"
-cp -vr "$kc_dir"/skel/base/. "$project_dir"
-cp -vr "$kc_dir"/skel/"$project_type"/. "$project_dir"
-cp -vr "$kc_dir"/bin/. "$project_dir"/bin
-cp -vr "$kc_dir"/env.sh "$project_dir"
-mkdir -p "$project_dir"/env/{tmp,var,run,log,etc,backup}
+mkdir "$PROJECT_DIR"
+cp -vr "$kc_dir"/skel/base/. "$PROJECT_DIR"
+cp -vr "$kc_dir"/skel/"$project_type"/. "$PROJECT_DIR"
+cp -vr "$kc_dir"/bin/. "$PROJECT_DIR"/bin
+cp -vr "$kc_dir"/env.sh "$PROJECT_DIR"
+mkdir -p "$PROJECT_DIR"/env/{tmp,var,run,log,etc,backup}
 echo '...done'
 
 echo -e '\e[1;35mConfigure etc templates\e[0m'
-app_dir=$project_dir'/app'
+app_dir=$PROJECT_DIR'/app'
 epoch=$(date +%s)'000'
 secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 # Copy yoda folder for containerization
-sed "s|{{KISS_PROJECT}}|${project_dir##*/}|g" "$kc_dir/skel/base/docker/.yodarc" \
-  > "$project_dir/docker/.yodarc"
+sed "s|{{KISS_PROJECT}}|${PROJECT_DIR##*/}|g" "$kc_dir/skel/base/docker/.yodarc" \
+  > "$PROJECT_DIR/docker/.yodarc"
 # Replace global static variables for init project
 sed "s|{{KISS_EPOCH}}|$epoch|g" "$kc_dir/skel/base/app/config/app.ini.tpl" \
   | sed "s|{{KISS_SECRET_KEY}}|$secret_key|g" \
@@ -39,6 +61,12 @@ sed "s|{{KISS_EPOCH}}|$epoch|g" "$kc_dir/skel/base/app/config/app.ini.tpl" \
 echo '...done'
 
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'
-"$kc_dir"/install-core "$1"
+
+args=()
+if [[ "$WITH_PLUGINS" == "true" ]]; then
+	args+=(--with-plugins)
+fi
+
+"$kc_dir"/install-core "${args[@]}" "$PROJECT_DIR"
 echo '...done'
 
