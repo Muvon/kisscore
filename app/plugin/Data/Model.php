@@ -1,28 +1,12 @@
 <?php declare(strict_types=1);
 
-/**
- * Абстрактный класс реализации модели
- *
- * @abstract
- * @package Core
- * @subpackage Model
- *
- * <code>
- * User::create()->save(['name' => 'Dmitry']);
- * </code>
- *
- * <code>
- * User::fetch(1)->save(['name' => 'New name']);
- * </code>
- *
- * <code>
- * User::fetch(1)->delete();
- * </code>
- *
- * <code>
- * echo User::get(1)['name'];
- * </code>
- */
+namespace Plugin\Data;
+
+use ArrayAccess;
+use Closure;
+use InvalidArgumentException;
+use JsonSerializable;
+use Result;
 
 /**
  * @template TArray of array

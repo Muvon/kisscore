@@ -1,12 +1,14 @@
 <?php declare(strict_types=1);
 
+namespace Plugin\Data;
+
 trait OptionTrait {
 	/**
-	 * @param mixed $id
+	 * @param int|string $id
 	 * @param array<string,mixed> $cond
 	 * @return array<mixed>
 	 */
-	public static function getOptionList(mixed $id, array $cond = []): array {
+	public static function getOptionList(int|string $id, array $cond = []): array {
 		$list = static::new()->getList($cond);
 
 		$ids = [];

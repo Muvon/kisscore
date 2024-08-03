@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Plugin\Data;
+
 /**
  * @phpstan-type FieldInfo array{type:string,null:bool,default:mixed}
  */
@@ -314,13 +316,11 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Получение количества элементов, согласно выборке с условием
-	 *
-	 * @access protected
+	 * Get total count by condition passed
 	 * @param array $conditions
 	 * @return int
 	 */
-	protected function dbCount(array $conditions = []): int {
+	public function getCount(array $conditions = []): int {
 		$where = $conditions ? $this->dbGetWhere($conditions) : null;
 		$q = 'SELECT COUNT(*) AS `count` FROM ' . static::table()
 		. ($where ? ' WHERE ' . implode('AND', $where) : '')
@@ -452,7 +452,7 @@ trait DatabaseTrait {
 	 *
 	 * @param array<key-of<TArray>> $fields поля для выборки из таблицы
 	 * @param int $id
-	 * @return array<mixed>
+	 * @return TArray
 	 */
 	protected function dbGetById(array $fields, int $id): array {
 		return $this->dbGetByField($fields, static::$id_field, $id);
@@ -517,16 +517,21 @@ trait DatabaseTrait {
 	 * @param string $select
 	 * @param array<string,mixed> $params
 	 * @param array<key-of<TArray>,one-of<'asc',desc'>> $order
+	 * @param int $offset
+	 * @param int $limit
+	 * @param int $total
 	 * @return array<TArray>
 	 */
 	protected function dbGetPaginated(
 		string $query,
 		string $select = '*',
 		array $params = [],
-		array $order = []
+		array $order = [],
+		int $offset = 0,
+		int $limit = 10,
+		int $total = -1
 	): array {
 		assert(is_string($query));
-		$total = $this->Pagination ? $this->Pagination->getTotal() : 0;
 		$order_string = '';
 		if ($order) {
 			foreach ($order as $field => $sort) {
@@ -540,20 +545,12 @@ trait DatabaseTrait {
 		. ($order_string ? ' ORDER BY ' . $order_string : '')
 		. ' LIMIT %d, %d';
 
-		if (!$total) {
+		if ($total === -1) {
 			$rows = self::dbQuery(sprintf($query_cnt, ...['COUNT(*) AS `count`']), $params);
 			$total = array_sum(array_column($rows, 'count'));
 		}
 
-		$offset = 0;
-		$limit = $total;
-		if ($this->Pagination) {
-			$this->Pagination->setTotal($total);
-			$offset = $this->Pagination->getOffset();
-			$limit = $this->Pagination->getLimit();
-		}
-
-		$result = $total ? self::dbQuery(sprintf($query, ...[$select, $offset, $limit]), $params) : [];
+		$result = $total > 0 ? self::dbQuery(sprintf($query, ...[$select, $offset, $limit]), $params) : [];
 		array_walk($result, fn (&$row) => static::transform($row, true));
 
 		return $result;
@@ -562,24 +559,14 @@ trait DatabaseTrait {
 	/**
 	 * Получение всего списка с данными или списка по условию
 	 *
-	 * @see self::getList( );
+	 * @param array<key-of<TArray>,value-of<TArray>> $conditions
+	 * @param array<key-of<TArray>,one-of<'asc',desc'>> $order
+	 * @param int $offset
+	 * @param int $limit
+	 * @return array<TArray>
 	 */
-	public function getList(array $conditions = [], array $order = []) {
-		$total = $this->Pagination ? $this->Pagination->getTotal() : 0;
-
-		if (!$total) {
-			$total = $this->dbCount($conditions);
-		}
-
-		$offset = null;
-		$limit = null;
-		if ($this->Pagination) {
-			$this->Pagination->setTotal($total);
-			$offset = $this->Pagination->getOffset();
-			$limit = $this->Pagination->getLimit();
-		}
-
-		$rows = $total ? $this->dbSelect(static::fields(), $conditions, $order, $offset, $limit) : [];
+	public function getList(array $conditions = [], array $order = [], int $offset = 0, int $limit = 10) {
+		$rows = $limit > 0 ? $this->dbSelect(static::fields(), $conditions, $order, $offset, $limit) : [];
 
 		array_walk(
 			$rows, function (&$row) {

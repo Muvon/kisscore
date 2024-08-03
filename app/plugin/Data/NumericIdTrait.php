@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Plugin\Data;
+
 trait NumericIdTrait {
   /** @var int|null $id */
 	protected ?int $id = null;

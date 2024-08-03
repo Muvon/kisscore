@@ -1,14 +1,11 @@
 <?php declare(strict_types=1);
 
-/**
-* @uses Memcached
-* @link http://www.php.net/manual/en/class.memcache.php
-*
-* @final
-* @package Core
-* @subpackage Cache
-*/
-class Cache {
+namespace Plugin\Data;
+
+use App;
+use Memcached;
+
+final class Cache {
 	final protected function __construct() {
 	}
 
@@ -17,28 +14,28 @@ class Cache {
    * @return Memcached
    */
 	protected static function connect(): Memcached {
-		static $Con;
-		if (!$Con) {
-			$Con = new Memcached;
-			$Con->setOption(Memcached::OPT_BINARY_PROTOCOL, config('memcache.binary_protocol'));
-			$Con->setOption(Memcached::OPT_COMPRESSION, config('memcache.compression'));
-			$Con->setOption(Memcached::OPT_CONNECT_TIMEOUT, config('memcache.connect_timeout'));
-			$Con->setOption(Memcached::OPT_RETRY_TIMEOUT, config('memcache.retry_timeout'));
-			$Con->setOption(Memcached::OPT_SEND_TIMEOUT, config('memcache.send_timeout'));
-			$Con->setOption(Memcached::OPT_RECV_TIMEOUT, config('memcache.recv_timeout'));
-			$Con->setOption(Memcached::OPT_POLL_TIMEOUT, config('memcache.poll_timeout'));
-			$Con->setOption(Memcached::OPT_PREFIX_KEY, config('memcache.key_prefix'));
+		static $Connection;
+		if (!$Connection) {
+			$Connection = new Memcached;
+			$Connection->setOption(Memcached::OPT_BINARY_PROTOCOL, config('memcache.binary_protocol'));
+			$Connection->setOption(Memcached::OPT_COMPRESSION, config('memcache.compression'));
+			$Connection->setOption(Memcached::OPT_CONNECT_TIMEOUT, config('memcache.connect_timeout'));
+			$Connection->setOption(Memcached::OPT_RETRY_TIMEOUT, config('memcache.retry_timeout'));
+			$Connection->setOption(Memcached::OPT_SEND_TIMEOUT, config('memcache.send_timeout'));
+			$Connection->setOption(Memcached::OPT_RECV_TIMEOUT, config('memcache.recv_timeout'));
+			$Connection->setOption(Memcached::OPT_POLL_TIMEOUT, config('memcache.poll_timeout'));
+			$Connection->setOption(Memcached::OPT_PREFIX_KEY, config('memcache.key_prefix'));
 
 			/** @var string */
 			$host = config('memcache.host');
 			/** @var int */
 			$port = config('memcache.port');
-			if (!$Con->addServer($host, $port)) {
+			if (!$Connection->addServer($host, $port)) {
 				App::error('Error while connecting to memcache in memory');
 			}
 		}
 
-		return $Con;
+		return $Connection;
 	}
 
   /**
@@ -60,6 +57,7 @@ class Cache {
 					$result[$map[$k]] = $item;
 				}
 				unset($items);
+				$items = null;
 				$items = &$result;
 			}
 		}

@@ -131,10 +131,13 @@ Where arguments are:
 
 ## Plugins
 
-
 There are core plugins that may be purged at the stage of installing core.
 You can simply pass the `--with-plugins` flag to the install-core script to install them.
 We are working on making them more modular and easy to use.
+
+## Libs
+
+Libs are independent and lightweight modules with no direct coupling to kisscore. These can be installed separately using the `--with-libs` flag during the installation process. Unlike plugins, libs are designed to be more versatile and can be used across different projects without heavy dependencies on the core system.
 
 ## Actions
 All actions are in app/actions folder. You should just create any file, for example test.php and put code in it.

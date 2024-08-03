@@ -1,5 +1,9 @@
 <?php declare(strict_types=1);
 
+namespace Plugin\List;
+
+use Error;
+
 /**
  * Загрузчик сущностей, доступ через объект Entity
  *
@@ -57,7 +61,7 @@ class Fetcher {
 		} elseif (is_array($mapper)) {
 			[$model, $method] = $mapper;
 		} else {
-			throw new Exception('Mapper can be string or array with 2 elements');
+			throw new Error('Mapper can be string or array with 2 elements');
 		}
 
 		$Self->model = $model;
@@ -137,14 +141,25 @@ class Fetcher {
 		}
 
 		$Obj = new $this->model;
-		if ($this->Pagination) {
-			$Obj->setPagination($this->Pagination);
+		$args = $this->args;
+		// If we have pagination and need to use dynamic count detection
+		if ($this->Pagination && $this->method !== 'get') {
+			$total = $this->Pagination ? $this->Pagination->getTotal() : 0;
+			if (!$total) {
+				$total = $Obj->getCount(...$args);
+			}
+			$this->Pagination->setTotal($total);
+			$args = [$args, ...[
+				'offset' => $this->Pagination->getOffset(),
+				'limit' => $this->Pagination->getLimit(),
+			]];
 		}
 
-		$this->data = call_user_func_array([$Obj, $this->method], $this->args);
-
+		$result = call_user_func_array([$Obj, $this->method], $args);
 		if ($this->method === 'get') {
-			$this->data = $this->data->getData();
+			$this->data = $result->getData();
+		} else {
+			$this->data = $result;
 		}
 
 		if (!$this->Pagination) {

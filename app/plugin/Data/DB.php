@@ -1,6 +1,15 @@
 <?php declare(strict_types=1);
 
-class DB {
+namespace Plugin\Data;
+
+use App;
+use mysqli;
+use mysqli_result;
+use mysqli_sql_exception;
+use Result;
+use Throwable;
+
+final class DB {
 	protected static bool $reconnect = true;
 	protected static array $pool = [];
 	protected static array $try = [];

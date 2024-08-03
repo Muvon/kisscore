@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Plugin\SEO;
+
 final class Robots {
   /**
    * @param string $file

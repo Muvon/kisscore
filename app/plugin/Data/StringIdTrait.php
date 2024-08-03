@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Plugin\Data;
+
 trait StringIdTrait {
   /** @var string|null $id */
 	protected ?string $id = null;

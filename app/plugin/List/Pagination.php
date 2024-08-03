@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
 
+namespace Plugin\List;
+
+use Error;
+
 /**
  * @final
  * @package Core
  * @subpackage Pagination
  * @phpstan-type PaginationInfo array{current:int,last:int,next_url?:string,prev_url?:string}
  */
-class Pagination {
+final class Pagination {
 	private int $limit = 1000;
 	private int $total = 0;
 	private int $page = 1;
@@ -147,11 +151,9 @@ class Pagination {
    * @return array{}|array{items:array<mixed>,total:int,offset:int,limit:int,pagination:PaginationInfo}
    */
 	public function listResult(array $list): array {
-	// Ничего нет? Ну и к черту :D
 		if (!$list) {
 			return [];
 		}
-
 
 		return [
 			'items'   => array_values($list),
