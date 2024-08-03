@@ -2,26 +2,21 @@
 set -e
 
 # Parse arguments
-while [[ $# -gt 0 ]]; do
-	case "$1" in
+for p in "$@"; do
+	case "$p" in
 		--with-plugins)
 			WITH_PLUGINS=true
 			shift
 			;;
-		--*)
-			KEY="${1#--}"
-			KEY="${KEY^^}"
-			VALUE="$2"
-			declare -g "$KEY=$VALUE"
-			shift 2
-			;;
-		*)
-			PROJECT_DIR="$1"
+		--backend=*)
+			value="${p#*=}"
+			BACKEND="$value"
 			shift
 			;;
 	esac
 done
 
+PROJECT_DIR="$1"
 # Check if project path is provided
 [[ -z "$PROJECT_DIR" ]] && echo 'Enter path of project to create. Example: ./create-app ./app' && exit 255
 
@@ -31,7 +26,7 @@ done
 kc_dir=$(cd "$(dirname "$0")" && pwd)
 
 # Set default type to swoole due to fpm is deprecated but still possible to use
-project_type=${2:-"swoole"}
+project_type=${BACKEND:-"swoole"}
 [[ "$project_type" != "fpm" && "$project_type" != "swoole" ]] && echo "The type '$project_type' is not supported" && exit 255
 
 # shellcheck source=./func.sh
