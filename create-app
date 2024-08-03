@@ -48,7 +48,7 @@ echo '...done'
 
 echo -e '\e[1;35mConfigure etc templates\e[0m'
 app_dir=$PROJECT_DIR'/app'
-epoch=$(date +%s)'000'
+epoch=$(date +%s)
 secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 # Copy yoda folder for containerization
 sed "s|{{KISS_PROJECT}}|${PROJECT_DIR##*/}|g" "$kc_dir/skel/base/docker/.yodarc" \

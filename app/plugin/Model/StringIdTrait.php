@@ -17,35 +17,26 @@ trait StringIdTrait {
 	 * Generates a unique string ID with embedded shard information
 	 *
 	 * @param string $value
-	 * @return string
+	 * @return string string with length of 20
 	 */
 	public static function generateId(string $value = ''): string {
 		static $seq = 0;
 		$shard_id = static::dbShardId($value);
-		$epoch = config('common.epoch');
-		$nano_time = hrtime(true);
-		$milliseconds = (int)($nano_time / 1_000_000);
-		$nano_seconds = $nano_time % 1_000_000;
-
-		$seq = (++$seq % 1024);
+		$epoch = config('common.epoch') * 1000;
+		$now = (int)(microtime(true) * 1000);
+		$seq = (++$seq % 2048);
 
 		// Generate components
-		$time_component = dechex($milliseconds - $epoch);
-		$shard_component = str_pad(dechex($shard_id), 3, '0', STR_PAD_LEFT);
-		$seq_component = str_pad(dechex($seq), 3, '0', STR_PAD_LEFT);
-		$nano_component = str_pad(dechex($nano_seconds), 5, '0', STR_PAD_LEFT);
-
-		// Generate a random component to ensure uniqueness
-		$random_component = bin2hex(random_bytes(4));
+		$time_component = dechex($now - $epoch);
+		$shard_component = dechex($shard_id);
+		$seq_component = dechex($seq);
 
 		// Combine all components
 		return sprintf(
-			'%s-%s-%s-%s-%s',
-			str_pad($time_component, 12, '0', STR_PAD_LEFT),
-			$shard_component . $seq_component,
-			$nano_component . substr($random_component, 0, 3),
-			substr($random_component, 3, 4),
-			bin2hex(random_bytes(6))  // Additional randomness
+			'%s-%s-%s',
+			str_pad($time_component, 11, '0', STR_PAD_LEFT),
+			str_pad($shard_component, 4, '0', STR_PAD_LEFT),
+			str_pad($seq_component, 3, '0', STR_PAD_LEFT),
 		);
 	}
 
@@ -56,7 +47,7 @@ trait StringIdTrait {
 	protected static function dbShardId(string $value): int {
 		$shard_id = 0;
 		if (static::$shard_key) {
-			$shard_id = crc32($value) % 1024;
+			$shard_id = crc32($value) % 8192;
 		}
 		return $shard_id;
 	}

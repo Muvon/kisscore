@@ -25,18 +25,13 @@ trait NumericIdTrait {
 	public static function generateId(string $value = ''): int {
 		static $seq = 0;
 		$shard_id = static::dbShardId($value);
-		$epoch = config('common.epoch');
-		$nano_time = hrtime(true);
-		$milliseconds = (int)($nano_time / 1_000_000);
-		$nano_seconds = $nano_time % 1_000_000;
-
-		$seq = (++$seq % 1024);
-
+		$epoch = config('common.epoch') * 1000;
+		$now = (int)(microtime(true) * 1000);
+		$seq = (++$seq % 2048);
 		// Combine milliseconds, shard_id, sequence, and nanoseconds
-		return (($milliseconds - $epoch) << 23)
-		| ($shard_id << 13)
-		| ($seq << 3)
-		| ($nano_seconds & 0x7);
+		return (($now - $epoch) << 24) # 40 bit for timestamp in ms
+		| ($shard_id << 11) # 13 bit for shard
+		| $seq;
 	}
 
 	/**
@@ -46,7 +41,7 @@ trait NumericIdTrait {
 	protected static function dbShardId(string $value): int {
 		$shard_id = 0;
 		if (static::$shard_key) {
-			$shard_id = crc32($value) % 1024;
+			$shard_id = crc32($value) % 8192;
 		}
 		return $shard_id;
 	}
