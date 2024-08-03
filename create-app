@@ -13,6 +13,10 @@ for p in "$@"; do
 			BACKEND="$value"
 			shift
 			;;
+		-*)
+			>&2 echo "Invalid option: $p"
+			exit 255
+			;;
 	esac
 done
 
