@@ -8,6 +8,12 @@ upstream {{PROJECT}}-fpm {
   server unix:{{RUN_DIR}}/php-fpm.sock;
 }
 
+map $host $static_dir {
+	hostnames;
+	default {{STATIC_DIR}};
+	{{STATIC_DIR_MAP}}
+}
+
 server {
   error_log {{LOG_DIR}}/nginx-error.log;
 
@@ -22,7 +28,7 @@ server {
   auth_basic_user_file {{CONFIG_DIR}}/.htpasswd;
 
   open_file_cache {{OPEN_FILE_CACHE}}; # disable file cache for development
-  root {{STATIC_DIR}};
+  root $static_dir;
   location = / {
     if ($request_method !~ ^(GET|HEAD|POST|PUT|DELETE|OPTIONS)$ ) {
       return 444;
@@ -70,7 +76,7 @@ server {
     fastcgi_param  BIN_DIR          {{BIN_DIR}};
     fastcgi_param  RUN_DIR          {{RUN_DIR}};
     fastcgi_param  TMP_DIR          {{TMP_DIR}};
-    fastcgi_param  STATIC_DIR       {{STATIC_DIR}};
+    fastcgi_param  STATIC_DIR       $static_dir;
 
     fastcgi_pass   {{PROJECT}}-fpm;
   }

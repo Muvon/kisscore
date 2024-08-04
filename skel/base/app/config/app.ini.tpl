@@ -12,10 +12,10 @@ action_map_file    = '{{CONFIG_DIR}}/action_map.php'
 
 upload_max_filesize = '10M'
 
-proto = 'http'
-domain = '{{PROJECT}}.lo'
 type = '{{KISS_PROJECT_TYPE}}'
-
+proto = 'http'
+domain = '{{PROJECT}}.zz'
+zones[] = 'www'
 lang_type = 'none' ; path or domain or none depends what we use for split
 languages[] = 'en'
 
@@ -26,7 +26,7 @@ languages[] = 'en'
 cli_level = 2
 
 [common:test]
-domain = '{{PROJECT}}.dev'
+domain = 'test.{{PROJECT}}.com'
 
 [common:production]
 domain = '{{PROJECT}}.com'
@@ -71,5 +71,5 @@ auth = 'Restricted'
 [cors]
 origin = '*'
 methods = 'GET, POST, PUT, DELETE, OPTIONS'
-headers = 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type'
+headers = 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Account-Token,API-Token,Request-Signature'
 credentials = 'true'
