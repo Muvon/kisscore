@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 App::exec('echo "' . config('nginx.auth_name') . ':"$(openssl passwd -apr1 ' . escapeshellarg(config('nginx.auth_pass')) . ') > $CONFIG_DIR/.htpasswd');
 
 $routes = Env::load(config('common.uri_map_file'));
@@ -41,18 +41,18 @@ foreach ($routes as $route => $params) {
 }
 
 // Form domain related rewrite rules
+$domain = config('common.domain');
 $rewrite_rules = '';
 foreach ($rewrites as $zone => $rules) {
-	$rewrite_rules .= 'if ($host = ' . $zone . '.' . $domain . ') {' . PHP_EOL
+	$rewrite_rules .= "if (\$host = {$zone}.{$domain}) {" . PHP_EOL
 		. implode(PHP_EOL, $rules) . PHP_EOL
 		. '}' . PHP_EOL;
 }
 
 // Prepare all server names we should use
-$domain = config('common.domain');
 $zones = config('common.zones');
 $domains = array_map(
-	fn($zone) => $zone . '.' . $domain,
+	fn($zone) => "{$zone}.{$domain}",
 	$zones
 );
 // If there is www in zones we unshift domain without www

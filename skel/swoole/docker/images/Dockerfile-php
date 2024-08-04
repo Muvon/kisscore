@@ -1,17 +1,17 @@
-FROM muvon/php:8.3.4
+FROM muvon/php:8.3.10
 LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
-RUN apk add --update curl bash openssl && \
+RUN php-ext add msgpack yaml swoole sodium && \
+	apk add --update curl bash openssl && \
   rm -fr /var/cache/apk/* && \
   rm -fr /tmp/*
-RUN php-ext add msgpack yaml swoole sodium
-
 COPY . /src
 RUN ln -fs /src/docker/containers/php/config/php.ini /etc/php/php.ini && \
   ln -fs /src/docker/containers/php/config/conf.d /etc/php/conf.d && \
-	cd /src/app && rm composer.lock && \
-	composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-simplexml \
-		--ignore-platform-req=ext-zip
+	cd /src/app && \
+	if [ -f composer.lock ]; then \
+		composer install --no-dev --optimize-autoloader; \
+	fi
 WORKDIR /src
 
 ENTRYPOINT ["/src/docker/containers/php/entrypoint"]
