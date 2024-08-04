@@ -247,15 +247,20 @@ final class Env {
   /**
    * Generate nginx URI map for route request to special file
 	 *
-	 *
 	 * @return void
    */
 	protected static function generateURIMap(): void {
 		$map = [];
+		$default_zone = config('common.zones')[0];
 		foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
 			$content = file_get_contents($file);
 			if (false === $content) {
 				throw new Exception("Failed to read file: $file");
+			}
+
+			$zone = $default_zone;
+			if (preg_match('/^\s*\*\s*@zone\s+(\w+)/im', $content, $zoneMatch)) {
+				$zone = $zoneMatch[1];
 			}
 
 			if (!preg_match_all('/^\s*\*\s*@route\s+([^:]+?)(:(.+))?$/ium', $content, $m)) {
@@ -266,7 +271,7 @@ final class Env {
 				$pattern = trim($m[1][$k]);
 				$params  = isset($m[2][$k]) && $m[2][$k] ? array_map('trim', explode(',', substr($m[2][$k], 1))) : [];
 				array_unshift($params, static::getActionByFile($file));
-				$map[$pattern] = $params;
+				$map[$pattern] = [$zone, ...$params];
 			}
 		}
 		static::store(config('common.uri_map_file'), $map);
