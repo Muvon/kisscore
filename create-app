@@ -8,6 +8,10 @@ for p in "$@"; do
 			WITH_PLUGINS=true
 			shift
 			;;
+		--with-libs)
+			WITH_LIBS=true
+			shift
+			;;
 		--backend=*)
 			value="${p#*=}"
 			BACKEND="$value"
@@ -62,8 +66,13 @@ echo '...done'
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'
 
 args=()
+
 if [[ "$WITH_PLUGINS" == "true" ]]; then
 	args+=(--with-plugins)
+fi
+
+if [[ "$WITH_LIBS" == "true" ]]; then
+	args+=(--with-libs)
 fi
 
 "$kc_dir"/install-core "${args[@]}" "$PROJECT_DIR"
