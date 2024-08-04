@@ -2,8 +2,8 @@
 set -e
 
 # Parse arguments
-while [[ $# -gt 0 ]]; do
-	case "$1" in
+for p in "$@"; do
+	case "$p" in
 		--with-plugins)
 			WITH_PLUGINS=true
 			shift
@@ -12,20 +12,14 @@ while [[ $# -gt 0 ]]; do
 			WITH_LIBS=true
 			shift
 			;;
-		--*)
-			KEY="${1#--}"
-			KEY="${KEY^^}"
-			VALUE="$2"
-			declare -g "$KEY=$VALUE"
-			shift 2
-			;;
-		*)
-			PROJECT_DIR="$1"
-			shift
+		-*)
+			>&2 echo "Invalid option: $p"
+			exit 255
 			;;
 	esac
 done
 
+PROJECT_DIR="$1"
 # Check if project path is provided
 [[ -z "$PROJECT_DIR" ]] && echo 'Enter path of project to create. Example: ./install-core ./app' && exit 255
 
