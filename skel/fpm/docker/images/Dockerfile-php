@@ -1,4 +1,4 @@
-FROM muvon/php:8.3.9-fpm
+FROM muvon/php:8.3.10-fpm
 LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
 RUN php-ext add msgpack yaml sodium && \
@@ -9,8 +9,10 @@ RUN php-ext add msgpack yaml sodium && \
 COPY . /src
 RUN ln -fs /src/docker/containers/php/config/php.ini /etc/php/php.ini && \
   ln -fs /src/docker/containers/php/config/conf.d /etc/php/conf.d && \
-	cd /src/app && rm composer.lock && \
-	composer install --no-dev --optimize-autoloader
+	cd /src/app && \
+	if [ -f composer.lock ]; then \
+		composer install --no-dev --optimize-autoloader; \
+	fi
 WORKDIR /src
 
 ENTRYPOINT ["/src/docker/containers/php/entrypoint"]
