@@ -2,7 +2,7 @@
 
 namespace Lib;
 
-use Muvon\KISS\RequestTrait;
+use Fetch;
 use Result;
 use ResultError;
 
@@ -10,8 +10,7 @@ use ResultError;
  * @phpstan-type ReplicateResponse array{id:string,error?:string,status:string}
  */
 final class Replicate {
-	use RequestTrait;
-
+	private Fetch $Fetch;
 	private string $api_token;
 
 	private function __construct() {
@@ -24,7 +23,7 @@ final class Replicate {
 	 */
 	public static function new(string $api_token): self {
 		$Self = new self;
-		$Self->request_type = 'json';
+		$Self->Fetch = Fetch::new(['request_type' => 'json']);
 		$Self->api_token = $api_token;
 		return $Self;
 	}
@@ -51,16 +50,16 @@ final class Replicate {
 			'version' => $version,
 			'input' => $input,
 		];
-		/** @var array{string,ReplicateResponse} $response */
-		$response = $this->request($api_url, $payload, 'POST', $headers);
-		[$err, $res] = $response;
-		if ($err) {
-			return err('e_replicate_http_error', $err);
+		/** @var Result<ReplicateResponse> */
+		$Res = $this->Fetch->request($api_url, $payload, 'POST', $headers);
+		if ($Res->err) {
+			return err('e_replicate_http_error', $Res->err);
 		}
-		if (isset($res['error'])) {
-			return err('e_replicate_response_error', $res['error']);
+		$result = $Res->unwrap();
+		if (isset($result['error'])) {
+			return err('e_replicate_response_error', $result['error']);
 		}
-		return ok($res['id']);
+		return ok($result['id']);
 	}
 
 	/**
@@ -133,12 +132,11 @@ final class Replicate {
 			'Authorization: Bearer ' . $this->api_token,
 			'Content-Type: application/json',
 		];
-		/** @var array{?string,ReplicateResponse} $response */
-		$response = $this->request($api_url, [], 'GET', $headers);
-		[$err, $res] = $response;
-		if ($err) {
+		/** @var Result<ReplicateResponse> */
+		$Res = $this->Fetch->request($api_url, [], 'GET', $headers);
+		if ($Res->err) {
 			return err('e_replicate_http_error');
 		}
-		return ok($res);
+		return $Res;
 	}
 }

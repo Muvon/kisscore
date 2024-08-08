@@ -2,13 +2,12 @@
 
 namespace Lib;
 
-use Muvon\KISS\RequestTrait;
+use Fetch;
 use Result;
 
 /** @package Lib */
 final class Mailer {
-	use RequestTrait;
-
+	private Fetch $Fetch;
 	/**
 	 * Initialize the mailer with token provided to use for api calls
 	 * @param string $ns
@@ -16,7 +15,7 @@ final class Mailer {
 	 * @return void
 	 */
 	public function __construct(protected string $ns, protected string $api_token) {
-		$this->request_type = 'json';
+		$this->Fetch = Fetch::new(['request_type' => 'json']);
 	}
 
 	/**
@@ -78,17 +77,12 @@ final class Mailer {
 	 */
 	protected function sendRequest(string $path, array $payload = []): Result {
 		$url = "https://mailer.muvon.dev/{$this->ns}/{$path}";
-		/** @var array{?string,mixed} $response */
-		$response = $this->request(
+		/** @var Result<mixed> */
+		$Res = $this->Fetch->request(
 			$url, $payload, 'POST', [
 				"API-Token: {$this->api_token}",
 			]
 		);
-		[$err, $res] = $response;
-		if ($err) {
-			return err($err);
-		}
-
-		return ok($res);
+		return $Res;
 	}
 }

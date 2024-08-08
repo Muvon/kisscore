@@ -149,7 +149,7 @@ class Fetcher {
 				$total = $Obj->getCount(...$args);
 			}
 			$this->Pagination->setTotal($total);
-			$args = [$args, ...[
+			$args = [...$args, ...[
 				'offset' => $this->Pagination->getOffset(),
 				'limit' => $this->Pagination->getLimit(),
 			]];

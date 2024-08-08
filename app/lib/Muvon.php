@@ -2,15 +2,14 @@
 
 namespace Lib;
 
+use Fetch;
 use Error;
-use Muvon\KISS\RequestTrait;
 use Result;
 use SodiumException;
 
+/** @package Lib */
 final class Muvon {
-
-	use RequestTrait;
-
+	private Fetch $Fetch;
 	/** @var non-empty-string */
 	protected string $project;
 	/** @var non-empty-string */
@@ -32,7 +31,7 @@ final class Muvon {
 		$this->project = $project;
 		$this->api_token = $api_token;
 		$this->public_key = $public_key;
-		$this->request_type = 'json';
+		$this->Fetch = Fetch::new(['request_type' => 'json']);
 	}
 
 	/**
@@ -93,18 +92,16 @@ final class Muvon {
 	 */
 	protected function sendRequest(string $path, array $payload = []): Result {
 		$url = "https://api.muvon.io/{$path}";
-		/** @var array{?string,array{?string,mixed}} $response */
-		$response = $this->request(
+		/** @var Result<array{?string,mixed}> */
+		$Res = $this->Fetch->request(
 			$url, $payload, 'POST', [
 				"API-Token: {$this->api_token}",
 			]
 		);
-		[$err, $res] = $response;
-
-		if ($err) {
-			return err($err);
+		if ($Res->err) {
+			return $Res;
 		}
-		[$err, $res] = $res;
+		[$err, $res] = $Res->unwrap();
 		if ($err) {
 			return err($err, $res);
 		}

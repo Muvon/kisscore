@@ -23,12 +23,18 @@ server {
 
   include {{CONFIG_DIR}}/nginx_route_map.conf;
 
-  set $realm "{{AUTH}}";
-  auth_basic $realm;
-  auth_basic_user_file {{CONFIG_DIR}}/.htpasswd;
-
   open_file_cache {{OPEN_FILE_CACHE}}; # disable file cache for development
   root $static_dir;
+	set $realm off;
+	if ($request_uri ~ ^/({{RESTRICTED_ROUTES}})/) {
+		set $realm Restricted;
+	}
+	if ($request_uri ~ "[?&]ROUTE=({{RESTRICTED_ROUTES}})") {
+		set $realm Restricted;
+	}
+
+	auth_basic $realm;
+	auth_basic_user_file {{CONFIG_DIR}}/.htpasswd;
   location = / {
     if ($request_method !~ ^(GET|HEAD|POST|PUT|DELETE|OPTIONS)$ ) {
       return 444;

@@ -32,12 +32,12 @@ foreach ($routes as $route => $params) {
 	// If we have lang_type = path
 	if ($lang_match) {
 		if ($route === 'home') { // Set root
-			$rewrites[$zone][] = "rewrite '(*UTF8)^/(?:$lang_match)/?$' '$uri';";
+			$rewrites[$zone][] = "rewrite '^/(?:$lang_match)/?$' '$uri';";
 		}
 		$route = "(?:$lang_match)/$route";
 	}
 
-	$rewrites[$zone][] = "rewrite '(*UTF8)^/$route/?$' '$uri';";
+	$rewrites[$zone][] = "rewrite '^/$route/?$' '$uri';";
 }
 
 // Form domain related rewrite rules
@@ -72,9 +72,9 @@ $static_dir_map = implode(PHP_EOL, array_map(
 Env::configure(__DIR__, [
 	'{{UPLOAD_MAX_FILESIZE}}' => config('common.upload_max_filesize'),
 	'{{SERVER_NAME}}' => $server_names,
-	'{{SERVER_PORT}}' => config('server.port'),
+	'{{SERVER_PORT}}' => config('nginx.port'),
 	'{{STATIC_DIR_MAP}}' => $static_dir_map,
-	'{{AUTH}}' => config('nginx.auth'),
+	'{{RESTRICTED_ROUTES}}' => config('nginx.auth_routes'),
 	'{{REWRITE_RULES}}' => $rewrite_rules,
 	'{{CORS_ORIGIN}}' => config('cors.origin'),
 	'{{CORS_METHODS}}' => config('cors.methods'),
