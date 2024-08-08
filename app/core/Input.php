@@ -49,18 +49,21 @@ final class Input {
 			$argv = filter_input(INPUT_SERVER, 'argv');
 			array_shift($argv); // file
 			static::$params['ACTION'] = array_shift($argv);
-			static::$params += $argv;
+			$get = $argv;
+			$post = [];
 		} elseif (static::isJson()) {
-			static::$params = (array)filter_input_array(INPUT_GET)
-				+ (array)json_decode(file_get_contents('php://input'), true);
+			$get = (array)filter_input_array(INPUT_GET);
+			$post = (array)json_decode(file_get_contents('php://input'), true);
 		} elseif (static::isMsgpack()) {
-			static::$params = (array)filter_input_array(INPUT_GET)
-				+ (array)msgpack_unpack(file_get_contents('php://input'));
+			$get = (array)filter_input_array(INPUT_GET);
+			$post = (array)msgpack_unpack(file_get_contents('php://input'));
 		} else {
-			static::$params = (array)filter_input_array(INPUT_POST)
-				+ (array)filter_input_array(INPUT_GET);
+			$get = (array)filter_input_array(INPUT_GET);
+			$post = (array)filter_input_array(INPUT_POST);
 		}
-
+		// Clean up system variables that are not supposed to be in post
+		unset($post['ROUTE'], $post['ACTION']);
+		static::$params = $get + $post;
 		static::$is_parsed = true;
 	}
 
