@@ -1,14 +1,17 @@
 <?php declare(strict_types=1);
+
 App::exec('echo "' . config('nginx.auth_name') . ':"$(openssl passwd -apr1 ' . escapeshellarg(config('nginx.auth_pass')) . ') > $CONFIG_DIR/.htpasswd');
 
 $routes = Env::load(config('common.uri_map_file'));
-uasort($routes, function ($a, $b) {
-	return (sizeof($a) > sizeof($b)) ? 1 : -1;
-});
+uasort(
+	$routes, function ($a, $b) {
+		return (sizeof($a) > sizeof($b)) ? 1 : -1;
+	}
+);
 
 $lang_type = config('common.lang_type');
 
-$lang_match = match($lang_type) {
+$lang_match = match ($lang_type) {
 	'path' => implode('|', config('common.languages')),
 	default => null
 };
@@ -20,7 +23,7 @@ foreach ($routes as $route => $params) {
 	$action = array_shift($params);
 	$i = 0; // route like (bla (bla bla)) with uff8 cant handle by nginx. so hack it
 	$uri = '/?ROUTE=' . preg_replace_callback('|\([^\)]+\)|is', fn() => '$' . ++$i, $route)
-		. '&ACTION=' . $action
+	. '&ACTION=' . $action
 	;
 
 	// If we have something more,foreach it
@@ -45,8 +48,8 @@ $domain = config('common.domain');
 $rewrite_rules = '';
 foreach ($rewrites as $zone => $rules) {
 	$rewrite_rules .= "if (\$host = {$zone}.{$domain}) {" . PHP_EOL
-		. implode(PHP_EOL, $rules) . PHP_EOL
-		. '}' . PHP_EOL;
+	. implode(PHP_EOL, $rules) . PHP_EOL
+	. '}' . PHP_EOL;
 }
 
 // Prepare all server names we should use
@@ -64,12 +67,15 @@ $server_names = implode(' ', $domains);
 // Static dir map
 $static_dir = getenv('STATIC_DIR');
 $default_zone = array_shift($zones);
-$static_dir_map = implode(PHP_EOL, array_map(
-	fn($zone) => "{$zone}.{$domain} {$static_dir}/{$zone};",
-	$zones
-));
+$static_dir_map = implode(
+	PHP_EOL, array_map(
+		fn($zone) => "{$zone}.{$domain} {$static_dir}/{$zone};",
+		$zones
+	)
+);
 
-Env::configure(__DIR__, [
+Env::configure(
+	__DIR__, [
 	'{{UPLOAD_MAX_FILESIZE}}' => config('common.upload_max_filesize'),
 	'{{SERVER_NAME}}' => $server_names,
 	'{{SERVER_PORT}}' => config('nginx.port'),
@@ -81,4 +87,5 @@ Env::configure(__DIR__, [
 	'{{CORS_HEADERS}}' => config('cors.headers'),
 	'{{CORS_CREDENTIALS}}' => config('cors.credentials'),
 	'{{OPEN_FILE_CACHE}}' => config('nginx.open_file_cache'),
-]);
+	]
+);
