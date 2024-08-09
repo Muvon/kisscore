@@ -1,6 +1,11 @@
 <?php declare(strict_types=1);
 
-App::exec('echo "' . config('nginx.auth_name') . ':"$(openssl passwd -apr1 ' . escapeshellarg(config('nginx.auth_pass')) . ') > $CONFIG_DIR/.htpasswd');
+App::exec(
+	'echo "' . config('nginx.auth_name')
+	. ':"$(openssl passwd -apr1 '
+	. escapeshellarg(config('nginx.auth_pass'))
+	. ') > $CONFIG_DIR/.htpasswd'
+);
 
 $routes = Env::load(config('common.uri_map_file'));
 uasort(
@@ -66,7 +71,8 @@ $server_names = implode(' ', $domains);
 
 // Static dir map
 $static_dir = getenv('STATIC_DIR');
-$default_zone = array_shift($zones);
+// Extract default_zone that is used for default static dir
+array_shift($zones);
 $static_dir_map = implode(
 	PHP_EOL, array_map(
 		fn($zone) => "{$zone}.{$domain} {$static_dir}/{$zone};",
