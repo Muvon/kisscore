@@ -127,7 +127,6 @@ Where arguments are:
 - $CONFIG_DIR - configuration files
 - $BIN_DIR - for special bin files and scripts
 - $STATIC_DIR - public directory for static files
-- $KISS_CORE - path to core.php file with KISSCore classes
 
 ## Plugins
 

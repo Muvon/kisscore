@@ -71,7 +71,6 @@ server {
 
     fastcgi_param  SCRIPT_FILENAME  {{APP_DIR}}/main.php;
     fastcgi_param  SCRIPT_NAME      {{APP_DIR}}/main.php;
-    fastcgi_param  KISS_CORE        {{APP_DIR}}/core.php;
     fastcgi_param  APP_DIR          {{APP_DIR}};
     fastcgi_param  ENV_DIR          {{ENV_DIR}};
     fastcgi_param  CONFIG_DIR       {{CONFIG_DIR}};

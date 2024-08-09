@@ -649,7 +649,6 @@ final class Env {
 		'LOG_DIR',
 		'VAR_DIR',
 		'TMP_DIR',
-		'KISS_CORE',
 	];
 
   /**

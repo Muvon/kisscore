@@ -1,5 +1,4 @@
 <?php declare(strict_types=1);
-include getenv('KISS_CORE');
 App::start();
 
 $Server = new Swoole\HTTP\Server("0.0.0.0", (int)config('server.port'), SWOOLE_BASE);

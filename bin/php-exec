@@ -14,9 +14,6 @@ fi
 code=$(test -f "$1" && echo "include '$1'" || echo "$1");
 $php $OPTS <<EOF
 <?php
-  include getenv('KISS_CORE');
-
-  // Получаем ответ   и выполняем запрос
   try {
     // Wait for config to be processed in fpm container
     Env::waitInit();

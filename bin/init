@@ -27,7 +27,6 @@ fi
 echo "Running Env::init()"
 $php $OPTS <<EOF
 <?php
-  include getenv('KISS_CORE');
   Env::init();
 EOF
 

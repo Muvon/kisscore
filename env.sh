@@ -13,8 +13,7 @@ export PROJECT=${PROJECT:-"${current_path##*/}"} \
   RUN_DIR=$PROJECT_DIR/env/run \
   LOG_DIR=$PROJECT_DIR/env/log \
   VAR_DIR=$PROJECT_DIR/env/var \
-  TMP_DIR=$PROJECT_DIR/env/tmp \
-  KISS_CORE=$PROJECT_DIR/app/core.php
+  TMP_DIR=$PROJECT_DIR/env/tmp
 
 if [[ "$PATH" != *"$PROJECT_DIR/env/bin"* ]]; then
   export PATH=$PROJECT_DIR:$PROJECT_DIR/env/bin:$PATH

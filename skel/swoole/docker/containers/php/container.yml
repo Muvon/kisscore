@@ -12,7 +12,6 @@ environment:
   - PROJECT=$COMPOSE_PROJECT_NAME
   - PROJECT_ENV=$ENV
   - PROJECT_REV=$REVISION
-  - KISS_CORE=/src/app/core.php
   - APP_DIR=/src/app
   - STATIC_DIR=/src/app/static
   - CONFIG_DIR=/src/env/etc
