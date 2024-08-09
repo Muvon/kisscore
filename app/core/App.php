@@ -87,7 +87,7 @@ final class App {
 		}
 
 		if (!isset(static::$debug)) {
-			static::$debug = getenv('PROJECT_ENV') === 'dev';
+			static::$debug = getenv('APP_ENV') === 'dev';
 			static::$log_level = (int)config('common.cli_level');
 		}
 
@@ -356,22 +356,6 @@ final class App {
 	 */
 	public static function error(string $error, string $class = 'Exception'): void {
 		throw new $class($error);
-	}
-
-	/**
-	 * Execute shell command in KISS core environment
-	 * @param string $cmd Command to be executed
-	 * @return string Result of execution
-	 */
-	public static function exec(string $cmd): string {
-		$project_dir = getenv('PROJECT_DIR');
-		$output = `
-		set -e
-		cd $project_dir
-		source ./env.sh
-		$cmd
-		`;
-		return $output ? trim($output) : '';
 	}
 }
 

@@ -45,7 +45,6 @@ mkdir "$PROJECT_DIR"
 cp -vr "$kc_dir"/skel/base/. "$PROJECT_DIR"
 cp -vr "$kc_dir"/skel/"$project_type"/. "$PROJECT_DIR"
 cp -vr "$kc_dir"/bin/. "$PROJECT_DIR"/bin
-cp -vr "$kc_dir"/env.sh "$PROJECT_DIR"
 mkdir -p "$PROJECT_DIR"/env/{tmp,var,run,log,etc,backup}
 echo '...done'
 

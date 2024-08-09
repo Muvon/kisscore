@@ -2,10 +2,7 @@
 
 final class Env {
 	protected static $params = [
-		'PROJECT',
-		'PROJECT_DIR',
-		'PROJECT_ENV',
-		'PROJECT_REV',
+		'APP_ENV',
 		'APP_DIR',
 		'STATIC_DIR',
 		'CONFIG_DIR',
@@ -23,7 +20,8 @@ final class Env {
    * @return void
    */
 	public static function init(): void {
-		App::$debug = getenv('PROJECT_ENV') === 'dev';
+		static::initLocalEnv();
+		App::$debug = getenv('APP_ENV') === 'dev';
 		App::$log_level = Cli::LEVEL_DEBUG;
 		static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
 		static::compileConfig();
@@ -35,6 +33,24 @@ final class Env {
 		static::prepareDirs();
 	}
 
+	/**
+	 * Initialize local env variables and detect it from core onse
+	 * @return void
+	 */
+	protected static function initLocalEnv(): void {
+		// We know that it is placed under app/core.php in project, so get it
+		$dir = realpath(__DIR__ . '/../');
+		putenv("APP_DIR=$dir/app");
+		putenv("STATIC_DIR=$dir/app/static");
+		putenv("CONFIG_DIR=$dir/env/etc");
+		putenv("ENV_DIR=$dir/env");
+		putenv("BIN_DIR=$dir/env/bin");
+		putenv("RUN_DIR=$dir/env/run");
+		putenv("LOG_DIR=$dir/env/log");
+		putenv("VAR_DIR=$dir/env/var");
+		putenv("TMP_DIR=$dir/env/tmp");
+	}
+
   // This method should be called in CLI only
 	/**
 	 * @param int $timeout
@@ -42,6 +58,7 @@ final class Env {
 	 */
 	public static function waitInit(int $timeout = 5): void {
 		$t = time();
+		Env::initLocalEnv();
 		$cnf_file = getenv('CONFIG_DIR') . '/config.php';
 		do {
 			$tpl_ts = filemtime(getenv('APP_DIR') . '/config/app.ini.tpl');
@@ -111,7 +128,7 @@ final class Env {
 	protected static function parseConfig(): array {
 		$config = [];
 
-		$env = getenv('PROJECT_ENV');
+		$env = getenv('APP_ENV');
 		// Prepare production config replacement
 		foreach (parse_ini_file(getenv('CONFIG_DIR') . '/app.ini', true) as $group => $block) {
 			if (str_contains($group, ':') && explode(':', $group)[1] === $env) {

@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck source=./env.sh
-source "$(dirname $0)/../env.sh"
 
 [[ -z "$1" ]] && echo 'Usage: php-exec [code | php_file]' && exit 1
 php=$(which php)

@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck source=./env.sh
-source "$(dirname $0)/../env.sh"
+set -e
 
 if [ -e /.inited ]; then
   echo 'Skipping first initialization'

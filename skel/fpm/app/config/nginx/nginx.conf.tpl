@@ -71,17 +71,7 @@ server {
 
     fastcgi_param  SCRIPT_FILENAME  {{APP_DIR}}/main.php;
     fastcgi_param  SCRIPT_NAME      {{APP_DIR}}/main.php;
-    fastcgi_param  APP_DIR          {{APP_DIR}};
-    fastcgi_param  ENV_DIR          {{ENV_DIR}};
-    fastcgi_param  CONFIG_DIR       {{CONFIG_DIR}};
-    fastcgi_param  PROJECT          {{PROJECT}};
-    fastcgi_param  PROJECT_ENV      {{PROJECT_ENV}};
-    fastcgi_param  VAR_DIR          {{VAR_DIR}};
-    fastcgi_param  LOG_DIR          {{LOG_DIR}};
-    fastcgi_param  BIN_DIR          {{BIN_DIR}};
-    fastcgi_param  RUN_DIR          {{RUN_DIR}};
-    fastcgi_param  TMP_DIR          {{TMP_DIR}};
-    fastcgi_param  STATIC_DIR       $static_dir;
+    fastcgi_param  APP_ENV      {{APP_ENV}};
 
     fastcgi_pass   {{PROJECT}}-fpm;
   }

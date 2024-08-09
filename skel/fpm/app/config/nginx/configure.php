@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-App::exec(
+system(
 	'echo "' . config('nginx.auth_name')
 	. ':"$(openssl passwd -apr1 '
 	. escapeshellarg(config('nginx.auth_pass'))

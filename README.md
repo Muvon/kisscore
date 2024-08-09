@@ -116,8 +116,10 @@ Where arguments are:
 
 ## Environment variables
 
-- $PROJECT - Your project name
-- $PROJECT_DIR - home dir of your project (~/$PROJECT)
+Must be set by you:
+- $APP_ENV - current environment
+
+And this is autodetected by KISSCore:
 - $APP_DIR - application dir with code
 - $ENV_DIR - environment dir
 - $RUN_DIR - run directory (pid files of running processes and so on)
