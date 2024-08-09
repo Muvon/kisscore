@@ -82,6 +82,8 @@ final class App {
 	 * @param array $config
 	 */
 	public static function start(array $config = []): void {
+		// First detect local envs from base vars, cuz we use it
+		Env::initLocalEnv();
 		foreach ($config as $param => $value) {
 			static::${$param} = $value;
 		}

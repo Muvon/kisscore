@@ -3,7 +3,7 @@
 @@ -43,6 +43,12 @@
      error_log      /dev/null;
    }
- 
+
 +  # Common bundles
 +  location ~* ^/([a-zA-Z0-9]+)\-[0-9A-Za-z]+\.(js|js.map|css|css.map)$ {
 +    add_header 'X-Content-Type-Options' 'nosniff' always;
@@ -11,5 +11,5 @@
 +  }
 +
    location @app {
-     access_log  {{LOG_DIR}}/nginx-access.log {{PROJECT}} buffer=32k;
- 
+     access_log  {{LOG_DIR}}/nginx-access.log app buffer=32k;
+

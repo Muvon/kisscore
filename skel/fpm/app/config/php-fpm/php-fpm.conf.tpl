@@ -1,5 +1,5 @@
 ; Start a new pool named 'project-name'.
-[{{PROJECT}}]
+[app]
 ; The address on which to accept FastCGI requests.
 ; Valid syntaxes are:
 ;   'ip.add.re.ss:port'    - to listen on a TCP socket to a specific address on

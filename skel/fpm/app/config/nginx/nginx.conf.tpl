@@ -1,10 +1,10 @@
-log_format  {{PROJECT}}
+log_format app
   '$remote_addr - $remote_user [$time_local] "$request" '
   '$status $body_bytes_sent "$http_referer" '
   '"$http_user_agent" "$http_x_forwarded_for" '
   '$upstream_response_time sec "$host"';
 
-upstream {{PROJECT}}-fpm {
+upstream app-fpm {
   server unix:{{RUN_DIR}}/php-fpm.sock;
 }
 
@@ -57,7 +57,7 @@ server {
   }
 
   location @app {
-    access_log  {{LOG_DIR}}/nginx-access.log {{PROJECT}} buffer=32k;
+    access_log  {{LOG_DIR}}/nginx-access.log app buffer=32k;
 
     expires off;
 
@@ -73,7 +73,7 @@ server {
     fastcgi_param  SCRIPT_NAME      {{APP_DIR}}/main.php;
     fastcgi_param  APP_ENV      {{APP_ENV}};
 
-    fastcgi_pass   {{PROJECT}}-fpm;
+    fastcgi_pass   app-fpm;
   }
 
   # This location block is used to view PHP-FPM stats
@@ -82,7 +82,7 @@ server {
 
     include        {{CONFIG_DIR}}/nginx_fastcgi_params;
     fastcgi_param SCRIPT_FILENAME $fastcgi_script_name;
-    fastcgi_pass {{PROJECT}}-fpm;
+    fastcgi_pass app-fpm;
   }
 }
 
@@ -113,7 +113,7 @@ server {
 
     include      {{CONFIG_DIR}}/nginx_fastcgi_params;
     fastcgi_param SCRIPT_FILENAME $fastcgi_script_name;
-    fastcgi_pass {{PROJECT}}-fpm;
+    fastcgi_pass app-fpm;
   }
 
   location / {

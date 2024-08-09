@@ -37,7 +37,7 @@ final class Env {
 	 * Initialize local env variables and detect it from core onse
 	 * @return void
 	 */
-	protected static function initLocalEnv(): void {
+	public static function initLocalEnv(): void {
 		// We know that it is placed under app/core.php in project, so get it
 		$dir = realpath(__DIR__ . '/../');
 		putenv("APP_DIR=$dir/app");
