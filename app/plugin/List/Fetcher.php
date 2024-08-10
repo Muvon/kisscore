@@ -143,7 +143,7 @@ class Fetcher {
 		$Obj = new $this->model;
 		$args = $this->args;
 		// If we have pagination and need to use dynamic count detection
-		if ($this->Pagination && $this->method !== 'get') {
+		if ($this->Pagination && $this->method !== 'get' && $this->method !== 'getByIds') {
 			$total = $this->Pagination ? $this->Pagination->getTotal() : 0;
 			if (!$total) {
 				$total = $Obj->getCount(...$args);
@@ -234,8 +234,8 @@ class Fetcher {
 	 */
 	private function &traverseRootKey(array &$data, array $rk): array {
 		foreach ($rk as $key) {
-			if (!array_key_exists($key, $data)) {
-				break;
+			if (array_key_exists($key, $data)) {
+				continue;
 			}
 			$data = &$data[$key];
 		}
