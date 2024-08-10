@@ -18,11 +18,11 @@ class Fetcher {
 	protected array $batch = [];
 	protected ?array $data = null;
 
-  /**
-   * @property string $src_key
-   * @property string $root_key
-   * @property string $dst_key
-   */
+	/**
+	 * @property string $src_key
+	 * @property string $root_key
+	 * @property string $dst_key
+	 */
 	protected $src_key  = '';
 	protected $root_key = '';
 	protected $dst_key  = '';
@@ -30,23 +30,23 @@ class Fetcher {
 
 	protected $Pagination = null;
 
-  /**
-   * Создание загрузчика данных и постановка первого задания
-   *
-   * @access public
-   * @static
-   * @param string|array{0:string,1:string} $mapper
-   *   Имя маппера, которые обязауется подгружать данные
-   * @param string $src_key
-   *   Индекс идентификатора
-   * @param mixed $args
-   *   Массив или строка/число - однозначный идентификатор
-   * @param array $data
-   *   Массив с результатами (если была уже агрегированная выборка)
-   * @param array $batch
-   *   Массив оппераций, которые будут выполнены в параллели
-   * @return Fetcher
-   */
+	/**
+	 * Создание загрузчика данных и постановка первого задания
+	 *
+	 * @access public
+	 * @static
+	 * @param string|array{0:string,1:string} $mapper
+	 *   Имя маппера, которые обязауется подгружать данные
+	 * @param string $src_key
+	 *   Индекс идентификатора
+	 * @param mixed $args
+	 *   Массив или строка/число - однозначный идентификатор
+	 * @param array $data
+	 *   Массив с результатами (если была уже агрегированная выборка)
+	 * @param array $batch
+	 *   Массив оппераций, которые будут выполнены в параллели
+	 * @return Fetcher
+	 */
 	public static function create(
 		string|array $mapper,
 		string $src_key,
@@ -75,22 +75,22 @@ class Fetcher {
 		return $Self;
 	}
 
-  /**
-   * Установка корневого ключа, откуда будет браться src_key
-   *
-   * @param string $root_key
-   * @return static
-   */
+	/**
+	 * Установка корневого ключа, откуда будет браться src_key
+	 *
+	 * @param string $root_key
+	 * @return static
+	 */
 	public function setRootKey(string $root_key): static {
 		$this->root_key = $root_key;
 		return $this;
 	}
 
-  /**
-   * @access protected
-   * @param string $key
-   * @return string
-   */
+	/**
+	 * @access protected
+	 * @param string $key
+	 * @return string
+	 */
 	protected function getDstKey(string $key): string {
 		if (false !== strpos($key, ':')) {
 			return explode(':', $key)[1];
@@ -99,15 +99,15 @@ class Fetcher {
 		return substr($key, 0, strrpos($key, '_') ?: 0);
 	}
 
-  /**
-   * Инициализцаия постраничной выборки
-   *
-   * @access public
-   * @param int $page
-   * @param int $limit
-   * @param int $total
-   * @return $this
-   */
+	/**
+	 * Инициализцаия постраничной выборки
+	 *
+	 * @access public
+	 * @param int $page
+	 * @param int $limit
+	 * @param int $total
+	 * @return $this
+	 */
 	public function paginate(int $page, int $limit, int $total = 0): static {
 		$this->Pagination = Pagination::create(
 			[
@@ -119,12 +119,12 @@ class Fetcher {
 		return $this;
 	}
 
-  /**
-   * Выполнение в последовательном режиме
-   *
-   * @access public
-   * @return static
-   */
+	/**
+	 * Выполнение в последовательном режиме
+	 *
+	 * @access public
+	 * @return static
+	 */
 	public function dispatch(): static {
 		$this->loadDataIfNeeded();
 		$this->processBatchIfNeeded();
@@ -298,21 +298,22 @@ class Fetcher {
 		if (!isset($row)) {
 			return;
 		}
-		$this->setDestination($data, $keys, $row, $Obj);
+		$dest = &array_value_ref($this->data, $keys);
+		$dest = is_array($row) ? array_values($Obj::getByIds($row)) : $Obj::get($row)->getData();
 	}
 
 	/**
-	 * @param array $item
+	 * @param array &$item
 	 * @param array $keys
 	 * @param array|int|string $row
-	 * @param object $Obj
+	 * @param array $items
 	 * @return void
 	 */
-	private function setDestination(array &$item, array $keys, array|int|string $row, object $Obj): void {
+	private function setDestination(array &$item, array $keys, array|int|string $row, array $items): void {
 		$dest = &array_value_ref($item, $keys);
 		$dest = is_array($row)
-		? array_values($Obj::getByIds($row))
-		: $Obj::get($row)->getData();
+		? array_values(array_intersect_key($items ?: [], array_flip($row)))
+		: ($items[$row] ?? null);
 	}
 
 	/**
