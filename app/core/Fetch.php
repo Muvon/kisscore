@@ -2,36 +2,35 @@
 
 /** @package  */
 final class Fetch {
-  protected int $request_connect_timeout = 5;
-  protected int $request_timeout = 30;
-  protected int $request_ssl_verify = 0;
-  protected int $request_keepalive = 20;
-  protected string $request_useragent = 'KISSCore/Fetch v0.9.0';
+	protected int $request_connect_timeout = 5;
+	protected int $request_timeout = 30;
+	protected int $request_ssl_verify = 0;
+	protected int $request_keepalive = 20;
+	protected string $request_useragent = 'KISSCore/Fetch v0.9.0';
 
   // The contents of the "Accept-Encoding: " header. This enables decoding of the response. Supported encodings are "identity", "deflate", and "gzip". If an empty string, "", is set, a header containing all supported encoding types is sent.
-  protected ?string $request_encoding = '';
+	protected ?string $request_encoding = '';
 
   // Type of the request can be one of json, msgpack, binary, raw
   // In case if not supported we use raw
-  protected string $request_type = 'raw';
+	protected string $request_type = 'raw';
 
   // Array containing proxy info with next fields
 	/** @var array{host:string,port:int,user?:string,password?:string,type?:string} */
-  protected array $request_proxy = [];
+	protected array $request_proxy = [];
 
 	/** @var array<string> */
-  protected array $request_json_bigint_keys = [];
+	protected array $request_json_bigint_keys = [];
 
 	/** @var array<CurlHandle> */
-  protected array $request_handlers = [];
+	protected array $request_handlers = [];
 
-  protected ?CurlMultiHandle $request_mh = null;
+	protected ?CurlMultiHandle $request_mh = null;
 
 	protected Closure $encoder_fn;
 	protected Closure $decoder_fn;
 
 	private function __construct() {
-
 	}
 
 	/**
@@ -65,10 +64,10 @@ final class Fetch {
    *
    * @return self
    */
-  public function multi(): self {
-    $this->request_mh = curl_multi_init();
-    return $this;
-  }
+	public function multi(): self {
+		$this->request_mh = curl_multi_init();
+		return $this;
+	}
 
   /**
 	 * Do single request only, use add method for multi()
@@ -79,7 +78,7 @@ final class Fetch {
    * @param array $headers Array with headers. Each entry as string
    * @return Result<mixed>
    */
-  public function request(string $url, array $payload = [], string $method = 'POST', array $headers = []): Result {
+	public function request(string $url, array $payload = [], string $method = 'POST', array $headers = []): Result {
 		if ($this->request_mh) {
 			return err('e_single_request_only');
 		}
@@ -173,10 +172,12 @@ final class Fetch {
 		}
 		do {
 			$status = curl_multi_exec($this->request_mh, $active);
-			if ($active) {
-				curl_multi_select($this->request_mh);
+			if (!$active) {
+				continue;
 			}
-		} while ($active && $status == CURLM_OK);
+
+			curl_multi_select($this->request_mh);
+		} while ($active && $status === CURLM_OK);
 
 		$result = [];
 		foreach ($this->request_handlers as $ch) {
@@ -216,7 +217,7 @@ final class Fetch {
 			}
 			curl_close($ch);
 			if (($httpcode !== 200 && $httpcode !== 201)) {
-				$error = match($httpcode) {
+				$error = match ($httpcode) {
 					429 => 'e_http_too_many_request',
 					400 => 'e_http_bad_request',
 					401 => 'e_http_unauthorized',
@@ -262,4 +263,3 @@ final class Fetch {
 		return $json;
 	}
 }
-

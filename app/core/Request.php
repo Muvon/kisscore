@@ -58,66 +58,67 @@ final class Request {
    * @return self ссылка на объекта запроса
    */
 	final protected static function create(): self {
-    if (self::$accept_lang) {
-      preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', self::$accept_lang, $lang);
-      if ($lang && sizeof($lang[1]) > 0) {
-        $langs = array_combine($lang[1], $lang[4]);
+		if (self::$accept_lang) {
+			preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', self::$accept_lang, $lang);
+			if ($lang && sizeof($lang[1]) > 0) {
+				$langs = array_combine($lang[1], $lang[4]);
 
-        foreach ($langs as $k => $v) {
-          if ($v === '') {
-            $langs[$k] = 1;
-          }
-        }
-        arsort($langs, SORT_NUMERIC);
-        static::$languages = $langs;
-      }
-    }
+				foreach ($langs as $k => $v) {
+					if ($v !== '') {
+						continue;
+					}
 
-    $url = rtrim(static::$request_uri, ';&?') ?: '/';
-    $Request = (new static($url))
-      ->setRoute(Input::get('ROUTE'))
-      ->setAction(Input::get('ACTION'))
-    ;
+					$langs[$k] = 1;
+				}
+				arsort($langs, SORT_NUMERIC);
+				static::$languages = $langs;
+			}
+		}
 
-    // Init language
-    Lang::init($Request);
+		$url = rtrim(static::$request_uri, ';&?') ?: '/';
+		$Request = (new static($url))
+		->setRoute(Input::get('ROUTE'))
+		->setAction(Input::get('ACTION'));
 
-    return $Request;
-  }
+	// Init language
+		Lang::init($Request);
+
+		return $Request;
+	}
 
   /**
    * Return current instance or initialize and parse
    */
-  public static function current(?Closure $init_fn = null): self {
-    static $instance;
-    if (!isset($instance) || isset($init_fn)) {
-      $init_fn ??= static::init(...);
-      $init_fn();
-      static::parseRealIp();
-      $instance = static::create();
-    }
+	public static function current(?Closure $init_fn = null): self {
+		static $instance;
+		if (!isset($instance) || isset($init_fn)) {
+			$init_fn ??= static::init(...);
+			$init_fn();
+			static::parseRealIp();
+			$instance = static::create();
+		}
 
-    return $instance;
-  }
+		return $instance;
+	}
 
-  protected static function init(): void {
-    self::$time = $_SERVER['REQUEST_TIME'];
-    self::$time_float = $_SERVER['REQUEST_TIME_FLOAT'];
-    self::$protocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL') ?? 'HTTP/1.1';
-    self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
-    self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER') ?? '';
-    self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR') ?? '';
+	protected static function init(): void {
+		self::$time = $_SERVER['REQUEST_TIME'];
+		self::$time_float = $_SERVER['REQUEST_TIME_FLOAT'];
+		self::$protocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL') ?? 'HTTP/1.1';
+		self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
+		self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER') ?? '';
+		self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR') ?? '';
 
-    // Эти переменные всегда определены в HTTP-запросе
-    self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-    self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
-    self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+	// Эти переменные всегда определены в HTTP-запросе
+		self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+		self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
+		self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 
-    self::$request_uri = filter_input(INPUT_SERVER, 'REQUEST_URI') ?? '';
-    self::$content_type = filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '';
+		self::$request_uri = filter_input(INPUT_SERVER, 'REQUEST_URI') ?? '';
+		self::$content_type = filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '';
 
-    self::$accept_lang = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE') ?? '';
-  }
+		self::$accept_lang = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE') ?? '';
+	}
 
 
   /**

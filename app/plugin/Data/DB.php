@@ -3,11 +3,11 @@
 namespace Plugin\Data;
 
 use App;
+use Result;
+use Throwable;
 use mysqli;
 use mysqli_result;
 use mysqli_sql_exception;
-use Result;
-use Throwable;
 
 final class DB {
 	protected static bool $reconnect = true;

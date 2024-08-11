@@ -340,4 +340,3 @@ final class Fetcher {
 		return [$row, $keys];
 	}
 }
-

@@ -2,8 +2,8 @@
 
 namespace Lib;
 
-use Fetch;
 use Error;
+use Fetch;
 use Result;
 use SodiumException;
 

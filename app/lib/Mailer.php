@@ -78,11 +78,10 @@ final class Mailer {
 	protected function sendRequest(string $path, array $payload = []): Result {
 		$url = "https://mailer.muvon.dev/{$this->ns}/{$path}";
 		/** @var Result<mixed> */
-		$Res = $this->Fetch->request(
+		return $this->Fetch->request(
 			$url, $payload, 'POST', [
 				"API-Token: {$this->api_token}",
 			]
 		);
-		return $Res;
 	}
 }

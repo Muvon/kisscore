@@ -50,7 +50,7 @@ final class Url {
 		$str = preg_replace('/(' . preg_quote($options['delimiter'], '/') . '){2,}/', '$1', $str);
 
 		// Truncate slug to max. characters
-		$str = mb_substr($str, 0, ($options['limit'] ? $options['limit'] : mb_strlen($str, 'UTF-8')), 'UTF-8');
+		$str = mb_substr($str, 0, ($options['limit'] ?: mb_strlen($str, 'UTF-8')), 'UTF-8');
 
 		// Remove delimiter from ends
 		$str = trim($str, $options['delimiter']);

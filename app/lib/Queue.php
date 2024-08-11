@@ -20,10 +20,12 @@ final class Queue {
 	 */
 	public static function new(string $host, int $port): self {
 		$Self = new self;
-		$Self->Client = new Client([
+		$Self->Client = new Client(
+			[
 			'host' => $host,
 			'port' => $port,
-		]);
+			]
+		);
 		$Self->Client->connect();
 		return $Self;
 	}

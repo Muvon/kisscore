@@ -65,4 +65,3 @@ final class Result {
 		return [$this->err, $this->res];
 	}
 }
-

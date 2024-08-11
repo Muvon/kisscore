@@ -3,4 +3,3 @@
 final class ResultError extends Error {
 
 }
-

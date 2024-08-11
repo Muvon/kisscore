@@ -22,7 +22,7 @@ final class App {
 		if (isset($params[$file])) {
 			foreach ($params[$file] as $param) {
 				$args[] = $param['name'] . ':' . $param['type']
-					. (isset($param['default']) ? '=' . $param['default'] : '')
+				. (isset($param['default']) ? '=' . $param['default'] : '')
 				;
 			}
 		}
@@ -68,10 +68,10 @@ final class App {
 		$log_file = getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-' . $type . '.log';
 		$message =
 		gmdate('[Y-m-d H:i:s T]')
-			. "\t" . $id
-			. "\t" . $message
-			. "\t" . $encoded_dump . "\t"
-			. json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
+		. "\t" . $id
+		. "\t" . $message
+		. "\t" . $encoded_dump . "\t"
+		. json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
 		;
 		error_log($message, 3, $log_file);
 		return $id;
@@ -180,17 +180,17 @@ final class App {
 			case $response === 1:
 				$Response->header('Content-type', 'text/html;charset=utf-8');
 				return View::create($Request->getAction())->set($vars);
-				break;
+			break;
 
 			case $response instanceof View:
 				$Response->header('Content-type', 'text/html;charset=utf-8');
 				return $response->set($vars);
-				break;
+			break;
 
 			case is_string($response):
 				$Response->header('Content-type', 'text/plain;charset=utf-8');
 				return View::fromString($response);
-				break;
+			break;
 
 			case is_array($response):
 			case is_object($response):
@@ -214,7 +214,7 @@ final class App {
 					throw new Error('Failed to encode ' . $type  . ' response');
 				}
 				return View::fromString($encoded);
-				break;
+			break;
 
 			default:
 				$Response->header('Content-type', 'text/plain;charset=utf-8');
@@ -294,22 +294,22 @@ final class App {
 
 				case $type === 'html':
 					$response = '<html><head><title>Error</title></head><body>'
-						. '<p>Unhandled exception <b>'
-						. $Exception::class . '</b> with message "' . $Exception->getMessage()
-						. (static::$debug ? '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() : '')
-						. '"</p>';
+					. '<p>Unhandled exception <b>'
+					. $Exception::class . '</b> with message "' . $Exception->getMessage()
+					. (static::$debug ? '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() : '')
+					. '"</p>';
 
 					if (static::$debug) {
 						$response .= '<p><ul>'
-							. implode(
-								'<br/>', array_map(
-									function ($item) {
-										return '<li>' . $item . '</li>';
-									}, explode(PHP_EOL, $Exception->getTraceAsString())
-								)
+						. implode(
+							'<br/>', array_map(
+								function ($item) {
+									return '<li>' . $item . '</li>';
+								}, explode(PHP_EOL, $Exception->getTraceAsString())
 							)
-							. '</ul></p>'
-							. '</body></html>'
+						)
+						. '</ul></p>'
+						. '</body></html>'
 						;
 					}
 					break;
@@ -360,4 +360,3 @@ final class App {
 		throw new $class($error);
 	}
 }
-

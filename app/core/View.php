@@ -547,9 +547,9 @@ final class View {
 	protected function getCompiledFile(array $routes = []): string {
 		assert(is_dir($this->compile_dir) && is_writable($this->compile_dir));
 		return $this->compile_dir
-			. '/view-' . $this->prefix . '-'
-			. md5($this->source_dir . ':' . implode(':', $routes ?: $this->routes))
-			. '.tplc'
+		. '/view-' . $this->prefix . '-'
+		. md5($this->source_dir . ':' . implode(':', $routes ?: $this->routes))
+		. '.tplc'
 		;
 	}
 

@@ -72,9 +72,9 @@ final class Input {
 	 * @param Callable $fn [description]
 	 * @return void
 	 */
-	public static function setParser(Callable $fn): void {
-	  static::$is_parsed = false;
-	  static::$parse_fn = $fn;
+	public static function setParser(callable $fn): void {
+		static::$is_parsed = false;
+		static::$parse_fn = $fn;
 	}
 
 	/**
