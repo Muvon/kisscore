@@ -565,12 +565,12 @@ trait DatabaseTrait {
 	 * @param int $limit
 	 * @return array<TArray>
 	 */
-	public function getList(array $conditions = [], array $order = [], int $offset = 0, int $limit = 10) {
-		$rows = $limit > 0 ? $this->dbSelect(static::fields(), $conditions, $order, $offset, $limit) : [];
+	public static function getList(array $conditions = [], array $order = [], int $offset = 0, int $limit = 10) {
+		$rows = $limit > 0 ? static::new()->dbSelect(static::fields(), $conditions, $order, $offset, $limit) : [];
 
 		array_walk(
 			$rows, function (&$row) {
-				$this->expand($row);
+				static::expand($row);
 				static::transform($row, true);
 			}
 		);

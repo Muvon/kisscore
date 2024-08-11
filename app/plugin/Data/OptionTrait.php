@@ -9,7 +9,7 @@ trait OptionTrait {
 	 * @return array<mixed>
 	 */
 	public static function getOptionList(int|string $id, array $cond = []): array {
-		$list = static::new()->getList($cond);
+		$list = static::getList($cond);
 
 		$ids = [];
 		if (is_array($id)) {

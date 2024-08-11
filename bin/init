@@ -29,6 +29,9 @@ $php $OPTS <<EOF
   Env::init();
 EOF
 
-"$APP_DIR/scripts/view-compile"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+APP_DIR="$(dirname "$DIR")/app"
+test -x "$APP_DIR/scripts/view-compile" && $_
+test -x "$APP_DIR/scripts/model-schema-cache" && $_
 
 echo 'Done'

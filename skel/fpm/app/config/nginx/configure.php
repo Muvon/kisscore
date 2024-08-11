@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
 system(
-	'echo "' . config('nginx.auth_name')
+	'echo "' . config('server.auth_name')
 	. ':"$(openssl passwd -apr1 '
-	. escapeshellarg(config('nginx.auth_pass'))
+	. escapeshellarg(config('server.auth_pass'))
 	. ') > $CONFIG_DIR/.htpasswd'
 );
 
@@ -84,14 +84,14 @@ Env::configure(
 	__DIR__, [
 	'{{UPLOAD_MAX_FILESIZE}}' => config('common.upload_max_filesize'),
 	'{{SERVER_NAME}}' => $server_names,
-	'{{SERVER_PORT}}' => config('nginx.port'),
+	'{{SERVER_PORT}}' => config('server.port'),
 	'{{STATIC_DIR_MAP}}' => $static_dir_map,
-	'{{RESTRICTED_ROUTES}}' => config('nginx.auth_routes'),
+	'{{RESTRICTED_ROUTES}}' => config('server.auth_routes'),
 	'{{REWRITE_RULES}}' => $rewrite_rules,
 	'{{CORS_ORIGIN}}' => config('cors.origin'),
 	'{{CORS_METHODS}}' => config('cors.methods'),
 	'{{CORS_HEADERS}}' => config('cors.headers'),
 	'{{CORS_CREDENTIALS}}' => config('cors.credentials'),
-	'{{OPEN_FILE_CACHE}}' => config('nginx.open_file_cache'),
+	'{{OPEN_FILE_CACHE}}' => config('server.open_file_cache'),
 	]
 );

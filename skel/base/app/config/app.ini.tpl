@@ -54,15 +54,13 @@ save_path     = "{{TMP_DIR}}/{{PROJECT_REV}}/sessions"
 
 [server]
 port = 80
-
-[nginx]
 auth_name = 'test'
 auth_pass = 'test'
 ; Regexp of restricted routes
 auth_routes = 'admin'
 open_file_cache = 'off'
 
-[nginx:production]
+[server:production]
 open_file_cache = 'max=100000 inactive=600s'
 
 [cors]

@@ -1,11 +1,11 @@
 #!/usr/bin/env /src/bin/php-exec-one
 <?php
 Cli::print('Generate model fields schema');
-foreach (glob(getenv('APP_DIR') . '/src/Component/*/*Model.php') as $file) {
+foreach (glob(getenv('APP_DIR') . '/src/*/*Model.php') as $file) {
 	$parts = explode('/', $file);
 	$name = basename(array_pop($parts), 'Model.php');
 	$component = array_pop($parts);
-  $class = "App\\Component\\$component\\{$name}Model";
+  $class = "App\\$component\\{$name}Model";
   Cli::print(' ' . $class);
   $Reflection = new ReflectionClass($class);
   if ($Reflection->isAbstract()) {

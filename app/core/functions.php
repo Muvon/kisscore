@@ -216,8 +216,10 @@ function &array_value_ref(array &$container, array|string $keys): mixed {
 		$keys = explode('.', $keys);
 	}
 	$reference = &$container;
-	foreach ($keys as $key) {
-		if (!isset($reference[$key])) {
+	$len = sizeof($keys);
+	for ($i = 0; $i < $len; $i++) {
+		$key = $keys[$i];
+		if (!isset($reference[$key]) && $i < $len) {
 			$reference[$key] = [];
 		}
 		$reference = &$reference[$key];

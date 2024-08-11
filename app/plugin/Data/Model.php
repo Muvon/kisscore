@@ -55,7 +55,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 * @return void
 	 */
 	// phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
-	protected function expand(array &$row): void {
+	protected static function expand(array &$row): void {
 	}
 
   /**
@@ -153,7 +153,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 		$this->is_new = false;
 		$this->exists = true;
-		$this->expand($this->data);
+		static::expand($this->data);
 		return ok($this);
 	}
 
@@ -291,7 +291,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 		$Obj = (new static)->loadByData($rows[0]);
 		static::transform($Obj->data, true);
-		$Obj->expand($Obj->data);
+		static::expand($Obj->data);
 
 		// Update cached map if set
 		$key = (string)$id;
@@ -358,7 +358,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		}
 		$data = array_filter($data);
 		array_walk($data, fn (&$row) => static::transform($row, true));
-		array_map($Obj->expand(...), $data);
+		array_map($Obj::expand(...), $data);
 		return $data;
 	}
 
@@ -407,7 +407,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		$this->exists = $data[static::$id_field] !== null;
 		$this->data = $this->appendDates(array_replace(static::getDefault(), $data));
 		$this->is_new = false;
-		$this->expand($this->data);
+		static::expand($this->data);
 		return $this;
 	}
 

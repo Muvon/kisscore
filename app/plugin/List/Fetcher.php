@@ -11,7 +11,7 @@ use Error;
  * @package Core
  * @subpackage Fetcher
  */
-class Fetcher {
+final class Fetcher {
 	protected string $model = '';
 	protected string $method = '';
 	protected array $ids = [];
@@ -140,7 +140,7 @@ class Fetcher {
 			return;
 		}
 
-		$Obj = new $this->model;
+		$Obj = $this->model::new();
 		$args = $this->args;
 		// If we have pagination and need to use dynamic count detection
 		if ($this->Pagination && $this->method !== 'get' && $this->method !== 'getByIds') {
@@ -155,7 +155,7 @@ class Fetcher {
 			]];
 		}
 
-		$result = call_user_func_array([$Obj, $this->method], $args);
+		$result = $Obj->{$this->method}(...$args);
 		if ($this->method === 'get') {
 			$this->data = $result->getData();
 		} else {
@@ -195,7 +195,7 @@ class Fetcher {
 		$sk = $Fetcher->src_key;
 		$rk = $Fetcher->root_key ? explode('.', $Fetcher->root_key) : [];
 
-		$Obj = new $Fetcher->model;
+		$Obj = $Fetcher->model::new();
 
 		$is_list = $this->method === 'getByIds';
 		$data = &$this->getDataReference($is_list);
@@ -211,7 +211,7 @@ class Fetcher {
 		if ($is_list) {
 			$this->processListData($data, $Obj, $rk, $sk, $dk);
 		} else {
-			$this->processSingleData($data, $Obj, $rk, $sk, $dk);
+			$this->processSingleData($this->data, $Obj, $rk, $sk, $dk);
 		}
 	}
 
@@ -234,7 +234,7 @@ class Fetcher {
 	 */
 	private function &traverseRootKey(array &$data, array $rk): array {
 		foreach ($rk as $key) {
-			if (array_key_exists($key, $data)) {
+			if (!array_key_exists($key, $data)) {
 				continue;
 			}
 			$data = &$data[$key];
@@ -279,7 +279,7 @@ class Fetcher {
 
 		$ids = array_column($array, $sk);
 		if (isset($ids[0]) && is_array($ids[0])) {
-			$ids = call_user_func_array('array_merge', $ids);
+			$ids = array_merge(...$ids);
 		}
 
 		return $ids;
@@ -340,3 +340,4 @@ class Fetcher {
 		return [$row, $keys];
 	}
 }
+
