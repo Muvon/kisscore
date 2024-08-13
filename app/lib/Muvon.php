@@ -45,7 +45,7 @@ final class Muvon {
 	public function createPayment(string $email, int $account_id, string $plan, int $value): Result {
 		/** @var Result<array{id:string,customer:string}> */
 		return $this->sendRequest(
-			'payment/create', [
+			'pay', 'stripe/create', [
 				'project' => $this->project,
 				'account_email' => $email,
 				'account_id' => $account_id,
@@ -63,7 +63,7 @@ final class Muvon {
 	public function getSubscriptionUrl(string $customer): Result {
 		/** @var Result<string> */
 		return $this->sendRequest(
-			'payment/subscription', [
+			'pay', 'stripe/subscription', [
 				'project' => $this->project,
 				'customer' => $customer,
 			]
@@ -86,12 +86,13 @@ final class Muvon {
 
 	/**
 	 * Internal function that uses trait to communicate with mailer API
+	 * @param string $ns
 	 * @param string $path Path for the API to call
 	 * @param array<mixed> $payload Data that we will send with request
 	 * @return Result<mixed>
 	 */
-	protected function sendRequest(string $path, array $payload = []): Result {
-		$url = "https://api.muvon.io/{$path}";
+	protected function sendRequest(string $ns, string $path, array $payload = []): Result {
+		$url = "https://{$ns}.muvon.dev/{$path}";
 		/** @var Result<array{?string,mixed}> */
 		$Res = $this->Fetch->request(
 			$url, $payload, 'POST', [
