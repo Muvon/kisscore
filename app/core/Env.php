@@ -23,7 +23,7 @@ final class Env {
 		static::initLocalEnv();
 		App::$debug = getenv('APP_ENV') === 'dev';
 		App::$log_level = Cli::LEVEL_DEBUG;
-		static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
+		static::configure(getenv('APP_DIR') . '/config/app.yml.tpl');
 		static::compileConfig();
 		static::generateActionMap();
 		static::generateURIMap();
@@ -61,7 +61,7 @@ final class Env {
 		Env::initLocalEnv();
 		$cnf_file = getenv('CONFIG_DIR') . '/config.php';
 		do {
-			$tpl_ts = filemtime(getenv('APP_DIR') . '/config/app.ini.tpl');
+			$tpl_ts = filemtime(getenv('APP_DIR') . '/config/app.yml.tpl');
 			$cnf_ts = file_exists($cnf_file) ? filemtime($cnf_file) : 0;
 
 			if ($cnf_ts > $tpl_ts) {
@@ -130,7 +130,7 @@ final class Env {
 
 		$env = getenv('APP_ENV');
 		// Prepare production config replacement
-		foreach (parse_ini_file(getenv('CONFIG_DIR') . '/app.ini', true) as $group => $block) {
+		foreach (yaml_parse_file(getenv('CONFIG_DIR') . '/app.yml') as $group => $block) {
 			if (str_contains($group, ':') && explode(':', $group)[1] === $env) {
 				$origin = strtok($group, ':');
 				$config[$origin] = array_merge($config[$origin], $block);

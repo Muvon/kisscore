@@ -22,10 +22,10 @@ composer require davidpersson/beanstalk:^2.0
 popd
 
 echo "
-[queue]
-host = 'queue'
-port = 5140
+queue:
+  host: 'queue'
+  port: 5140
 
-[queue:production]
-host = '127.0.0.1'
-" >> "$1/app/config/app.ini.tpl"
+queue:production:
+  host: '127.0.0.1'
+" >> "$1/app/config/app.yml.tpl"

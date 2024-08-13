@@ -39,10 +39,12 @@ export DB_IP=0.0.0.0 \\
 
 
 echo "
-[mysql]
-connect_timeout=1
-shard[0] = 'mysql:host=db;port=3306;dbname=$db_name;user=$db_user;password=$db_user_pw'
+mysql:
+  connect_timeout: 1
+  shard:
+    - 'mysql:host=db;port=3306;dbname=$db_name;user=$db_user;password=$db_user_pw'
 
-[mysql:production]
-shard[0] = 'mysql:host=10.0.0.1;port=3306;dbname=$db_name;user=$db_user;password=production_pw'
-" >> "$1/app/config/app.ini.tpl"
+mysql:production:
+  shard:
+    - 'mysql:host=10.0.0.1;port=3306;dbname=$db_name;user=$db_user;password=production_pw'
+" >> "$1/app/config/app.yml.tpl"

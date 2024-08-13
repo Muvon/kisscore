@@ -56,10 +56,10 @@ secret_key=$(ssh_random_string 'A-Za-z0-9' 64)
 sed "s|{{KISS_PROJECT}}|${PROJECT_DIR##*/}|g" "$kc_dir/skel/base/docker/.yodarc" \
   > "$PROJECT_DIR/docker/.yodarc"
 # Replace global static variables for init project
-sed "s|{{KISS_EPOCH}}|$epoch|g" "$kc_dir/skel/base/app/config/app.ini.tpl" \
+sed "s|{{KISS_EPOCH}}|$epoch|g" "$kc_dir/skel/base/app/config/app.yml.tpl" \
   | sed "s|{{KISS_SECRET_KEY}}|$secret_key|g" \
   | sed "s|{{KISS_PROJECT_TYPE}}|$project_type|g" \
-  > "$app_dir/config/app.ini.tpl"
+  > "$app_dir/config/app.yml.tpl"
 echo '...done'
 
 echo -e '\e[1;35mInstall compiled core file to project\e[0m'
