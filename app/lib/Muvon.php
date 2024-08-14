@@ -16,6 +16,10 @@ final class Muvon {
 	protected string $app_token;
 	/** @var non-empty-string */
 	protected string $app_pubkey;
+	/** @var non-empty-string */
+	protected string $proto = 'https';
+	/** @var non-empty-string */
+	protected string $domain = 'muvon.dev';
 
 	/**
 	 * Initialize the Muvon KIT lib
@@ -32,6 +36,25 @@ final class Muvon {
 		$this->app_token = $app_token;
 		$this->app_pubkey = $app_pubkey;
 		$this->Fetch = Fetch::new(['request_type' => 'json']);
+	}
+
+	/**
+	 * @param string $proto
+	 * @return static
+	 */
+	public function setProto(string $proto): static {
+		$this->proto = $proto;
+		return $this;
+	}
+
+	/**
+	 * Change the default domain of the API
+	 * @param string $domain
+	 * @return static
+	 */
+	public function setDomain(string $domain): static {
+		$this->domain = $domain;
+		return $this;
 	}
 
 	/**
@@ -141,7 +164,7 @@ final class Muvon {
 	 * @return Result<mixed>
 	 */
 	protected function sendRequest(string $ns, string $path, array $payload = []): Result {
-		$url = "https://{$ns}.muvon.dev/{$this->app_id}/{$path}";
+		$url = "{$this->proto}://{$ns}.{$this->domain}/{$this->app_id}/{$path}";
 		/** @var Result<array{?string,mixed}> */
 		$Res = $this->Fetch->request(
 			$url, $payload, 'POST', [
