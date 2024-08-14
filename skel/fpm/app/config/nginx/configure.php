@@ -2,9 +2,9 @@
 
 system(
 	'echo "' . config('server.auth_name')
-	. ':"$(openssl passwd -apr1 '
-	. escapeshellarg(config('server.auth_pass'))
-	. ') > $CONFIG_DIR/.htpasswd'
+		. ':"$(openssl passwd -apr1 '
+		. escapeshellarg(config('server.auth_pass'))
+		. ') > $CONFIG_DIR/.htpasswd'
 );
 
 $routes = Env::load(config('common.uri_map_file'));
@@ -28,7 +28,7 @@ foreach ($routes as $route => $params) {
 	$action = array_shift($params);
 	$i = 0; // route like (bla (bla bla)) with uff8 cant handle by nginx. so hack it
 	$uri = '/?ROUTE=' . preg_replace_callback('|\([^\)]+\)|is', fn() => '$' . ++$i, $route)
-	. '&ACTION=' . $action
+		. '&ACTION=' . $action
 	;
 
 	// If we have something more,foreach it
@@ -52,13 +52,22 @@ foreach ($routes as $route => $params) {
 $domain = config('common.domain');
 $rewrite_rules = '';
 foreach ($rewrites as $zone => $rules) {
-	$rewrite_rules .= "if (\$host = {$zone}.{$domain}) {" . PHP_EOL
-	. implode(PHP_EOL, $rules) . PHP_EOL
-	. '}' . PHP_EOL;
+	// Special case for www we use single domain
+	if ($zone === 'www') {
+		$condition = "\$host = {$domain}";
+	} else {
+		$condition = "\$host = {$zone}.{$domain}";
+	}
+	$rewrite_rules .= "if ({$condition}) {" . PHP_EOL
+		. implode(PHP_EOL, $rules) . PHP_EOL
+		. '}' . PHP_EOL;
 }
 
 // Prepare all server names we should use
 $zones = config('common.zones');
+// Exclude zones which we explicit set
+$zones = array_filter($zones, fn($zone) => $zone !== 'ws');
+$ws_domain = "ws.{$domain}";
 $domains = array_map(
 	fn($zone) => "{$zone}.{$domain}",
 	$zones
@@ -82,16 +91,19 @@ $static_dir_map = implode(
 
 Env::configure(
 	__DIR__, [
-	'{{UPLOAD_MAX_FILESIZE}}' => config('common.upload_max_filesize'),
-	'{{SERVER_NAME}}' => $server_names,
-	'{{SERVER_PORT}}' => config('server.port'),
-	'{{STATIC_DIR_MAP}}' => $static_dir_map,
-	'{{RESTRICTED_ROUTES}}' => config('server.auth_routes'),
-	'{{REWRITE_RULES}}' => $rewrite_rules,
-	'{{CORS_ORIGIN}}' => config('cors.origin'),
-	'{{CORS_METHODS}}' => config('cors.methods'),
-	'{{CORS_HEADERS}}' => config('cors.headers'),
-	'{{CORS_CREDENTIALS}}' => config('cors.credentials'),
-	'{{OPEN_FILE_CACHE}}' => config('server.open_file_cache'),
+		'{{UPLOAD_MAX_FILESIZE}}' => config('common.upload_max_filesize'),
+		'{{SERVER_NAME}}' => $server_names,
+		'{{SERVER_PORT}}' => config('server.port'),
+		'{{STATIC_DIR_MAP}}' => $static_dir_map,
+		'{{RESTRICTED_ROUTES}}' => config('server.auth_routes'),
+		'{{REWRITE_RULES}}' => $rewrite_rules,
+		'{{CORS_ORIGIN}}' => config('cors.origin'),
+		'{{CORS_METHODS}}' => config('cors.methods'),
+		'{{CORS_HEADERS}}' => config('cors.headers'),
+		'{{CORS_CREDENTIALS}}' => config('cors.credentials'),
+		'{{OPEN_FILE_CACHE}}' => config('server.open_file_cache'),
+		'{{WS_HOST}}' => config('ws.host'),
+		'{{WS_PORT}}' => config('ws.port'),
+		'{{WS_SERVER_NAME}}' => $ws_domain,
 	]
 );
