@@ -11,26 +11,26 @@ use SodiumException;
 final class Muvon {
 	private Fetch $Fetch;
 	/** @var non-empty-string */
-	protected string $project;
+	protected string $app_id;
 	/** @var non-empty-string */
-	protected string $api_token;
+	protected string $app_token;
 	/** @var non-empty-string */
-	protected string $public_key;
+	protected string $app_pubkey;
 
 	/**
 	 * Initialize the Muvon KIT lib
-	 * @param string $project
-	 * @param string $api_token
-	 * @param string $public_key
+	 * @param string $app_id
+	 * @param string $app_token
+	 * @param string $app_pubkey
 	 * @return void
 	 */
-	public function __construct(string $project, string $api_token, string $public_key) {
-		if (empty($project) || empty($api_token) || empty($public_key)) {
-			throw new Error('Muvon API requires project, api_token and public_key');
+	public function __construct(string $app_id, string $app_token, string $app_pubkey) {
+		if (empty($app_id) || empty($app_token) || empty($app_pubkey)) {
+			throw new Error('Muvon API requires App id, token and pubkey');
 		}
-		$this->project = $project;
-		$this->api_token = $api_token;
-		$this->public_key = $public_key;
+		$this->app_id = $app_id;
+		$this->app_token = $app_token;
+		$this->app_pubkey = $app_pubkey;
 		$this->Fetch = Fetch::new(['request_type' => 'json']);
 	}
 
@@ -54,7 +54,7 @@ final class Muvon {
 	public function subscribe(string $email): Result {
 		/** @var Result<bool> */
 		return $this->sendRequest(
-			'mailer', "{$this->project}/subscribe", [
+			'mail', 'subscribe', [
 				'email' => $email,
 			]
 		);
@@ -76,7 +76,7 @@ final class Muvon {
 
 		/** @var Result<bool> */
 		return $this->sendRequest(
-			'mail', "{$this->project}/email/send", [
+			'mail', 'email/send', [
 				'email' => $email,
 				'from' => $from,
 				'template' => $template,
@@ -97,7 +97,6 @@ final class Muvon {
 		/** @var Result<array{id:string,customer:string}> */
 		return $this->sendRequest(
 			'pay', 'stripe/create', [
-				'project' => $this->project,
 				'account_email' => $email,
 				'account_id' => $account_id,
 				'plan' => $plan,
@@ -115,7 +114,6 @@ final class Muvon {
 		/** @var Result<string> */
 		return $this->sendRequest(
 			'pay', 'stripe/subscription', [
-				'project' => $this->project,
 				'customer' => $customer,
 			]
 		);
@@ -132,7 +130,7 @@ final class Muvon {
 		if (empty($signature) || strlen($signature) !== 64) {
 			return false;
 		}
-		return sodium_crypto_sign_verify_detached($signature, $payload, $this->public_key);
+		return sodium_crypto_sign_verify_detached($signature, $payload, $this->app_pubkey);
 	}
 
 	/**
@@ -143,11 +141,11 @@ final class Muvon {
 	 * @return Result<mixed>
 	 */
 	protected function sendRequest(string $ns, string $path, array $payload = []): Result {
-		$url = "https://{$ns}.muvon.dev/{$path}";
+		$url = "https://{$ns}.muvon.dev/{$this->app_id}/{$path}";
 		/** @var Result<array{?string,mixed}> */
 		$Res = $this->Fetch->request(
 			$url, $payload, 'POST', [
-				"API-Token: {$this->api_token}",
+				"API-Token: {$this->app_token}",
 			]
 		);
 		if ($Res->err) {
