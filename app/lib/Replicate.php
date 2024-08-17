@@ -35,21 +35,24 @@ final class Replicate {
 	 * @return Result<string>
 	 */
 	public function run(string $version, array $input): Result {
-		$api_url = 'https://api.replicate.com/v1/predictions';
+		if (strpos($version, ':') === false) {
+			$api_url = "https://api.replicate.com/v1/models/$version/predictions";
+			$payload = [
+				'input' => $input,
+			];
+		} else {
+			[, $version] = explode(':', $version);
+			$api_url = "https://api.replicate.com/v1/predictions";
+			$payload = [
+				'version' => $version,
+				'input' => $input,
+			];
+		}
 		$headers = [
 			'Authorization: Bearer ' . $this->api_token,
 			'Content-Type: application/json',
 		];
 
-		// Support cases when we pass name of model also
-		if (strpos($version, ':') !== false) {
-			[, $version] = explode(':', $version);
-		}
-
-		$payload = [
-			'version' => $version,
-			'input' => $input,
-		];
 		/** @var Result<ReplicateResponse> */
 		$Res = $this->Fetch->request($api_url, $payload, 'POST', $headers);
 		if ($Res->err) {
