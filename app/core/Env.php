@@ -14,11 +14,11 @@ final class Env {
 		'TMP_DIR',
 	];
 
-  /**
-   * Initialization of Application
-   *
-   * @return void
-   */
+	/**
+	 * Initialization of Application
+	 *
+	 * @return void
+	 */
 	public static function init(): void {
 		static::initLocalEnv();
 		App::$debug = getenv('APP_ENV') === 'dev';
@@ -51,7 +51,7 @@ final class Env {
 		putenv("TMP_DIR=$dir/env/tmp");
 	}
 
-  // This method should be called in CLI only
+	// This method should be called in CLI only
 	/**
 	 * @param int $timeout
 	 * @return void
@@ -74,20 +74,20 @@ final class Env {
 		Cli::error('Env: wait init timeouted');
 	}
 
-  /**
-   * Configure all config templates in dir $template or special $template file
-   *
-   * @param string $template
-   * @param array $params
-   * @return void
-   */
+	/**
+	 * Configure all config templates in dir $template or special $template file
+	 *
+	 * @param string $template
+	 * @param array $params
+	 * @return void
+	 */
 	public static function configure(string $template, array $params = []): void {
-	  // Add default params
+		// Add default params
 		foreach (static::$params as $param) {
 			$params['{{' . $param . '}}'] = getenv($param);
 		}
 
-	  // Add extra params
+		// Add extra params
 		$params += [
 			'{{DEBUG}}' => (int)App::$debug,
 		];
@@ -100,16 +100,16 @@ final class Env {
 		}
 	}
 
-  /**
-   * Compile config.json into fast php array to include it ready to use optimized config
+	/**
+	 * Compile config.json into fast php array to include it ready to use optimized config
 	 *
 	 * @return void
-   */
+	 */
 	protected static function compileConfig(): void {
 
 		$config = static::parseConfig();
 
-	  // Iterate to make dot.notation.direct.access
+		// Iterate to make dot.notation.direct.access
 		$Iterator = new RecursiveIteratorIterator(new RecursiveArrayIterator($config));
 		foreach ($Iterator as $leaf_value) {
 			$keys = [];
@@ -144,39 +144,58 @@ final class Env {
 		return $config;
 	}
 
-	/**
-	 * Make dot.notation for group access
-	 *
-	 * @param array<string,mixed> $config
-	 * @param string $group
-	 * @return array<string,mixed>
-	 */
-	protected static function appendDotNotationToConfig(array $config, string $group): array {
-		foreach ($config[$group] as $key => $val) {
-			$parts = explode('.', $key);
-			$ref = &$config;
-			for ($i = 0, $max_i = sizeof($parts) - 1; $i <= $max_i; $i++) {
-				$key = ($i === 0 ? $group . '.' : '') . $parts[$i];
 
-				if ($i === $max_i) {
-					$ref[$key] = $val;
-					$config[$group . '.' . $key] = &$ref[$key];
-					unset($ref);
-				} else {
-					$ref[$key] ??= [];
-					$ref = &$ref[$key];
-				}
+	/**
+ * Make dot.notation for group access
+ *
+ * @param array<string,mixed> $config
+ * @param string $group
+ * @return array<string,mixed>
+ */
+	protected static function appendDotNotationToConfig(array $config, string $group): array {
+		$result = $config;
+
+		foreach ($config[$group] as $key => $val) {
+			if (str_contains($key, '.')) {
+				continue;
+			}
+			$path = $group . '.' . $key;
+			$result[$path] = $val;
+
+			if (is_array($val)) {
+				$result = self::recursiveAppendDotNotation($result, $path, $val);
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+ * Recursively append dot notation for nested arrays
+ *
+ * @param array<string,mixed> $config
+ * @param string $prefix
+ * @param array<string,mixed> $array
+ * @return array<string,mixed>
+ */
+	protected static function recursiveAppendDotNotation(array $config, string $prefix, array $array): array {
+		foreach ($array as $key => $value) {
+			$fullKey = $prefix . '.' . $key;
+			$config[$fullKey] = $value;
+
+			if (is_array($value)) {
+				$config = self::recursiveAppendDotNotation($config, $fullKey, $value);
 			}
 		}
 
 		return $config;
 	}
 
-  /**
-   * Generate all configs for configurable plugins. It includes all plugin/_/configure.php files
+	/**
+	 * Generate all configs for configurable plugins. It includes all plugin/_/configure.php files
 	 *
-   * @return void
-   */
+	 * @return void
+	 */
 	protected static function generateConfigs(): void {
 		$configure = function ($file) {
 			return include $file;
@@ -260,11 +279,11 @@ final class Env {
 		}
 	}
 
-  /**
-   * Generate nginx URI map for route request to special file
+	/**
+	 * Generate nginx URI map for route request to special file
 	 *
 	 * @return void
-   */
+	 */
 	protected static function generateURIMap(): void {
 		$map = [];
 		$default_zone = config('common.zones')[0];
@@ -293,11 +312,11 @@ final class Env {
 		static::store(config('common.uri_map_file'), $map);
 	}
 
-  /**
-   * Generate action => file_path map
+	/**
+	 * Generate action => file_path map
 	 *
 	 * @return void
-   */
+	 */
 	protected static function generateActionMap(): void {
 		$map = [];
 		foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
@@ -306,11 +325,11 @@ final class Env {
 		static::store(config('common.action_map_file'), $map);
 	}
 
-  /**
-   * Generate parameters map from annotations in actions and triggers files
+	/**
+	 * Generate parameters map from annotations in actions and triggers files
 	 *
 	 * @return void
-   */
+	 */
 	protected static function generateParamMap(): void {
 		$map_files = [
 			'actions'  => config('common.param_map_file'),
@@ -337,11 +356,11 @@ final class Env {
 		}
 	}
 
-  /**
-   * Generate trigger map to be called on some event
+	/**
+	 * Generate trigger map to be called on some event
 	 *
 	 * @return void
-   */
+	 */
 	protected static function generateTriggerMap(): void {
 		$map = [];
 		foreach (static::getPHPFiles(getenv('APP_DIR') . '/triggers') as $file) {
@@ -369,25 +388,25 @@ final class Env {
 		return substr(trim(str_replace(getenv('APP_DIR') . '/actions', '', $file), '/'), 0, -4);
 	}
 
-  /**
-   * Helper for getting list of all php files in dir
-   * @param string $dir
-   * @return string[]
-   */
+	/**
+	 * Helper for getting list of all php files in dir
+	 * @param string $dir
+	 * @return string[]
+	 */
 	protected static function getPHPFiles(string $dir): array {
 		assert(is_dir($dir));
 		$output = `find -L $dir -name '*.php'`;
 		return $output ? explode(PHP_EOL, trim($output)) : [];
 	}
 
-  /**
-   * This function uses for store variable in php file for next load
-   * Its much faster than parse and encode jsons or whatever
-   *
-   * @param string $file
-   * @param mixed $data
-   * @return bool
-   */
+	/**
+	 * This function uses for store variable in php file for next load
+	 * Its much faster than parse and encode jsons or whatever
+	 *
+	 * @param string $file
+	 * @param mixed $data
+	 * @return bool
+	 */
 	protected static function store(string $file, mixed $data): bool {
 		return !!file_put_contents($file, '<?php return ' . var_export($data, true) . ';');
 	}

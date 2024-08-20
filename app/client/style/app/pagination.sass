@@ -1,0 +1,21 @@
+.pagination
+  &, p, ul, li
+    display: flex
+    align-self: center
+  li
+    margin-left: 2px
+    margin-right: 2px
+    justify-content: center
+    width: 2rem
+    list-style: none
+    padding: 6px
+    border: 1px solid var(--border)
+    a:hover
+      text-decoration: none
+    &:hover
+      border: 1px solid var(--selection)
+
+    &:first-child
+      width: auto
+    &:last-child
+      width: auto
