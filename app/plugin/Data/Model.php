@@ -3,7 +3,7 @@
 namespace Plugin\Data;
 
 use ArrayAccess;
-use Closure;
+use Error;
 use InvalidArgumentException;
 use JsonSerializable;
 use Result;
@@ -17,7 +17,6 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	use DatabaseTrait;
 	use ArrayTrait;
 	use OptionTrait;
-	protected bool $is_new = true;
 	protected string $label = '';
 	protected bool $exists = false;
 	/** @var array<string,bool> */
@@ -138,20 +137,19 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		}
 
 		$data = array_intersect_key($this->data, $data);
-		$errors = $this->validate($data)->errors;
+		$errors = $this->validate($data);
 		if ($errors) {
 			return err_list(array_keys($errors));
 		}
 
 		static::transform($data);
 
-		if (!$this->is_new) {
+		if ($this->exists) {
 			$this->updateExistingRecord($data);
 		} else {
 			$this->insertNewRecord($data);
 		}
 
-		$this->is_new = false;
 		$this->exists = true;
 		static::expand($this->data);
 		return ok($this);
@@ -161,7 +159,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 * @param TArray $data
 	 * @return bool
 	 */
-	private function updateExistingRecord(array &$data): bool {
+	private function updateExistingRecord(array $data): bool {
 		if (isset($this->data[static::$id_field]) && $this->getId() === $this->data[static::$id_field]) {
 			unset($this->data[static::$id_field]);
 		}
@@ -180,7 +178,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 * @param TArray $data
 	 * @return bool
 	 */
-	private function insertNewRecord(array &$data): bool {
+	private function insertNewRecord(array $data): bool {
 		$this->prepareId($data);
 		$data[static::$id_field] = $this->getId();
 		$saved = $this->dbInsert($data);
@@ -221,7 +219,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 			$data['updated_at'] = time();
 		}
 
-		if ($this->is_new && !isset($data['created_at'])) {
+		if (!$this->exists && !isset($data['created_at'])) {
 			$data['created_at'] = $data['updated_at'];
 		}
 
@@ -277,6 +275,9 @@ abstract class Model implements ArrayAccess, JsonSerializable {
    * @return static
    */
 	public static function getForUpdate(int|string $id): static {
+		if (!DB::inTransaction()) {
+			throw new Error('You must be in transaction to use getForUpdate');
+		}
 		/** @var array<TArray> */
 		$rows = static::dbQuery(
 			'SELECT * FROM ' . static::table()
@@ -286,7 +287,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		);
 
 		if (!$rows || !isset($rows[0])) {
-			throw new \Exception('Cant find row with requested id in database for update');
+			throw new Error('Cant find row with requested id in database for update');
 		}
 
 		$Obj = (new static)->loadByData($rows[0]);
@@ -404,9 +405,8 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 			throw new InvalidArgumentException('There is no id field in data array');
 		}
 		$this->setId($data[static::$id_field]);
-		$this->exists = $data[static::$id_field] !== null;
 		$this->data = $this->appendDates(array_replace(static::getDefault(), $data));
-		$this->is_new = false;
+		$this->exists = true;
 		static::expand($this->data);
 		return $this;
 	}
@@ -461,15 +461,13 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 *
 	 * @access protected
 	 * @param TArray $data
-	 * @return $this
-	 *
-	 * <code>
-	 * $msgs = Photo::create()->save($form)->getErrors();
+	 * @return array<string>
 	 * </code>
 	 */
-	protected function validate($data) {
+	protected function validate(array $data): array {
+		$errors = [];
 		foreach ($this->rules() as $field => $rule) {
-			if ($this->is_new) { // Если новая запись
+			if (!$this->exists) { // Если новая запись
 				// Еще нет такого поля? Пишем туда нуль и валидируем
 				if (!isset($data[$field])) {
 					$data[$field] = null;
@@ -480,54 +478,13 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 					continue;
 				}
 			}
-
-			/** @var Result<bool> $res */
-			$res = $rule($data[$field]);
-
-			// Не изменилось поле? удаляем
-			if ($data[$field] === null) {
-				unset($data[$field]);
-			}
-
-			// Если результат не TRUE, то там ошибка
-			if (!$res->err) {
+			$Res = $rule($data[$field]);
+			if (!$Res->err) {
 				continue;
 			}
-
-			$this->addError($field . '_' . $res->err);
+			$errors[] = $field . '_' . $Res->err;
 		}
-		return $this;
-	}
-
-	/**
-	 * Get all errors occurred if we have
-	 * @return array<string,bool>
-	 */
-	public function getErrors(): array {
-		return $this->errors;
-	}
-
-	/**
-	 * Add new error
-	 * @param string $error
-	 * @return static
-	 */
-	protected function addError(string $error): static {
-		$this->errors['e_' . static::$table . '_' . $error] = true;
-		return $this;
-	}
-
-	/**
-	 * @param array<string> $errors
-	 * @param Closure|null $callback
-	 * @return static
-	 */
-	public function done(array &$errors, Closure $callback = null): static {
-		$errors = $this->getErrors();
-		if (!$errors) {
-			$callback && $callback();
-		}
-		return $this;
+		return $errors;
 	}
 
 	/**

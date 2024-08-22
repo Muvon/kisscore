@@ -259,4 +259,8 @@ final class DB {
 			default => '"' . $DB->real_escape_string($item) . '"',
 		};
 	}
+
+	public static function inTransaction(): bool {
+		return static::$in_transaction;
+	}
 }

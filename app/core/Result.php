@@ -42,20 +42,27 @@ final class Result {
 	}
 
 	/**
+	 * In case of error return default value
+	 * @param T $default
+	 * @return T
+	 */
+	public function unwrapOr(mixed $default): mixed {
+		if ($this->err) {
+			return $default;
+		}
+
+		return $this->res;
+	}
+
+
+	/**
 	 * The function combines two or multiple results and return ok if all ok
 	 * or first error from first result that failed
 	 * @param Result<T> ...$Results
-	 * @return Result<T>
+	 * @return T
 	 */
-	public static function unwrapAll(Result ...$Results): Result {
-		$oks = [];
-		foreach ($Results as $Result) {
-			if ($Result->err) {
-				return $Result;
-			}
-			$oks[] = $Result->unwrap();
-		}
-		return ok($oks);
+	public static function unwrapAll(Result ...$Results): mixed {
+		return array_map(fn($Result) => $Result->unwrap(), $Results);
 	}
 
 	/**
