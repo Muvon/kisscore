@@ -10,6 +10,7 @@ use mysqli_result;
 use mysqli_sql_exception;
 
 final class DB {
+	protected static bool $in_transaction = false;
 	protected static bool $reconnect = true;
 	protected static array $pool = [];
 	protected static array $try = [];
@@ -25,34 +26,43 @@ final class DB {
 	 * @throws Throwable
 	 */
 	public static function transaction(callable $func, ?callable $rollback = null): Result {
+		// If we are already in transaction just call func
+		// Cuz anyway it all goes to the single big transaction
+		if (static::$in_transaction) {
+			// Rewrap it just to make sure that we will throw exception
+			// and process rollback
+			return ok($func()->unwrap());
+		}
+
 	  /** @var \mysqli $DB */
 		$DB = static::$pool[0];
 		$DB->autocommit(false);
 		$DB->begin_transaction();
+		static::$in_transaction = true;
 		static::$reconnect = false;
 		try {
 			/** @var Result<V> $result */
 			$result = $func();
 			assert($result instanceof Result);
-			if ($result->err) {
-				$DB->rollback();
-				if ($rollback) {
-					$rollback();
-				}
-			} else {
-				$DB->commit();
-			}
-			$DB->autocommit(true);
-			static::$reconnect = true;
+			// This throws exception if error
+			$result->unwrap();
+			$DB->commit();
 			return $result;
 		} catch (Throwable $e) {
 			$DB->rollback();
-			$DB->autocommit(true);
-			static::$reconnect = true;
 			if ($rollback) {
 				$rollback();
 			}
+
+			// Do simple return in case if it's result
+			if ($e instanceof Result) {
+				return $e;
+			}
 			throw $e;
+		} finally {
+			$DB->autocommit(true);
+			static::$reconnect = true;
+			static::$in_transaction = false;
 		}
 	}
 
