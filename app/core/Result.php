@@ -35,7 +35,11 @@ final class Result {
 	 */
 	public function unwrap(): mixed {
 		if ($this->err) {
-			throw new ResultError($this->err);
+			$message = $this->err;
+			if ($this->res) {
+				$message .= ': ' . json_encode($this->res);
+			}
+			throw new ResultError($message);
 		}
 
 		return $this->res;
