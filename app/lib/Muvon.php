@@ -66,6 +66,15 @@ final class Muvon {
 		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 			return err('e_email_not_valid');
 		}
+		$hostname = substr(strrchr($email, '@'), 1);
+		if ($hostname !== false) {
+			$mxs = [];
+			$weights = [];
+			$has_mx = getmxrr($hostname, $mxs, $weights);
+			if (!$has_mx) {
+				return err('e_email_hostname_not_valid');
+			}
+		}
 		return ok(true);
 	}
 
