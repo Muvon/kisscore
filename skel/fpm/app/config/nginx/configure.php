@@ -28,7 +28,7 @@ foreach ($routes as $route => $params) {
 	$action = array_shift($params);
 	$i = 0; // route like (bla (bla bla)) with uff8 cant handle by nginx. so hack it
 	$uri = '/?ROUTE=' . preg_replace_callback('|\([^\)]+\)|is', fn() => '$' . ++$i, $route)
-		. '&ACTION=' . $action
+	. '&ACTION=' . $action
 	;
 
 	// If we have something more,foreach it
@@ -59,8 +59,8 @@ foreach ($rewrites as $zone => $rules) {
 		$condition = "\$host = {$zone}.{$domain}";
 	}
 	$rewrite_rules .= "if ({$condition}) {" . PHP_EOL
-		. implode(PHP_EOL, $rules) . PHP_EOL
-		. '}' . PHP_EOL;
+	. implode(PHP_EOL, $rules) . PHP_EOL
+	. '}' . PHP_EOL;
 }
 
 // Prepare all server names we should use
@@ -88,6 +88,9 @@ $static_dir_map = implode(
 		$zones
 	)
 );
+
+// Create directories for static files if not exists
+array_map(fn($zone) => mkdir($static_dir . "/{$zone}"), $zones);
 
 Env::configure(
 	__DIR__, [
