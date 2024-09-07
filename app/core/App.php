@@ -22,7 +22,7 @@ final class App {
 		if (isset($params[$file])) {
 			foreach ($params[$file] as $param) {
 				$args[] = $param['name'] . ':' . $param['type']
-				. (isset($param['default']) ? '=' . $param['default'] : '')
+					. (isset($param['default']) ? '=' . $param['default'] : '')
 				;
 			}
 		}
@@ -68,10 +68,10 @@ final class App {
 		$log_file = getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-' . $type . '.log';
 		$message =
 		gmdate('[Y-m-d H:i:s T]')
-		. "\t" . $id
-		. "\t" . $message
-		. "\t" . $encoded_dump . "\t"
-		. json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
+			. "\t" . $id
+			. "\t" . $message
+			. "\t" . $encoded_dump . "\t"
+			. json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
 		;
 		error_log($message, 3, $log_file);
 		return $id;
@@ -180,17 +180,17 @@ final class App {
 			case $response === 1:
 				$Response->header('Content-type', 'text/html;charset=utf-8');
 				return View::create($Request->getAction())->set($vars);
-			break;
+				break;
 
 			case $response instanceof View:
 				$Response->header('Content-type', 'text/html;charset=utf-8');
 				return $response->set($vars);
-			break;
+				break;
 
 			case is_string($response):
 				$Response->header('Content-type', 'text/plain;charset=utf-8');
 				return View::fromString($response);
-			break;
+				break;
 
 			case is_array($response):
 			case is_object($response):
@@ -214,7 +214,7 @@ final class App {
 					throw new Error('Failed to encode ' . $type  . ' response');
 				}
 				return View::fromString($encoded);
-			break;
+				break;
 
 			default:
 				$Response->header('Content-type', 'text/plain;charset=utf-8');
@@ -235,7 +235,10 @@ final class App {
 	 * @param Throwable $Exception
 	 */
 	public static function handleException(Throwable $Exception) {
-		static::log($Exception->getMessage(), ['trace' => $Exception->getTraceAsString()], 'error');
+		$log_exception = !$Exception instanceof ResultError;
+		if ($log_exception) {
+			static::logException($Exception);
+		}
 
 		$exception = $Exception::class;
 		do {
@@ -251,112 +254,112 @@ final class App {
 				return static::$e_handlers[$implement]($Exception);
 			}
 		}
-	}
+		}
 
-	/**
+		/**
 	 * @param int $code
 	 * @param ?string $type
 	 * @param ?callable $format_func
 	 * @return callable
 	 */
-	public static function createExceptionHandler(
-		int $code = 500,
-		?string $type = null,
-		?callable $format_func = null
-	): callable {
-		static $types = [
-			'json' => 'application/json',
-			'html' => 'text/html',
-			'text' => 'text/plain',
-		];
+		public static function createExceptionHandler(
+			int $code = 500,
+			?string $type = null,
+			?callable $format_func = null
+		): callable {
+			static $types = [
+				'json' => 'application/json',
+				'html' => 'text/html',
+				'text' => 'text/plain',
+			];
 
-		if (!isset($type)) {
-			$type = match (true) {
-				Input::isJson() => 'json',
-				Input::isCli() => 'text',
-				default => 'html'
+			if (!isset($type)) {
+				$type = match (true) {
+					Input::isJson() => 'json',
+					Input::isCli() => 'text',
+					default => 'html'
+				};
+			}
+
+			return function (Throwable $Exception) use ($code, $type, $format_func, $types) {
+				switch (true) {
+					case isset($format_func):
+						$response = $format_func($Exception);
+						break;
+					case $type === 'json':
+						$response = json_encode(
+							[
+								'error' => $Exception->getMessage(),
+								'trace' => App::$debug ? $Exception->getTrace() : [],
+							], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+						);
+						break;
+
+					case $type === 'html':
+						$response = '<html><head><title>Error</title></head><body>'
+							. '<p>Unhandled exception <b>'
+							. $Exception::class . '</b> with message "' . $Exception->getMessage()
+							. (static::$debug ? '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() : '')
+							. '"</p>';
+
+						if (static::$debug) {
+							$response .= '<p><ul>'
+								. implode(
+									'<br/>', array_map(
+										function ($item) {
+											return '<li>' . $item . '</li>';
+										}, explode(PHP_EOL, $Exception->getTraceAsString())
+									)
+								)
+								. '</ul></p>'
+								. '</body></html>'
+							;
+						}
+						break;
+
+					default:
+						$response = 'Error: ' . $Exception->getMessage();
+						if (static::$debug) {
+							$response .= PHP_EOL . $Exception->getTraceAsString();
+						}
+				}
+
+				return Response::current()
+					->status($code)
+					->header('Content-type', $types[$type] . ';charset=utf8')
+					->send($response);
 			};
 		}
 
-		return function (Throwable $Exception) use ($code, $type, $format_func, $types) {
-			switch (true) {
-				case isset($format_func):
-					$response = $format_func($Exception);
-					break;
-				case $type === 'json':
-					$response = json_encode(
-						[
-							'error' => $Exception->getMessage(),
-							'trace' => App::$debug ? $Exception->getTrace() : [],
-						], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-					);
-					break;
-
-				case $type === 'html':
-					$response = '<html><head><title>Error</title></head><body>'
-					. '<p>Unhandled exception <b>'
-					. $Exception::class . '</b> with message "' . $Exception->getMessage()
-					. (static::$debug ? '" in file "' . $Exception->getFile() . ':' . $Exception->getLine() : '')
-					. '"</p>';
-
-					if (static::$debug) {
-						$response .= '<p><ul>'
-						. implode(
-							'<br/>', array_map(
-								function ($item) {
-									return '<li>' . $item . '</li>';
-								}, explode(PHP_EOL, $Exception->getTraceAsString())
-							)
-						)
-						. '</ul></p>'
-						. '</body></html>'
-						;
-					}
-					break;
-
-				default:
-					$response = 'Error: ' . $Exception->getMessage();
-					if (static::$debug) {
-						$response .= PHP_EOL . $Exception->getTraceAsString();
-					}
-			}
-
-			return Response::current()
-				->status($code)
-				->header('Content-type', $types[$type] . ';charset=utf8')
-				->send($response);
-		};
-	}
-
-	/**
+		/**
 	 * Assign handler for special exception that will be called when exception raises
 	 *
 	 * @param string $exception
 	 * @param callable $handler
 	 * @return void
 	 */
-	public static function setExceptionHandler(string $exception, callable $handler): void {
-		static::$e_handlers[$exception] = $handler;
-	}
+		public static function setExceptionHandler(string $exception, callable $handler): void {
+			static::$e_handlers[$exception] = $handler;
+		}
 
-	/**
+		/**
 	 * Хэндлер для управления ошибками ассертов
 	 * @param	string  $file
 	 * @param	string	$line
 	 * @param	int	$code
 	 * @throws Exception
 	 */
-	public static function handleAssertion(string $file, string $line, ?int $code): void {
-		throw new Error('Assertion failed in file ' . $file . ' at line ' . $line . ' with code ' . $code);
-	}
+		public static function handleAssertion(string $file, string $line, ?int $code): void {
+			throw new Error('Assertion failed in file ' . $file . ' at line ' . $line . ' with code ' . $code);
+		}
 
-	/**
+		/**
 	 * Generate error to stop next steps using special exception class name
 	 * @param string $error Message that describes error
 	 * @param string $class Exception class name to be raised
 	 * @throws \Exception
 	 */
-	public static function error(string $error, string $class = 'Exception'): void {
-		throw new $class($error);
+		public static function error(string $error, string $class = 'Exception'): void {
+			throw new $class($error);
+		}
 	}
-}
