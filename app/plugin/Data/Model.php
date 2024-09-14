@@ -139,7 +139,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		$data = array_intersect_key($this->data, $data);
 		$errors = $this->validate($data);
 		if ($errors) {
-			return err_list(array_keys($errors));
+			return err_list($errors);
 		}
 
 		static::transform($data);
