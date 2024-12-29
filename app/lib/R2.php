@@ -41,14 +41,16 @@ final class R2 {
 	 * @param  string $bucket
 	 * @param  string $key
 	 * @param  string $expires
+	 * @param  int $maxFileSize
 	 * @return Result<string>
 	 */
-	public function getUploadUrl(string $bucket, string $key, $expires = '+30 mins'): Result {
+	public function getUploadUrl(string $bucket, string $key, $expires = '+30 mins', $maxFileSize = 10485760): Result {
 		try {
 			$cmd = $this->Client->getCommand(
 				'PutObject', [
 					'Bucket' => $bucket,
 					'Key' => $key,
+					'ContentLength' => $maxFileSize,
 				]
 			);
 
@@ -59,6 +61,7 @@ final class R2 {
 			return err('e_upload_url_error', $E->getMessage());
 		}
 	}
+
 
 	/**
 	 * Upload the file to Cloudflare and return url
