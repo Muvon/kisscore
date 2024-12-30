@@ -5,6 +5,7 @@ namespace Lib;
 use Aws\Credentials\Credentials;
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
+use Aws\S3\Exception\S3Exception;
 use Result;
 
 /** @package Lib */
@@ -168,10 +169,36 @@ final class R2 {
 			}
 
 			return err('e_create_bucket_error');
-		} catch (\Aws\S3\Exception\S3Exception $e) {
-			return err('e_create_bucket_error: ' . $e->getMessage());
+		} catch (S3Exception $e) {
+			return err('e_create_bucket_error', $e->getMessage());
 		} catch (\Exception $e) {
-			return err('e_create_bucket_error: Unexpected error occurred');
+			return err('e_create_bucket_error', 'Unexpected error occurred');
+		}
+	}
+
+	/**
+	 * Get file information by key
+	 * @param  string $bucket
+	 * @param  string $key
+	 * @return Result<int> Size of the file
+	 */
+	public function getFileInfo(string $bucket, string $key): Result {
+		try {
+			try {
+				$result = $this->Client->headObject([
+					'Bucket' => $bucket,
+					'Key'    => $key,
+				]);
+
+				return ok((int)$result['ContentLength']);
+			} catch (S3Exception $e) {
+				if ($e->getAwsErrorCode() === 'NotFound') {
+					return err('e_file_not_found');
+				}
+				throw $e;
+			}
+		} catch (AwsException $e) {
+			return err('e_file_info_error', $e->getMessage());
 		}
 	}
 }
