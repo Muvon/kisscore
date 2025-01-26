@@ -41,11 +41,11 @@ final class R2 {
 	 * Get upload URL for single file to bucket
 	 * @param  string $bucket
 	 * @param  string $key
-	 * @param  string $expires
+	 * @param  int $ttl
 	 * @param  int $maxFileSize
 	 * @return Result<string>
 	 */
-	public function getUploadUrl(string $bucket, string $key, $expires = '+30 mins', $maxFileSize = 10485760): Result {
+	public function getUploadUrl(string $bucket, string $key, $ttl = 1800, $maxFileSize = 10485760): Result {
 		try {
 			$cmd = $this->Client->getCommand(
 				'PutObject', [
@@ -55,6 +55,8 @@ final class R2 {
 				]
 			);
 
+			$mins = (int)ceil($ttl / 60);
+			$expires = "+{$mins} mins";
 			$request = $this->Client->createPresignedRequest($cmd, $expires);
 
 			return ok((string)$request->getUri());

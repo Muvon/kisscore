@@ -643,7 +643,7 @@ final class Env {
 	public static function init(): void {
 		App::$debug = getenv('PROJECT_ENV') === 'dev';
 		App::$log_level = Cli::LEVEL_DEBUG;
-		static::configure(getenv('APP_DIR') . '/config/app.ini.tpl');
+		static::configure(getenv('APP_DIR') . '/config/app.yaml.tpl');
 		static::compileConfig();
 		static::generateActionMap();
 		static::generateURIMap();
@@ -662,7 +662,7 @@ final class Env {
 		$t = time();
 		$cnf_file = getenv('CONFIG_DIR') . '/config.php';
 		do {
-			$tpl_ts = filemtime(getenv('APP_DIR') . '/config/app.ini.tpl');
+			$tpl_ts = filemtime(getenv('APP_DIR') . '/config/app.yaml.tpl');
 			$cnf_ts = file_exists($cnf_file) ? filemtime($cnf_file) : 0;
 
 			if ($cnf_ts > $tpl_ts) {
