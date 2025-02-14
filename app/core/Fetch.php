@@ -15,6 +15,9 @@ final class Fetch {
   // In case if not supported we use raw
 	protected string $request_type = 'raw';
 
+	// Type of the response can be one of json, msgpack, binary, raw
+	protected string $response_type = 'raw';
+
   // Array containing proxy info with next fields
 	/** @var array{host:string,port:int,user?:string,password?:string,type?:string} */
 	protected array $request_proxy = [];
@@ -50,7 +53,7 @@ final class Fetch {
 			};
 		}
 		if (!isset($Self->decoder_fn)) {
-			$Self->decoder_fn = match ($Self->request_type) {
+			$Self->decoder_fn = match ($Self->response_type) {
 				'msgpack' => msgpack_unpack(...),
 				'json' => fn($response) => json_decode($response = preg_replace('/"\s*:\s*([0-9]+\.[0-9]+)([,\}\]])/ius', '":"$1"$2', $response), true, flags: JSON_BIGINT_AS_STRING),
 				default => fn($response) => $response,
