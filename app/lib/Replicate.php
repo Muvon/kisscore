@@ -42,7 +42,7 @@ final class Replicate {
 			];
 		} else {
 			[, $version] = explode(':', $version);
-			$api_url = "https://api.replicate.com/v1/predictions";
+			$api_url = 'https://api.replicate.com/v1/predictions';
 			$payload = [
 				'version' => $version,
 				'input' => $input,

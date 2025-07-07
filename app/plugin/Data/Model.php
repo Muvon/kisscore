@@ -366,13 +366,14 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	/**
 	 * Helper to simplify process of writing new code for the fetcher by fields
 	 * @param array<string,mixed> $fields
+	 * @param array<mixed> $oroder
 	 * @return static
 	 * @throws InvalidArgumentException
 	 */
-	protected static function getByFields(array $fields): static {
+	public static function getByFields(array $fields, array $order = []): static {
 		$Self = new static;
 		/** @var TArray $row */
-		$row = $Self->dbGet(static::fields(), $fields);
+		$row = $Self->dbGet(static::fields(), $fields, $order);
 		if ($row) {
 			static::transform($row, true);
 			$Self->loadByData($row);

@@ -4,8 +4,8 @@ namespace Lib;
 
 use Aws\Credentials\Credentials;
 use Aws\Exception\AwsException;
-use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
+use Aws\S3\S3Client;
 use Result;
 
 /** @package Lib */
@@ -187,10 +187,12 @@ final class R2 {
 	public function getFileInfo(string $bucket, string $key): Result {
 		try {
 			try {
-				$result = $this->Client->headObject([
+				$result = $this->Client->headObject(
+					[
 					'Bucket' => $bucket,
 					'Key'    => $key,
-				]);
+					]
+				);
 
 				return ok((int)$result['ContentLength']);
 			} catch (S3Exception $e) {

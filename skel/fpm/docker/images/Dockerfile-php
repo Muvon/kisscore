@@ -1,7 +1,7 @@
 FROM muvon/php:8.3.10-fpm
 LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
-RUN php-ext add msgpack yaml sodium && \
+RUN php-ext add msgpack yaml && \
 	apk add --update curl bash openssl && \
   rm -fr /var/cache/apk/* && \
   rm -fr /tmp/*

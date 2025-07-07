@@ -162,9 +162,11 @@ final class Env {
 			$path = $group . '.' . $key;
 			$result[$path] = $val;
 
-			if (is_array($val)) {
-				$result = self::recursiveAppendDotNotation($result, $path, $val);
+			if (!is_array($val)) {
+				continue;
 			}
+
+			$result = self::recursiveAppendDotNotation($result, $path, $val);
 		}
 
 		return $result;
@@ -183,9 +185,11 @@ final class Env {
 			$fullKey = $prefix . '.' . $key;
 			$config[$fullKey] = $value;
 
-			if (is_array($value)) {
-				$config = self::recursiveAppendDotNotation($config, $fullKey, $value);
+			if (!is_array($value)) {
+				continue;
 			}
+
+			$config = self::recursiveAppendDotNotation($config, $fullKey, $value);
 		}
 
 		return $config;

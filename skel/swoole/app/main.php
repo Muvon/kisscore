@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 App::start();
 
-$Server = new Swoole\HTTP\Server("0.0.0.0", (int)config('server.port'), SWOOLE_BASE);
+$port = (int)config('server.port');
+$Server = new Swoole\HTTP\Server("0.0.0.0", $port, SWOOLE_BASE);
 
 $cpu_num = swoole_cpu_num();
 $Server->set([
@@ -225,12 +226,12 @@ $Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
 
 // This solves issue with worker exit timeout ERRNO 9012
 // @see https://bytepursuits.com/swoole-solve-warning-worker_reactor_try_to_exit-errno-9012-worker-exit-timeout-forced-termination
-$Server->on('workerExit', function (Swoole\Server $Server, int $worker_id) {
+$Server->on('workerExit', static function (Swoole\Server $Server, int $worker_id) {
 	Swoole\Timer::clearAll();
 	Swoole\Event::exit();
 });
 
-$Server->on('close', function ($Server, $fd) {
+$Server->on('close', static function ($Server, $fd) {
 	Cli::print("Connection closed: #{$fd}.", Cli::LEVEL_DEBUG);
 });
 
