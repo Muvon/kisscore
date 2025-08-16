@@ -1,0 +1,1 @@
+<?php return {{SWOOLE_ROUTES}};

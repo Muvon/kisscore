@@ -1,0 +1,68 @@
+{
+	"name": "muvon/kisscore",
+	"description": "Muvon KISScore is blazing fast Swoole-based framework for rapid development with high performance async capabilities",
+	"type": "library",
+	"license": "MIT",
+	"keywords": ["framework", "php", "rapid-development", "swoole", "async", "high-performance", "microframework"],
+	"homepage": "https://github.com/muvon/kisscore",
+	"authors": [
+		{
+			"name": "Muvon Un Limited",
+			"email": "hello@muvon.io"
+		}
+	],
+	"require": {
+		"php": ">=8.4"
+	},
+	"require-dev": {
+		"phpstan/phpstan": "^1.11.7",
+		"slevomat/coding-standard": "^8.20.0",
+		"squizlabs/php_codesniffer": "dev-master",
+		"muvon/coding-standard": "dev-master"
+	},
+	"autoload": {
+		"psr-4": {
+			"": "app/core/",
+			"Plugin\\": "app/plugin/",
+			"Lib\\": "app/lib/",
+			"KC\\": "src/KC/"
+		},
+		"files": [
+			"app/core/functions.php"
+		]
+	},
+	"bin": [
+		"bin/init",
+		"bin/php-exec",
+		"bin/php-exec-one",
+		"bin/codestyle-analyze",
+		"bin/codestyle-check",
+		"bin/codestyle-fix",
+		"bin/cron",
+		"bin/watcher",
+		"bin/kisscore-init"
+	],
+	"scripts": {
+		"post-install-cmd": [
+			"@kisscore-init"
+		],
+		"post-update-cmd": [
+			"@kisscore-init"
+		],
+		"kisscore-init": "KC\\Installer::init",
+		"kisscore-create-project": "KC\\Installer::createProject"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		},
+		"bin-dir": "vendor/bin"
+	},
+	"minimum-stability": "stable",
+	"extra": {
+		"kisscore": {
+			"skeleton-dir": "skel",
+			"app-dir": "app"
+		}
+	}
+}

@@ -60,4 +60,3 @@ cors:
   methods: 'GET, POST, PUT, DELETE, OPTIONS'
   headers: 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Account-Token,API-Token,Request-Signature'
   credentials: 'true'
-

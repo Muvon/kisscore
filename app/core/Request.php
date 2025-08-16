@@ -76,9 +76,25 @@ final class Request {
 		}
 
 		$url = rtrim(static::$request_uri, ';&?') ?: '/';
-		$Request = (new static($url))
-		->setRoute(Input::get('ROUTE'))
-		->setAction(Input::get('ACTION'));
+
+		// Use Swoole routing instead of nginx parameters
+		$route_info = Router::match($url, static::$host);
+
+		$Request = (new static($url));
+
+		if ($route_info) {
+			$Request->setRoute($route_info['route'])
+					->setAction($route_info['action']);
+
+			// Set route parameters in Input
+			foreach ($route_info['params'] as $key => $value) {
+				Input::set($key, $value);
+			}
+		} else {
+			// Fallback to default action
+			$Request->setRoute('home')
+					->setAction('home');
+		}
 
 	// Init language
 		Lang::init($Request);

@@ -1,2 +1,0 @@
-ports:
-  - '${ARDB_PORT}:${ARDB_PORT}'

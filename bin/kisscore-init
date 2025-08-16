@@ -1,0 +1,178 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+/**
+ * KC Project Initializer
+ *
+ * This script initializes a new KC project by copying skeleton files
+ * and setting up the basic directory structure.
+ *
+ * Usage:
+ *   ./vendor/bin/kisscore-init
+ *   composer run-script kisscore-create-project
+ */
+
+// Find the autoloader
+$autoloadPaths = [
+    __DIR__ . '/../autoload.php',
+    __DIR__ . '/../../autoload.php',
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../../../../autoload.php',
+];
+
+$autoloader = null;
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        $autoloader = require $path;
+        break;
+    }
+}
+
+if (!$autoloader) {
+    fwrite(STDERR, "Error: Could not find Composer autoloader\n");
+    exit(1);
+}
+
+// Simple CLI argument parsing
+$command = $argv[1] ?? 'help';
+
+switch ($command) {
+    case 'init':
+    case 'create-project':
+        createProject();
+        break;
+
+    case 'help':
+    case '--help':
+    case '-h':
+    default:
+        showHelp();
+        break;
+}
+
+function createProject(): void
+{
+    $rootDir = getcwd();
+    $vendorDir = $rootDir . '/vendor';
+    $packageDir = $vendorDir . '/muvon/kisscore';
+
+    if (!is_dir($packageDir)) {
+        fwrite(STDERR, "Error: KC package not found. Make sure it's installed via Composer.\n");
+        exit(1);
+    }
+
+    $skelDir = $packageDir . '/skel';
+    $binDir = $packageDir . '/bin';
+
+    if (!is_dir($skelDir)) {
+        fwrite(STDERR, "Error: Skeleton directory not found in KC package.\n");
+        exit(1);
+    }
+
+    // Ask for confirmation
+    echo "This will copy KC skeleton files to your project.\n";
+    echo "Continue? (y/N): ";
+    $handle = fopen("php://stdin", "r");
+    $line = fgets($handle);
+    fclose($handle);
+
+    if (strtolower(trim($line)) !== 'y') {
+        echo "Project creation cancelled.\n";
+        exit(0);
+    }
+
+    // Copy skeleton files
+    echo "Copying skeleton files...\n";
+    copyDirectory($skelDir, $rootDir);
+
+    // Copy bin files to project root bin directory
+    $projectBinDir = $rootDir . '/bin';
+    if (is_dir($binDir)) {
+        echo "Copying bin scripts...\n";
+        if (!is_dir($projectBinDir)) {
+            mkdir($projectBinDir, 0755, true);
+        }
+        copyDirectory($binDir, $projectBinDir);
+
+        // Make bin files executable
+        foreach (glob($projectBinDir . '/*') as $binFile) {
+            if (is_file($binFile)) {
+                chmod($binFile, 0755);
+            }
+        }
+    }
+
+    // Create basic directory structure
+    $dirs = ['env/backup', 'env/etc', 'env/log', 'env/run', 'env/tmp', 'env/var'];
+    foreach ($dirs as $dir) {
+        $fullPath = $rootDir . '/' . $dir;
+        if (!is_dir($fullPath)) {
+            mkdir($fullPath, 0755, true);
+            echo "Created directory: {$dir}\n";
+        }
+    }
+
+    // Create .env file if it doesn't exist
+    $envFile = $rootDir . '/.env';
+    if (!file_exists($envFile)) {
+        $envContent = "# KC Environment Configuration\n";
+        $envContent .= "APP_DIR=" . $rootDir . "/app\n";
+        $envContent .= "CONFIG_DIR=" . $rootDir . "/app/config\n";
+        $envContent .= "STATIC_DIR=" . $rootDir . "/app/static\n";
+        $envContent .= "LOG_DIR=" . $rootDir . "/env/log\n";
+        $envContent .= "TMP_DIR=" . $rootDir . "/env/tmp\n";
+        $envContent .= "VAR_DIR=" . $rootDir . "/env/var\n";
+
+        file_put_contents($envFile, $envContent);
+        echo "Created .env file\n";
+    }
+
+    echo "\nKC project created successfully!\n";
+    echo "\nNext steps:\n";
+    echo "1. Configure your app/config files\n";
+    echo "2. Run: php app/main.php to start your application\n";
+    echo "3. Check bin/ directory for available tools\n";
+}
+
+function copyDirectory(string $source, string $destination): void
+{
+    if (!is_dir($destination)) {
+        mkdir($destination, 0755, true);
+    }
+
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    foreach ($iterator as $item) {
+        $destPath = $destination . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+
+        if ($item->isDir()) {
+            if (!is_dir($destPath)) {
+                mkdir($destPath, 0755, true);
+            }
+        } else {
+            // Don't overwrite existing files
+            if (!file_exists($destPath)) {
+                copy($item->getPathname(), $destPath);
+                echo "Copied: {$iterator->getSubPathName()}\n";
+            } else {
+                echo "Skipped existing file: {$iterator->getSubPathName()}\n";
+            }
+        }
+    }
+}
+
+function showHelp(): void
+{
+    echo "KC Project Initializer\n\n";
+    echo "Usage:\n";
+    echo "  kisscore-init <command>\n\n";
+    echo "Commands:\n";
+    echo "  init, create-project  Initialize a new KC project\n";
+    echo "  help                  Show this help message\n\n";
+    echo "Examples:\n";
+    echo "  ./vendor/bin/kisscore-init init\n";
+    echo "  composer run-script kisscore-create-project\n\n";
+}
