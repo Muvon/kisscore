@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-/src/bin/init
-exec php-fpm -R -F -y /src/docker/containers/php/config/php-fpm.conf

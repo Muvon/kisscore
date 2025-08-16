@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-exec nginx -c /src/docker/containers/nginx/config/nginx.conf -g 'daemon off;'

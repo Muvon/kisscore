@@ -1,1 +1,0 @@
-{{REWRITE_RULES}}
