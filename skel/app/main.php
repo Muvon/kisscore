@@ -164,64 +164,66 @@ $Server->set([
 	// 'enable_object' => true,
 ]);
 
-
-$Server->on('connect', function ($Server, $fd) {
-	Cli::print("New connection established: #{$fd}.", Cli::LEVEL_DEBUG);
-});
-
-$Server->on('receive', function(Swoole\Server $Server, int $fd, int $reactor_id, string $data) {
-	$Server->send($fd, "Echo to #{$fd}: \n".$data);
-	$Server->close($fd);
-});
-
 $Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Response $Response) {
-	// TODO: Find proper way to organize fpm + swoole support
-	// But till that time this is just fast migration from FPM to not break most things
-	Input::setParser(function() use ($Request) {
-	  if (Input::isJson()) {
-	    Input::$params = (array) $Request->get + (array) json_decode(file_get_contents('php://input'), true);
-	  } elseif (Input::isMsgpack()) {
-	    Input::$params = (array) $Request->get + (array) msgpack_unpack(file_get_contents('php://input'));
-	  } else {
-	    Input::$params = (array) $Request->get + (array) $Request->post;
-	  };
-	});
+	try {
+		// TODO: Find proper way to organize fpm + swoole support
+		// But till that time this is just fast migration from FPM to not break most things
+		Input::setParser(function() use ($Request) {
+			if (Input::isJson()) {
+				$params = (array) $Request->get + (array) json_decode(file_get_contents('php://input'), true);
+			} elseif (Input::isMsgpack()) {
+				$params = (array) $Request->get + (array) msgpack_unpack(file_get_contents('php://input'));
+			} else {
+				$params = (array) $Request->get + (array) $Request->post;
+			};
+			return $params;
+		});
 
-	Cookie::setParser(fn() => $Request->cookie);
+		Cookie::setParser(fn() => $Request->cookie);
 
-	Request::current(function() use ($Request) {
-	  Request::$time = $Request->server['request_time'];
-	  Request::$time_float = $Request->server['request_time_float'];
+		Request::current(function() use ($Request) {
+			Request::$time = $Request->server['request_time'];
+			Request::$time_float = $Request->server['request_time_float'];
 
-	  Request::$protocol = $Request->server['server_protocol'];
+			Request::$protocol = $Request->server['server_protocol'];
 
-	  Request::$is_ajax = !!($Request->header['x-requested-with'] ?? false);
-	  Request::$referer = $Request->header['referer'] ?? '';
-	  Request::$xff = $Request->header['x-forwarded-for'] ?? '';
+			Request::$is_ajax = !!($Request->header['x-requested-with'] ?? false);
+			Request::$referer = $Request->header['referer'] ?? '';
+			Request::$xff = $Request->header['x-forwarded-for'] ?? '';
 
-	  // Эти переменные всегда определены в HTTP-запросе
-	  Request::$method = $Request->server['request_method'];
-	  Request::$user_agent = $Request->header['user-agent'] ?? '';
-	  Request::$ip = $Request->server['remote_addr'];
+			// Эти переменные всегда определены в HTTP-запросе
+			Request::$method = $Request->server['request_method'];
+			Request::$user_agent = $Request->header['user-agent'] ?? '';
+			Request::$ip = $Request->server['remote_addr'];
 
-	  Request::$request_uri = $Request->server['request_uri'];
-	  Request::$content_type = $Request->header['content-type'] ?? '';
+			Request::$request_uri = $Request->server['request_uri'];
+			Request::$content_type = $Request->header['content-type'] ?? '';
 
-	  Request::$accept_lang = $Request->header['accept-language'] ?? '';
-	});
+			Request::$accept_lang = $Request->header['accept-language'] ?? '';
+		});
 
-	// Process action and get view template if have
-	$View = App::process()
-	  ->prepend('_head')
-	  ->append('_foot')
-	;
+		// Process action and get view template if have
+		$View = App::process();
 
-	Response::current()->sendHeaders(
-		$Response->header(...),
-		fn($name, $value, $options) =>
-			$Response->cookie($name, $value, ...$options)
-	);
-	$Response->end((string) $View->render());
+		Response::current()->sendHeaders(
+			$Response->header(...),
+			fn($name, $value, $options) =>
+				$Response->cookie($name, $value, ...$options)
+		);
+		$response = (string) $View->render();
+	} catch (Throwable $T) {
+		App::logException($T);
+		$response = [
+			$T instanceof ResultError ? $T->getMessage() : 'e_error',
+			App::$debug ? $T->getMessage() . PHP_EOL . PHP_EOL . $T->getTraceAsString() : null,
+		];
+		Response::current()
+			->status(400)
+			->header('Content-type', 'application/json; charset=utf8');
+		$response = (string)json_encode($response);
+	}
+
+	$Response->end($response);
 });
 
 // This solves issue with worker exit timeout ERRNO 9012
@@ -229,10 +231,6 @@ $Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
 $Server->on('workerExit', static function (Swoole\Server $Server, int $worker_id) {
 	Swoole\Timer::clearAll();
 	Swoole\Event::exit();
-});
-
-$Server->on('close', static function ($Server, $fd) {
-	Cli::print("Connection closed: #{$fd}.", Cli::LEVEL_DEBUG);
 });
 
 $Server->start();

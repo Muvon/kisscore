@@ -41,29 +41,34 @@ final class Input {
    * @return void
    */
 	protected static function parse(): void {
+
 		if (static::$is_parsed) {
 			return;
 		}
+		$fn = static::$parse_fn ?? function () {
 
-		if (static::isCli()) {
-			$argv = filter_input(INPUT_SERVER, 'argv');
-			array_shift($argv); // file
-			static::$params['ACTION'] = array_shift($argv);
-			$get = $argv;
-			$post = [];
-		} elseif (static::isJson()) {
-			$get = (array)filter_input_array(INPUT_GET);
-			$post = (array)json_decode(file_get_contents('php://input'), true);
-		} elseif (static::isMsgpack()) {
-			$get = (array)filter_input_array(INPUT_GET);
-			$post = (array)msgpack_unpack(file_get_contents('php://input'));
-		} else {
-			$get = (array)filter_input_array(INPUT_GET);
-			$post = (array)filter_input_array(INPUT_POST);
-		}
-		// Clean up system variables that are not supposed to be in post
-		unset($post['ROUTE'], $post['ACTION']);
-		static::$params = $get + $post;
+
+			if (static::isCli()) {
+				$argv = filter_input(INPUT_SERVER, 'argv');
+				array_shift($argv); // file
+				static::$params['ACTION'] = array_shift($argv);
+				$get = $argv;
+				$post = [];
+			} elseif (static::isJson()) {
+				$get = (array)filter_input_array(INPUT_GET);
+				$post = (array)json_decode(file_get_contents('php://input'), true);
+			} elseif (static::isMsgpack()) {
+				$get = (array)filter_input_array(INPUT_GET);
+				$post = (array)msgpack_unpack(file_get_contents('php://input'));
+			} else {
+				$get = (array)filter_input_array(INPUT_GET);
+				$post = (array)filter_input_array(INPUT_POST);
+			}
+				// Clean up system variables that are not supposed to be in post
+			unset($post['ROUTE'], $post['ACTION']);
+			return $get + $post;
+		};
+		static::$params = $fn();
 		static::$is_parsed = true;
 	}
 
