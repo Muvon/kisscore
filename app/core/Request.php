@@ -40,6 +40,9 @@ final class Request {
 	public static string $host = '';
 	public static string $user_agent = '';
 
+	/** @var array<string,string> */
+	public static array $headers = [];
+
 	/** @var array<string,int> */
 	public static array $languages = [];
 
@@ -108,8 +111,9 @@ final class Request {
 	public static function current(?Closure $init_fn = null): self {
 		static $instance;
 		if (!isset($instance) || isset($init_fn)) {
-			$init_fn ??= static::init(...);
-			$init_fn();
+			if (isset($init_fn)) {
+				$init_fn();
+			}
 			static::parseRealIp();
 			$instance = static::create();
 		}
@@ -117,23 +121,26 @@ final class Request {
 		return $instance;
 	}
 
-	protected static function init(): void {
-		self::$time = $_SERVER['REQUEST_TIME'];
-		self::$time_float = $_SERVER['REQUEST_TIME_FLOAT'];
-		self::$protocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL') ?? 'HTTP/1.1';
-		self::$is_ajax = !!filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH');
-		self::$referer = filter_input(INPUT_SERVER, 'HTTP_REFERER') ?? '';
-		self::$xff = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR') ?? '';
-
-	// Эти переменные всегда определены в HTTP-запросе
-		self::$method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-		self::$user_agent = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT') ?: 'undefined';
-		self::$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-
-		self::$request_uri = filter_input(INPUT_SERVER, 'REQUEST_URI') ?? '';
-		self::$content_type = filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '';
-
-		self::$accept_lang = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE') ?? '';
+	/**
+	 * Reset static state for new request (Swoole: state persists across requests)
+	 */
+	public static function reset(): void {
+		self::$time = 0;
+		self::$time_float = 0;
+		self::$request_uri = '';
+		self::$content_type = '';
+		self::$accept_lang = '';
+		self::$method = 'GET';
+		self::$protocol = 'HTTP';
+		self::$referer = '';
+		self::$ip = '0.0.0.0';
+		self::$real_ip = '0.0.0.0';
+		self::$xff = '';
+		self::$host = '';
+		self::$user_agent = '';
+		self::$headers = [];
+		self::$languages = [];
+		self::$is_ajax = false;
 	}
 
 
@@ -187,7 +194,7 @@ final class Request {
    * @return string
    */
 	public function getHeader(string $header): string {
-		return filter_input(INPUT_SERVER, 'HTTP_' . strtoupper(str_replace('-', '_', $header))) ?? '';
+		return static::$headers[strtolower($header)] ?? '';
 	}
 
   /**

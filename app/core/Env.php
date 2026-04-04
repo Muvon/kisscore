@@ -17,10 +17,11 @@ final class Env {
 	/**
 	 * Initialization of Application
 	 *
+	 * @param ?string $root Project root directory
 	 * @return void
 	 */
-	public static function init(): void {
-		static::initLocalEnv();
+	public static function init(?string $root = null): void {
+		static::initLocalEnv($root);
 		App::$debug = getenv('APP_ENV') === 'dev';
 		App::$log_level = Cli::LEVEL_DEBUG;
 		static::configure(getenv('APP_DIR') . '/config/app.yml.tpl');
@@ -34,12 +35,22 @@ final class Env {
 	}
 
 	/**
-	 * Initialize local env variables and detect it from core onse
+	 * Initialize local env variables from project root
+	 *
+	 * @param ?string $root Explicit project root directory. If null, uses APP_DIR env or falls back to auto-detection.
 	 * @return void
 	 */
-	public static function initLocalEnv(): void {
-		// We know that it is placed under app/core.php in project, so get it
-		$dir = realpath(__DIR__ . '/../');
+	public static function initLocalEnv(?string $root = null): void {
+		if ($root !== null) {
+			$dir = realpath($root);
+		} elseif (getenv('APP_DIR')) {
+			// Already configured externally (e.g. Docker env.sh)
+			return;
+		} else {
+			// Fallback for standalone dev checkout: __DIR__ is app/core/, go up 2 levels
+			$dir = realpath(__DIR__ . '/../../');
+		}
+
 		putenv("APP_DIR=$dir/app");
 		putenv("STATIC_DIR=$dir/app/static");
 		putenv("CONFIG_DIR=$dir/env/etc");
@@ -54,11 +65,12 @@ final class Env {
 	// This method should be called in CLI only
 	/**
 	 * @param int $timeout
+	 * @param ?string $root Project root directory
 	 * @return void
 	 */
-	public static function waitInit(int $timeout = 5): void {
+	public static function waitInit(int $timeout = 5, ?string $root = null): void {
 		$t = time();
-		Env::initLocalEnv();
+		Env::initLocalEnv($root);
 		$cnf_file = getenv('CONFIG_DIR') . '/config.php';
 		do {
 			$tpl_ts = filemtime(getenv('APP_DIR') . '/config/app.yml.tpl');
@@ -284,7 +296,7 @@ final class Env {
 	}
 
 	/**
-	 * Generate nginx URI map for route request to special file
+	 * Generate URI route map from action annotations
 	 *
 	 * @return void
 	 */
@@ -399,7 +411,7 @@ final class Env {
 	 */
 	protected static function getPHPFiles(string $dir): array {
 		assert(is_dir($dir));
-		$output = `find -L $dir -name '*.php'`;
+		$output = shell_exec("find -L $dir -name '*.php'");
 		return $output ? explode(PHP_EOL, trim($output)) : [];
 	}
 

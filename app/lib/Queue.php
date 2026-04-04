@@ -49,16 +49,6 @@ final class Queue {
 			return true;
 		};
 
-		if (function_exists('fastcgi_finish_request')) {
-			register_shutdown_function(
-				function () use ($func) {
-					$func();
-					fastcgi_finish_request();
-				}
-			);
-			return true;
-		}
-
 		return $func();
 	}
 

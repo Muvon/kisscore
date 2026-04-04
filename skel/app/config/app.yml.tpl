@@ -47,13 +47,6 @@ session:
 
 server:
   port: 80
-  auth_name: 'test'
-  auth_pass: 'test'
-  auth_routes: 'admin'
-  open_file_cache: 'off'
-
-server:production:
-  open_file_cache: 'max=100000 inactive=600s'
 
 cors:
   origin: '*'

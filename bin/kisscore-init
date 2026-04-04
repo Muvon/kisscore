@@ -12,26 +12,28 @@
  *   composer run-script kisscore-create-project
  */
 
-// Find the autoloader
-$autoloadPaths = [
-    __DIR__ . '/../autoload.php',
-    __DIR__ . '/../../autoload.php',
-    __DIR__ . '/../../../autoload.php',
-    __DIR__ . '/../../../../autoload.php',
-];
+// Find the autoloader (Composer proxy sets this global when running via vendor/bin)
+$autoloadPath = $GLOBALS['_composer_autoload_path']
+    ?? $GLOBALS['_composer_bin_dir'] . '/../autoload.php'
+    ?? null;
 
-$autoloader = null;
-foreach ($autoloadPaths as $path) {
-    if (file_exists($path)) {
-        $autoloader = require $path;
-        break;
+if (!$autoloadPath || !file_exists($autoloadPath)) {
+    // Fallback: walk up from __DIR__
+    foreach ([1, 2, 3, 4] as $levels) {
+        $try = dirname(__DIR__, $levels) . '/vendor/autoload.php';
+        if (file_exists($try)) {
+            $autoloadPath = $try;
+            break;
+        }
     }
 }
 
-if (!$autoloader) {
+if (!$autoloadPath || !file_exists($autoloadPath)) {
     fwrite(STDERR, "Error: Could not find Composer autoloader\n");
     exit(1);
 }
+
+require $autoloadPath;
 
 // Simple CLI argument parsing
 $command = $argv[1] ?? 'help';

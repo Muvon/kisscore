@@ -71,7 +71,7 @@ final class App {
 		. "\t" . $id
 		. "\t" . $message
 		. "\t" . $encoded_dump . "\t"
-		. json_encode(filter_input_array(INPUT_COOKIE), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
+		. json_encode(Cookie::all(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL
 		;
 		error_log($message, 3, $log_file);
 		return $id;
@@ -83,7 +83,8 @@ final class App {
 	 */
 	public static function start(array $config = []): void {
 		// First detect local envs from base vars, cuz we use it
-		Env::initLocalEnv();
+		Env::initLocalEnv($config['root'] ?? null);
+		unset($config['root']);
 		foreach ($config as $param => $value) {
 			static::${$param} = $value;
 		}
@@ -194,7 +195,7 @@ final class App {
 
 			case is_array($response):
 			case is_object($response):
-				$accept = filter_input(INPUT_SERVER, 'HTTP_ACCEPT') ?? '';
+				$accept = Request::$headers['accept'] ?? '';
 				$type = match (true) {
 					str_contains('application/json', $accept) => 'json',
 					str_contains('application/msgpack', $accept) => 'msgpack',
