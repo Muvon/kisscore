@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
-cd app || exit 1
-./vendor/bin/phpcs -v -s --standard="$(pwd)/ruleset.xml" .
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd -P )"
+cd "$PROJECT_DIR" || exit 1
+vendor/bin/phpcs -v -s --standard=ruleset.xml app/

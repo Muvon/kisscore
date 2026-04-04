@@ -2,11 +2,10 @@
 
 /**
  * @template T
- * @phpstan-type string E
  */
 final class Result {
 	/**
-	 * @param string $err
+	 * @param ?string $err
 	 * @param T $res
 	 */
 	public function __construct(public ?string $err, public mixed $res) {
@@ -14,24 +13,23 @@ final class Result {
 
 	/**
 	 * @param T $res
-	 * @return static<string,T>
+	 * @return self<T>
 	 */
-	public static function ok(mixed $res): static {
-		return new static(null, $res);
+	public static function ok(mixed $res): self {
+		return new self(null, $res);
 	}
 
 	/**
 	 * @param T $res
-	 * @return static<string,T>
+	 * @return self<T>
 	 */
-	public static function err(string $err, mixed $res = null): static {
-		return new static($err, $res);
+	public static function err(string $err, mixed $res = null): self {
+		return new self($err, $res);
 	}
 
 	/**
 	 * Unwrap or throw exception if error
 	 * @return T
-	 * @throws ResultError<string>
 	 */
 	public function unwrap(): mixed {
 		if ($this->err) {
@@ -63,14 +61,14 @@ final class Result {
 	 * The function combines two or multiple results and return ok if all ok
 	 * or first error from first result that failed
 	 * @param Result<T> ...$Results
-	 * @return T
+	 * @return array<T>
 	 */
-	public static function unwrapAll(Result ...$Results): mixed {
+	public static function unwrapAll(Result ...$Results): array {
 		return array_map(fn($Result) => $Result->unwrap(), $Results);
 	}
 
 	/**
-	 * @return array{string,T}
+	 * @return array{?string,T}
 	 */
 	public function toArray(): array {
 		return [$this->err, $this->res];

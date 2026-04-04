@@ -97,9 +97,7 @@ final class Response {
    */
 	public function status(int $status): self {
 		assert(isset(self::$messages[$status]));
-		if (isset(self::$messages[$status])) {
-			$this->status = $status;
-		}
+		$this->status = $status;
 		return $this;
 	}
 
@@ -133,20 +131,22 @@ final class Response {
    * Send all staff to output: headers, body and so on
 	 *
 	 * @param string $content
-   * @return $this
+   * @return self
    */
 	public function send(string $content = ''): self {
-		return $this->sendHeaders()->setBody($content)->sendBody();
+		$this->sendHeaders();
+		$this->setBody($content);
+		$this->sendBody();
+		return $this;
 	}
 
   /**
   * Relocate user to url
 	*
-  * @param string $url полный HTTP-адрес страницы для редиректа
-  * @param int $code код редиректа (301 | 302)
-  * @return void
+  * @param string $url
+  * @param int $code (301 | 302)
   */
-	public static function redirect(string $url, int $code = 302): void {
+	public static function redirect(string $url, int $code = 302): never {
 		assert(in_array($code, [301, 302]));
 
 		if ($url[0] === '/') {
@@ -186,8 +186,8 @@ final class Response {
 	 */
 	public function sendHeaders(?callable $header_fn = null, ?callable $cookie_fn = null): self {
 		if (!$header_fn) {
-			$header_fn = function (string $key, string $value, bool $replace = true) {
-				return header($key . ': ' . $value, $replace);
+			$header_fn = function (string $key, string $value, bool $replace = true): void {
+				header($key . ': ' . $value, $replace);
 			};
 		}
 		Cookie::send($cookie_fn); // This is not good but fuck it :D
@@ -203,8 +203,8 @@ final class Response {
 		}
 
 	  // Send header with execution time
-		$header_fn('X-Server-Time', strval(intval(Request::$time_float * 1000)));
-		$header_fn('X-Response-Time', strval(intval((microtime(true) - Request::$time_float) * 1000)));
+		$header_fn('X-Server-Time', (string)(int)(Request::$time_float * 1000));
+		$header_fn('X-Response-Time', (string)(int)((microtime(true) - Request::$time_float) * 1000));
 		return $this;
 	}
 

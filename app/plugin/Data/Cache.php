@@ -41,7 +41,7 @@ final class Cache {
   /**
    * Получение данных из кэша по ключу
    *
-   * @param array|string $key
+   * @param array<string>|string $key
    * @param mixed $default Closure | mixed если это замыкание, то кэш записвыается
    * @param int $ttl Optional TTL for expires
    * @return mixed кэшированное данное
@@ -49,10 +49,12 @@ final class Cache {
 	public static function get(array|string $key, mixed $default = null, int $ttl = 0): mixed {
 		$items = is_string($key) ? static::connect()->get($key) : static::connect()->getMulti($key);
 		if (is_array($key)) {
-			if (!$items) {
+			if (!is_array($items)) {
 				$items = [];
 			} else {
 				$map = array_flip($key);
+				/** @var array<int,mixed> $result */
+				$result = [];
 				foreach ($items as $k => $item) {
 					$result[$map[$k]] = $item;
 				}
@@ -74,11 +76,11 @@ final class Cache {
 	/**
 	 * @param string $key
 	 * @return int
-	 * @throws Exception
 	 */
 	public static function getCas(string $key): int {
+		/** @var array{cas:int}|false $info */
 		$info = static::connect()->get($key, null, Memcached::GET_EXTENDED);
-		return $info['cas'] ?? 0;
+		return is_array($info) ? $info['cas'] : 0;
 	}
 
 	/**
@@ -87,7 +89,6 @@ final class Cache {
 	 * @param mixed $val
 	 * @param int $ttl
 	 * @return bool
-	 * @throws Exception
 	 */
 	public static function setWithCas(float $token, string $key, mixed $val, int $ttl = 0): bool {
 		return static::connect()->cas($token, $key, $val, $ttl);
@@ -96,19 +97,18 @@ final class Cache {
   /**
    * Установка данные для ключа, перезапись в случае нахождения
    *
-   * @param string|array $key Массив или строка
+   * @param string|array<string,mixed> $key Массив или строка
    * @param mixed $val
    * @param int $ttl
-   * @return mixed
+   * @return bool
    */
-	public static function set(string|array $key, mixed $val, int $ttl = 0): mixed {
-		assert(is_string($key) || is_array($key));
-		assert(is_int($ttl));
-
-		return is_string($key)
-		? static::connect()->set($key, $val, $ttl)
-		: static::connect()->setMulti($key, $val) // $val as $ttl
-		;
+	public static function set(string|array $key, mixed $val, int $ttl = 0): bool {
+		if (is_string($key)) {
+			return static::connect()->set($key, $val, $ttl);
+		}
+		/** @var int $ttl_val */
+		$ttl_val = $val;
+		return static::connect()->setMulti($key, $ttl_val); // $val as $ttl
 	}
 
   /**
@@ -146,20 +146,20 @@ final class Cache {
 	}
 
 	/**
-	 * @param string|array $key
+	 * @param string|array<string> $key
 	 * @return bool
-	 * @throws Exception
 	 */
 	public static function remove(string|array $key): bool {
-		return is_string($key)
-		? static::connect()->delete($key)
-		: static::connect()->deleteMulti($key);
+		if (is_string($key)) {
+			return static::connect()->delete($key);
+		}
+		/** @var bool */
+		return (bool)static::connect()->deleteMulti($key);
 	}
 
 	/**
-	 * @param string|array $key
+	 * @param string|array<string> $key
 	 * @return bool
-	 * @throws Exception
 	 */
 	public static function delete(string|array $key): bool {
 		return static::remove($key);
@@ -169,7 +169,6 @@ final class Cache {
 	 * @param string $key
 	 * @param int $ttl
 	 * @return bool
-	 * @throws Exception
 	 */
 	public static function touch(string $key, int $ttl = 0): bool {
 		return static::connect()->touch($key, $ttl);
@@ -198,7 +197,6 @@ final class Cache {
 	 * @param int $count
 	 * @param int $ttl
 	 * @return int
-	 * @throws Exception
 	 */
 	public static function decrement(string $key, int $count = 1, int $ttl = 0): int {
 		return static::increment($key, -$count, $ttl);

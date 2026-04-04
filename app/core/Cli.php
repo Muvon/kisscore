@@ -17,7 +17,7 @@ final class Cli {
 		}
 
 		system('stty -echo');
-		$secret = trim(fgets(STDIN));
+		$secret = trim((string)fgets(STDIN));
 		system('stty echo');
 
 		return $secret;

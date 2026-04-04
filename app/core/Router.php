@@ -5,44 +5,59 @@
  */
 final class Router
 {
+	/** @var array<array<string,mixed>>|null */
 	private static ?array $routes = null;
+	/** @var array<array<string,mixed>>|null */
 	private static ?array $compiled = null;
 
 	/**
 	 * Generate route map from action files
+	 * @return array<array<string,mixed>>
 	 */
 	public static function generateMap(): array {
-		$routes = Env::load(config('common.uri_map_file'));
+		/** @var string $uriMapFile */
+		$uriMapFile = config('common.uri_map_file');
+		$routes = Env::load($uriMapFile);
 		uasort(
-			$routes, function ($a, $b) {
-				return (sizeof($a) > sizeof($b)) ? 1 : -1;
+			$routes, function (mixed $a, mixed $b): int {
+				/** @var array<mixed> $aArr */
+				$aArr = $a;
+				/** @var array<mixed> $bArr */
+				$bArr = $b;
+				return (sizeof($aArr) > sizeof($bArr)) ? 1 : -1;
 			}
 		);
 
+		/** @var string $lang_type */
 		$lang_type = config('common.lang_type');
+		/** @var array<string> $configLanguages */
+		$configLanguages = config('common.languages');
 		$lang_match = match ($lang_type) {
-			'path' => implode('|', config('common.languages')),
+			'path' => implode('|', $configLanguages),
 			default => null
 		};
 
 		$map = [];
 
-		foreach ($routes as $route => $params) {
+		foreach ($routes as $route => $routeParams) {
+			/** @var array<mixed> $params */
+			$params = $routeParams;
 			$zone = array_shift($params);
 			$action = array_shift($params);
 
+			$routeKey = (string)$route;
 			$data = [
-				'pattern' => $route,
+				'pattern' => $routeKey,
 				'zone' => $zone,
 				'action' => $action,
 				'params' => array_values($params),
 			];
 
 			if ($lang_match) {
-				if ($route === 'home') {
+				if ($routeKey === 'home') {
 					$data['lang_pattern'] = "(?:$lang_match)/?";
 				} else {
-					$data['lang_pattern'] = "(?:$lang_match)/" . $route;
+					$data['lang_pattern'] = "(?:$lang_match)/" . $routeKey;
 				}
 				$data['has_lang'] = true;
 			}
@@ -91,12 +106,18 @@ final class Router
 	 */
 	private static function compile(): void {
 		static::$compiled = [];
+		if (static::$routes === null) {
+			return;
+		}
 
 		foreach (static::$routes as $route) {
+			/** @var string $pattern */
 			$pattern = $route['pattern'];
 
 			if (isset($route['has_lang']) && isset($route['lang_pattern'])) {
-				$regex = '/^' . str_replace('/', '\/', $route['lang_pattern']) . '$/';
+				/** @var string $langPattern */
+				$langPattern = $route['lang_pattern'];
+				$regex = '/^' . str_replace('/', '\/', $langPattern) . '$/';
 			} else {
 				$regex = '/^' . str_replace('/', '\/', $pattern) . '$/';
 			}
@@ -114,6 +135,7 @@ final class Router
 
 	/**
 	 * Match URL against routes
+	 * @return array{action:string,params:array<string,string>,route:string,zone:string}|null
 	 */
 	public static function match(string $url, string $host = ''): ?array {
 		static::init();
@@ -125,16 +147,22 @@ final class Router
 
 		$zone = static::getZone($host);
 
-		foreach (static::$compiled as $route) {
-			if ($route['zone'] !== $zone) {
+		foreach (static::$compiled ?? [] as $route) {
+			/** @var string $routeZone */
+			$routeZone = $route['zone'];
+			if ($routeZone !== $zone) {
 				continue;
 			}
 
-			if (preg_match($route['regex'], $clean_url, $matches)) {
+			/** @var string $regex */
+			$regex = $route['regex'];
+			if (preg_match($regex, $clean_url, $matches)) {
 				array_shift($matches);
 
 				$params = [];
-				foreach ($route['params'] as $i => $param_name) {
+				/** @var array<string> $routeParams */
+				$routeParams = $route['params'] ?? [];
+				foreach ($routeParams as $i => $param_name) {
 					if (!isset($matches[$i])) {
 						continue;
 					}
@@ -142,11 +170,15 @@ final class Router
 					$params[$param_name] = $matches[$i];
 				}
 
+				/** @var string $routeAction */
+				$routeAction = $route['action'];
+				/** @var string $routePattern */
+				$routePattern = $route['pattern'];
 				return [
-					'action' => $route['action'],
+					'action' => $routeAction,
 					'params' => $params,
-					'route' => $route['pattern'],
-					'zone' => $route['zone'],
+					'route' => $routePattern,
+					'zone' => $routeZone,
 				];
 			}
 		}
@@ -158,12 +190,14 @@ final class Router
 	 * Get zone from host
 	 */
 	private static function getZone(string $host): string {
+		/** @var array<string> $zones */
+		$zones = config('common.zones');
 		if (!$host) {
-			return config('common.zones')[0] ?? 'www';
+			return $zones[0] ?? 'www';
 		}
 
+		/** @var string $domain */
 		$domain = config('common.domain');
-		$zones = config('common.zones');
 
 		if ($host === $domain) {
 			return 'www';

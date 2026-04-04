@@ -5,17 +5,23 @@ namespace Plugin\SEO;
 final class Sitemap {
   /**
    * @param string $file
-   * @param array $locs
+   * @param array<int,array{url:string,date:string,priority:string}> $locs
    * @param string|null $host
    * @return void
    */
 	public static function generate(string $file, array $locs, ?string $host = null): void {
 		if (!$host) {
-			$host = config('common.proto') . '://' . config('common.domain');
+			/** @var string $proto */
+			$proto = config('common.proto');
+			/** @var string $domain */
+			$domain = config('common.domain');
+			$host = $proto . '://' . $domain;
 		}
+		$xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9';
+		$mobile = 'http://www.google.com/schemas/sitemap-mobile/1.0';
 		file_put_contents(
 			$file, '<?xml version="1.0" encoding="UTF-8"?>'
-			. PHP_EOL . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">'
+			. PHP_EOL . '<urlset xmlns="' . $xmlns . '" xmlns:mobile="' . $mobile . '">'
 			. PHP_EOL . '<url>'
 			. PHP_EOL . '  <loc>' . $host . '</loc>'
 			. PHP_EOL . '  <lastmod>' . gmdate('Y-m-d\TH:i:sP') . '</lastmod>'

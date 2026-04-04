@@ -5,12 +5,19 @@ namespace Plugin\SEO;
 final class Url {
 	/**
 	 * @param string $str
-	 * @param array{delimiter?:string,limit?:int,lowercase?:bool,replacements?:array,transliterate?:bool} $options
+	 * @param array{
+	 *   delimiter?:string,
+	 *   limit?:int|null,
+	 *   lowercase?:bool,
+	 *   replacements?:array<string,string>,
+	 *   transliterate?:bool,
+	 * } $options
 	 * @return string
 	 */
-	public static function getSlug(string $str, $options = []): string {
+	public static function getSlug(string $str, array $options = []): string {
 		// Make sure string is in UTF-8 and strip invalid UTF-8 characters
-		$str = mb_convert_encoding((string)$str, 'UTF-8', mb_list_encodings());
+		$converted = mb_convert_encoding($str, 'UTF-8', mb_list_encodings());
+		$str = $converted !== false ? $converted : $str;
 
 		$defaults = [
 			'delimiter' => '-',
@@ -38,16 +45,16 @@ final class Url {
 		];
 
 		// Make custom replacements
-		$str = preg_replace(array_keys($options['replacements']), $options['replacements'], $str);
+		$str = (string)preg_replace(array_keys($options['replacements']), $options['replacements'], $str);
 
 		// Transliterate characters to ASCII
 		$str = str_replace(array_keys($char_map), $char_map, $str);
 
 		// Replace non-alphanumeric characters with our delimiter
-		$str = preg_replace('/[^\p{L}\p{Nd}]+/u', $options['delimiter'], $str);
+		$str = (string)preg_replace('/[^\p{L}\p{Nd}]+/u', $options['delimiter'], $str);
 
 		// Remove duplicate delimiters
-		$str = preg_replace('/(' . preg_quote($options['delimiter'], '/') . '){2,}/', '$1', $str);
+		$str = (string)preg_replace('/(' . preg_quote($options['delimiter'], '/') . '){2,}/', '$1', $str);
 
 		// Truncate slug to max. characters
 		$str = mb_substr($str, 0, ($options['limit'] ?: mb_strlen($str, 'UTF-8')), 'UTF-8');
@@ -56,7 +63,7 @@ final class Url {
 		$str = trim($str, $options['delimiter']);
 
 		// Remove not latin letter
-		$str = preg_replace('/[^a-z0-9\_\-]+/ui', '', $str);
+		$str = (string)preg_replace('/[^a-z0-9\_\-]+/ui', '', $str);
 
 		return $options['lowercase'] ? mb_strtolower($str, 'UTF-8') : $str;
 	}

@@ -7,15 +7,20 @@ class Secret {
 	 * @return void
 	 */
 	public function __construct(protected string $key) {
-		$this->key = hex2bin($key);
+		$decoded = hex2bin($key);
+		if ($decoded === false) {
+			throw new \InvalidArgumentException('Invalid hex key');
+		}
+		$this->key = $decoded;
 	}
 
 	/**
 	 * Static helper to initialize with request key
-	 * @param mixed $key
+	 * @param string $key
 	 * @return static
 	 */
 	public static function with(string $key): static {
+		/** @phpstan-ignore-next-line Unsafe new static() — class is not final but subclasses must maintain constructor contract */
 		return new static($key);
 	}
 
@@ -40,6 +45,10 @@ class Secret {
 	 * @throws SodiumException
 	 */
 	public function decrypt(string $encrypted, string $nonce): string {
-		return sodium_crypto_aead_aes256gcm_decrypt($encrypted, '', $nonce, $this->key);
+		$result = sodium_crypto_aead_aes256gcm_decrypt($encrypted, '', $nonce, $this->key);
+		if ($result === false) {
+			throw new \RuntimeException('Decryption failed');
+		}
+		return $result;
 	}
 }

@@ -2,7 +2,7 @@
 
 final class Autoload {
 	protected static bool $inited = false;
-	/** @var string[] $prefixed */
+	/** @var array<string, array<string>> */
 	protected static array $prefixes = [];
 
 	/**

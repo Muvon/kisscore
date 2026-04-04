@@ -16,9 +16,9 @@ final class View {
 	protected array $data = [];
 	/** @var string[] $routes */
 	protected array $routes = [];
-	/** @var string[] $output_filters */
+	/** @var array<callable> $output_filters */
 	protected array $output_filters = [];
-	/** @var string[] $compilers */
+	/** @var array<string,array<callable>> $compilers */
 	protected array $compilers = [];
 
 	protected string $body;
@@ -52,7 +52,7 @@ final class View {
   /** @var string $template_extension */
 	protected string $template_extension = 'tpl';
 
-  /** @var array $block_path */
+  /** @var array<string> $block_path */
 	protected array $block_path = [];
 
   /**
@@ -61,12 +61,20 @@ final class View {
    * @see self::create
    */
 	final protected function __construct() {
-		$this->routes = [config('default.action')];
+		/** @var string $defaultAction */
+		$defaultAction = config('default.action');
+		$this->routes = [$defaultAction];
 
 	  // Setup default settings
-		$this->template_extension = config('view.template_extension');
-		$this->source_dir = config('view.source_dir');
-		$this->compile_dir = config('view.compile_dir');
+		/** @var string $templateExtension */
+		$templateExtension = config('view.template_extension');
+		$this->template_extension = $templateExtension;
+		/** @var string $sourceDir */
+		$sourceDir = config('view.source_dir');
+		$this->source_dir = $sourceDir;
+		/** @var string $compileDir */
+		$compileDir = config('view.compile_dir');
+		$this->compile_dir = $compileDir;
 	}
 
   /**
@@ -128,9 +136,9 @@ final class View {
    * @param string[] ...$routes Список всех роутов в нужной последовательности для сборки
    * @return self
    */
-	public static function create(...$routes): self {
+	public static function create(string ...$routes): self {
 		$View = new static;
-		$View->routes = $routes;
+		$View->routes = array_values($routes);
 		return $View;
 	}
 
@@ -159,7 +167,7 @@ final class View {
 	 * @return self
 	 */
 	public function addOutputFilter(callable $filter): self {
-		$this->output_filters = $filter;
+		$this->output_filters[] = $filter;
 		return $this;
 	}
 
@@ -225,32 +233,40 @@ final class View {
 	protected function block(string $key, mixed $param, mixed $item, Closure $block): self {
 		static $arrays = [];
 		$arrays[$key] = is_array($param);
-		if ($arrays[$key] && is_int(key($param))) {
-			$last = sizeof($param) - 1;
-			$i = 0;
-			foreach ($param as $value) {
-				if (!is_array($value)) {
-					$value = ['parent' => $item, 'this' => $value];
-				}
-
-				$value['global']     = &$this->data;
-				$value['first']      = $i === 0;
-				$value['last']       = $i === $last;
-				$value['even']       = $i % 2 ? true : false;
-				$value['odd']        = !$value['even'];
-				$value['iteration']  = ++$i;
-				$block($value);
-			}
+		if ($arrays[$key] && is_array($param) && is_int(key($param))) {
+			$this->blockIterateList($param, $item, $block);
 		} elseif ($param) {
 			if ($arrays[$key]) {
 				$item   = $param + ['global' => &$this->data, 'parent' => $item];
 				$block($item);
-				$item = $item['parent'];
 			} else {
 				$block($item);
 			}
 		}
 		return $this;
+	}
+
+	/**
+	 * @param array<int, mixed> $param
+	 * @param mixed $item
+	 * @param Closure $block
+	 */
+	protected function blockIterateList(array $param, mixed $item, Closure $block): void {
+		$last = sizeof($param) - 1;
+		$i = 0;
+		foreach ($param as $value) {
+			if (!is_array($value)) {
+				$value = ['parent' => $item, 'this' => $value];
+			}
+
+			$value['global']     = &$this->data;
+			$value['first']      = $i === 0;
+			$value['last']       = $i === $last;
+			$value['even']       = $i % 2 ? true : false;
+			$value['odd']        = !$value['even'];
+			$value['iteration']  = ++$i;
+			$block($value);
+		}
 	}
 
 	/**
@@ -321,7 +337,7 @@ final class View {
 			)
 		);
 
-		return preg_replace_callback(
+		return (string)preg_replace_callback(
 			'#\{(' . static::VAR_PTRN . ')(' . $filter_ptrn . ')?\}#ium',
 			function ($matches) {
 				$filter = 'raw';
@@ -347,7 +363,7 @@ final class View {
 
 	  // Могут быть вложенные
 		while (preg_match($line_block, $str) > 0) {
-			$str = preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
+			$str = (string)preg_replace($line_block, '{$1}' . PHP_EOL . '$2' . PHP_EOL . '{/$1}', $str);
 		}
 
 		return $str;
@@ -358,7 +374,7 @@ final class View {
    * @return string
    */
 	protected function chunkCompileBlocks(string $str): string {
-		return preg_replace_callback(
+		return (string)preg_replace_callback(
 			'#\{(' . static::VAR_PTRN . ')\}(.+?){\/\\1}#ius',
 			function ($m) {
 				// Oh Shit so magic :)
@@ -402,12 +418,12 @@ final class View {
 	protected function chunkMinify(string $str): string {
 	  // Remove tabs and merge into single line
 		if (config('view.merge_lines')) {
-			$str = preg_replace(['#^\s+#ium', "|\>\s*\r?\n\<|ius", "|\s*\r?\n|ius"], ['', '><', ' '], $str);
+			$str = (string)preg_replace(['#^\s+#ium', "|\>\s*\r?\n\<|ius", "|\s*\r?\n|ius"], ['', '><', ' '], $str);
 		}
 
 	  // Remove comments
 		if (config('view.strip_comments')) {
-			$str = preg_replace('/<!\-\-.+?\-\->/is', '', $str);
+			$str = (string)preg_replace('/<!\-\-.+?\-\->/is', '', $str);
 		}
 
 		return $str;
@@ -428,9 +444,13 @@ final class View {
 			return $file_c;
 		}
 
-		$str = file_get_contents($source_file);
+		$str = (string)file_get_contents($source_file);
 	  // Do precompile by custom compiler to make it possible to change vars after
-		$compilers = array_merge($this->compilers[$route] ?? [], $this->compilers['*'] ?? []);
+		/** @var array<callable> $routeCompilers */
+		$routeCompilers = $this->compilers[$route] ?? [];
+		/** @var array<callable> $globalCompilers */
+		$globalCompilers = $this->compilers['*'] ?? [];
+		$compilers = array_merge($routeCompilers, $globalCompilers);
 		if ($compilers) {
 			foreach ($compilers as $compiler) {
 				$str = $compiler($str, $route);
@@ -445,14 +465,14 @@ final class View {
 		$str = $this->chunkMinify($str);
 
 	  // Замена подключений файлов
-		$str = preg_replace_callback(
+		$str = (string)preg_replace_callback(
 			'#\{\>([a-z\_0-9\/]+)(.*?)\}#ium', function ($matches) {
 				return static::chunkParseParams($matches[2]) . $this->getChunkContent($matches[1]);
 			}, $str
 		);
 
 	  // Замена динамичных подключений файлов
-		$str = preg_replace_callback(
+		$str = (string)preg_replace_callback(
 			'#\{\>\>([a-z\_0-9\.]+)(.*?)\}#ium', function ($matches) {
 				$route = static::chunkVar($matches[1], '$item');
 				return '<?php '
@@ -516,7 +536,7 @@ final class View {
 	 * @return string
 	 */
 	protected function getChunkContent(string $template): string {
-		return file_get_contents($this->compileChunk($template));
+		return (string)file_get_contents($this->compileChunk($template));
 	}
 
 	/**
@@ -572,7 +592,7 @@ final class View {
 		try {
 			ob_start();
 			$this->compile();
-			$this->body = ob_get_clean();
+			$this->body = (string)ob_get_clean();
 		} catch (Throwable $e) {
 			if (!$quiet) {
 				throw $e;
@@ -587,7 +607,9 @@ final class View {
 	 * @return void
 	 */
 	public static function flush(): void {
-		$dir = escapeshellarg(config('view.compile_dir'));
+		/** @var string $compileDir */
+		$compileDir = config('view.compile_dir');
+		$dir = escapeshellarg($compileDir);
 		system('for file in `find ' . $dir . ' -name \'view-*\'`; do rm -f $file; done');
 	}
 }

@@ -27,25 +27,27 @@ function config(string $param): mixed {
  * </code>
  */
 function typify(mixed $var, string $type): mixed {
+	/** @var scalar|null $s */
+	$s = $var;
 	switch ($type) {
 		case 'int':
 		case 'integer':
-			$var = (int)$var;
+			$var = (int)$s;
 			break;
 		case 'uinteger':
 		case 'uint':
-			$var = (int)$var;
+			$var = (int)$s;
 			if ($var < 0) {
 				$var = 0;
 			}
 			break;
 		case 'double':
 		case 'float':
-			$var = (float)$var;
+			$var = (float)$s;
 			break;
 		case 'udouble':
 		case 'ufloat':
-			$var = (float)$var;
+			$var = (float)$s;
 			if ($var < 0) {
 				$var = 0.0;
 			}
@@ -58,7 +60,7 @@ function typify(mixed $var, string $type): mixed {
 			$var = $var ? (array)$var : [];
 			break;
 		case 'string':
-			$var = (string)$var;
+			$var = (string)$s;
 			break;
 		default: // Do nothing here
 			break;
@@ -70,24 +72,28 @@ function typify(mixed $var, string $type): mixed {
 /**
  * Triggered events
  * @param string $event
- * @param array $payload Дополнительные данные для манипуляции
+ * @param array<string, mixed> $payload Дополнительные данные для манипуляции
  * @return void
  */
 function trigger_event(string $event, array $payload = []): void {
 	static $map;
 	if (!isset($map)) {
-		$map = Env::load(config('common.trigger_map_file'));
+		/** @var string $trigger_map_file */
+		$trigger_map_file = config('common.trigger_map_file');
+		$map = Env::load($trigger_map_file);
 	}
 
 	if (!isset($map[$event])) {
 		return;
 	}
 
+	/** @var string $trigger_param_file */
+	$trigger_param_file = config('common.trigger_param_file');
 	array_walk(
-		$map[$event], function (string $file) use ($payload) {
+		$map[$event], function (string $file) use ($payload, $trigger_param_file) {
 			extract(
 				Input::extractTypified(
-					App::getImportVarsArgs($file, config('common.trigger_param_file')),
+					App::getImportVarsArgs($file, $trigger_param_file),
 					function ($key, $default = null) use ($payload) {
 						return $payload[$key] ?? $default;
 					}
@@ -129,6 +135,7 @@ function container(string $name, mixed $value = null): mixed {
  * @return string
  */
 function get_class_name(string $class): string {
+	/** @var class-string $class */
 	return (new ReflectionClass($class))->getShortName();
 }
 
@@ -138,7 +145,7 @@ function get_class_name(string $class): string {
  * @return string
  */
 function bchexdec(string $hex): string {
-	$dec = 0;
+	$dec = '0';
 	$len = strlen($hex);
 	for ($i = 1; $i <= $len; $i++) {
 		$dec = bcadd("$dec", bcmul((string)(hexdec($hex[$i - 1])), bcpow('16', (string)($len - $i))));
@@ -199,7 +206,7 @@ function bench(?string $txt = null): ?array {
 
 /**
  * @param object $obj
- * @return array
+ * @return array<string, mixed>
  */
 function as_array(object $obj): array {
 	return (array)$obj;
@@ -209,7 +216,7 @@ function as_array(object $obj): array {
  * Get ref to the value in the array by list of keys or dot notation
  * @param array<mixed> $container
  * @param array<string|int>|string $keys
- * @return &mixed
+ * @return mixed
  */
 function &array_value_ref(array &$container, array|string $keys): mixed {
 	if (is_string($keys)) {
@@ -227,8 +234,8 @@ function &array_value_ref(array &$container, array|string $keys): mixed {
 	return $reference;
 }
 /**
- * @param array $arrays
- * @return array
+ * @param array<string, array<mixed>> $arrays
+ * @return array<int, array<string, mixed>>
  */
 function array_cartesian(array $arrays): array {
 	$result = [];
@@ -260,10 +267,11 @@ function array_cartesian(array $arrays): array {
 
 // $state_map = array_order_by($state_map, 'created_at', SORT_DESC, SORT_NUMERIC/*, 'id', SORT_DESC, SORT_NUMERIC*/);
 /**
- * @return array
+ * @return array<mixed>
  */
 function array_order_by(): array {
 	$args = func_get_args();
+	/** @var array<mixed> $data */
 	$data = array_shift($args);
 	foreach ($args as $n => $field) {
 		if (!is_string($field)) {
@@ -272,22 +280,26 @@ function array_order_by(): array {
 
 		$tmp = [];
 		foreach ($data as $key => $row) {
+			/** @var array<string, mixed> $row */
 			$tmp[$key] = $row[$field];
 		}
 		$args[$n] = $tmp;
 	}
-	$args[] = &$data;
-	call_user_func_array('array_multisort', $args);
-	return array_pop($args);
+	/** @var array<array<mixed>|int> $sort_params */
+	$sort_params = $args;
+	$sort_params[] = &$data;
+	/** @var array<mixed> $first_arg */
+	$first_arg = $sort_params[0];
+	array_multisort($first_arg, ...array_slice($sort_params, 1));
+	return $data;
 }
 
 // Helpers for Result class
 /**
  * Shortcut for Result::ok()
  *
- * @template T
- * @param T $res
- * @return Result<T>
+ * @param mixed $res
+ * @return Result<mixed>
  */
 function ok(mixed $res = null): Result {
 	return Result::ok($res);
@@ -297,10 +309,9 @@ function ok(mixed $res = null): Result {
 /**
  * Shortcut for Result::err()
  *
- * @template U
  * @param string $err
- * @param U $res
- * @return Result<never>
+ * @param mixed $res
+ * @return Result<mixed>
  */
 function err(string $err, mixed $res = null): Result {
 	return Result::err($err, $res);
@@ -308,9 +319,8 @@ function err(string $err, mixed $res = null): Result {
 
 /**
  * Multiple errors creation for single response
- * @template U
  * @param array<string> $errs
- * @return Result<U>
+ * @return Result<mixed>
  */
 function err_list(array $errs): Result {
 	return Result::err('e_error_list', $errs);
@@ -318,7 +328,7 @@ function err_list(array $errs): Result {
 
 if (!function_exists('defer')) {
 	/**
-	 * @param ?SplStack $ctx
+	 * @param ?SplStack<object> $ctx
 	 * @param callable $cb
 	 * @return void
 	 */
@@ -327,13 +337,14 @@ if (!function_exists('defer')) {
 
 		$ctx->push(
 			new class($cb) {
+				/** @var callable */
 				protected $cb;
 				public function __construct(callable $cb) {
 					$this->cb = $cb;
 				}
 
 				public function __destruct() {
-					\call_user_func($this->cb);
+					($this->cb)();
 				}
 			}
 		);

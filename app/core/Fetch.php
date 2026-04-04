@@ -8,7 +8,7 @@ final class Fetch {
 	protected int $request_keepalive = 20;
 	protected string $request_useragent = 'KISSCore/Fetch v0.9.0';
 
-  // The contents of the "Accept-Encoding: " header. This enables decoding of the response. Supported encodings are "identity", "deflate", and "gzip". If an empty string, "", is set, a header containing all supported encoding types is sent.
+	// Accept-Encoding: identity, deflate, gzip. Empty string = all supported.
 	protected ?string $request_encoding = '';
 
   // Type of the request can be one of json, msgpack, binary, raw
@@ -19,7 +19,7 @@ final class Fetch {
 	protected string $response_type = 'raw';
 
   // Array containing proxy info with next fields
-	/** @var array{host:string,port:int,user?:string,password?:string,type?:string} */
+	/** @var array{}|array{host:string,port:int,user?:string,password?:string,type?:string} */
 	protected array $request_proxy = [];
 
 	/** @var array<string> */
@@ -38,7 +38,7 @@ final class Fetch {
 
 	/**
 	 * @param array<string,mixed> $config One of available configs
-	 * @return CurlRequest
+	 * @return self
 	 */
 	public static function new(array $config = []): self {
 		$Self = new self;
@@ -55,7 +55,14 @@ final class Fetch {
 		if (!isset($Self->decoder_fn)) {
 			$Self->decoder_fn = match ($Self->response_type) {
 				'msgpack' => msgpack_unpack(...),
-				'json' => fn($response) => json_decode($response = preg_replace('/"\s*:\s*([0-9]+\.[0-9]+)([,\}\]])/ius', '":"$1"$2', $response), true, flags: JSON_BIGINT_AS_STRING),
+				'json' => function ($response) {
+					$response = preg_replace(
+						'/"\s*:\s*([0-9]+\.[0-9]+)([,\}\]])/ius',
+						'":"$1"$2',
+						$response
+					);
+					return json_decode($response, true, flags: JSON_BIGINT_AS_STRING);
+				},
 				default => fn($response) => $response,
 			};
 		}
@@ -76,9 +83,9 @@ final class Fetch {
 	 * Do single request only, use add method for multi()
    *
    * @param string $url
-   * @param array $payload
+   * @param array<string,mixed> $payload
    * @param string $method Can be POST or GET only
-   * @param array $headers Array with headers. Each entry as string
+   * @param array<string> $headers Array with headers. Each entry as string
    * @return Result<mixed>
    */
 	public function request(string $url, array $payload = [], string $method = 'POST', array $headers = []): Result {
@@ -92,14 +99,14 @@ final class Fetch {
 	/**
 	 * This method adds new request to multi request
 	 * @param string $url
-	 * @param array $payload
+	 * @param array<string,mixed> $payload
 	 * @param string $method
-	 * @param array $headers
-	 * @return Fetch
+	 * @param array<string> $headers
+	 * @return self
 	 */
 	public function add(string $url, array $payload = [], string $method = 'POST', array $headers = []): self {
 		if (!$this->request_mh) {
-			return err('e_multi_request_only');
+			throw new Error('Trying to add request without multi() init');
 		}
 
 		$ch = $this->createCurlHandler($url, $payload, $method, $headers);
@@ -110,12 +117,17 @@ final class Fetch {
 
 	/**
  * @param string $url
- * @param array $payload
+ * @param array<string,mixed> $payload
  * @param string $method
- * @param array $headers
+ * @param array<string> $headers
  * @return CurlHandle
  */
-	protected function createCurlHandler(string $url, array $payload = [], string $method = 'POST', array $headers = []): CurlHandle {
+	protected function createCurlHandler(
+		string $url,
+		array $payload = [],
+		string $method = 'POST',
+		array $headers = [],
+	): CurlHandle {
 		if ($method === 'GET' && $payload) {
 			$url = rtrim($url, '?') . '?' . http_build_query($payload, '', '&');
 		}
@@ -140,12 +152,14 @@ final class Fetch {
 			CURLOPT_USERAGENT => $this->request_useragent,
 		];
 
-		if ($this->request_proxy) {
-			$opts[CURLOPT_PROXY] = $this->request_proxy['host'] . ':' . $this->request_proxy['port'];
-			if (isset($this->request_proxy['user'])) {
-				$opts[CURLOPT_PROXYUSERPWD] = $this->request_proxy['user'] . ':' . $this->request_proxy['password'];
+		if ($this->request_proxy !== []) {
+			/** @var array{host:string,port:int,user?:string,password?:string,type?:string} $proxy */
+			$proxy = $this->request_proxy;
+			$opts[CURLOPT_PROXY] = $proxy['host'] . ':' . $proxy['port'];
+			if (isset($proxy['user'])) {
+				$opts[CURLOPT_PROXYUSERPWD] = $proxy['user'] . ':' . ($proxy['password'] ?? '');
 			}
-			$opts[CURLOPT_PROXYTYPE] = match ($this->request_proxy['type'] ?? 'http') {
+			$opts[CURLOPT_PROXYTYPE] = match ($proxy['type'] ?? 'http') {
 				'socks4' => CURLPROXY_SOCKS4,
 				'socks5' => CURLPROXY_SOCKS5,
 				default => CURLPROXY_HTTP,
@@ -154,7 +168,7 @@ final class Fetch {
 
 		if ($method === 'POST') {
 			$opts[CURLOPT_POST] = 1;
-			$opts[CURLOPT_POSTFIELDS] = call_user_func($this->encoder_fn, $payload);
+			$opts[CURLOPT_POSTFIELDS] = ($this->encoder_fn)($payload);
 		}
 
 		curl_setopt_array($ch, $opts);
@@ -167,7 +181,7 @@ final class Fetch {
 	 * If we call this methods without multi it throws Exception
 	 * In case if one or more responses failed it throws Exception
 	 *
-	 * @return array list of results with structure same as single request
+	 * @return array<Result<mixed>> list of results with structure same as single request
 	 */
 	public function exec(): array {
 		if (!$this->request_mh) {
@@ -243,7 +257,7 @@ final class Fetch {
 				return err('e_response_empty', $response);
 			}
 
-			$decoded = call_user_func($this->decoder_fn, $response);
+			$decoded = ($this->decoder_fn)($response);
 			if (false === $decoded) {
 				return err('e_response_decode_failed');
 			}
@@ -258,9 +272,14 @@ final class Fetch {
 	 * @return string
 	 */
 	protected function encodeJson(mixed $data): string {
-		$json = json_encode($data);
+		$json = (string)json_encode($data);
 		if ($this->request_json_bigint_keys) {
-			$json = preg_replace('/"(' . implode('|', $this->request_json_bigint_keys) . ')":"([0-9]+)"/ius', '"$1":$2', $json);
+			$keys = implode('|', $this->request_json_bigint_keys);
+			$json = (string)preg_replace(
+				'/"(' . $keys . ')":"([0-9]+)"/ius',
+				'"$1":$2',
+				$json
+			);
 		}
 
 		return $json;

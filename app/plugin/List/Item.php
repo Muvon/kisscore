@@ -46,10 +46,10 @@ class Item {
   /**
    * @param string|array{0:string,1:string} $mapper
    * @param mixed $args
-   * @param array &$result
-   * @param array $batch
-   * @return ItemFetcher::create()
-   * @see ItemFetcher::create()
+   * @param array<mixed> &$result
+   * @param array<Fetcher> $batch
+   * @return Fetcher
+   * @see Fetcher::create()
    */
 	public static function fetcher(string|array $mapper, mixed $args, array &$result, array $batch = []): Fetcher {
 		$result = [];
@@ -60,9 +60,10 @@ class Item {
    * @param string|array{0:string,1:string} $mapper
    * @param string $src_key Если не указано, автогенерация из $mapper
    * @param string $root_key Ключ родителя, из которого берется src_key
-   * @return ItemFetcher::create()
+   * @return Fetcher
    */
 	public static function fetch(string|array $mapper, string $src_key = '', string $root_key = ''): Fetcher {
-		return Fetcher::create($mapper, $src_key ?: strtolower($mapper) . '_id')->setRootKey($root_key);
+		$mapper_name = is_array($mapper) ? $mapper[0] : $mapper;
+		return Fetcher::create($mapper, $src_key ?: strtolower($mapper_name) . '_id')->setRootKey($root_key);
 	}
 }

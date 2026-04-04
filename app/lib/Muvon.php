@@ -16,9 +16,7 @@ final class Muvon {
 	protected string $app_token;
 	/** @var non-empty-string */
 	protected string $app_pubkey;
-	/** @var non-empty-string */
 	protected string $proto = 'https';
-	/** @var non-empty-string */
 	protected string $domain = 'muvon.dev';
 
 	/**
@@ -39,7 +37,7 @@ final class Muvon {
 	}
 
 	/**
-	 * @param string $proto
+	 * @param non-empty-string $proto
 	 * @return static
 	 */
 	public function setProto(string $proto): static {
@@ -49,7 +47,7 @@ final class Muvon {
 
 	/**
 	 * Change the default domain of the API
-	 * @param string $domain
+	 * @param non-empty-string $domain
 	 * @return static
 	 */
 	public function setDomain(string $domain): static {
@@ -64,17 +62,21 @@ final class Muvon {
 	 */
 	public function validateEmail(string $email): Result {
 		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+			/** @var Result<bool> */
 			return err('e_email_not_valid');
 		}
-		$hostname = substr(strrchr($email, '@'), 1);
+		$at_pos = strrchr($email, '@');
+		$hostname = $at_pos !== false ? substr($at_pos, 1) : false;
 		if ($hostname !== false) {
 			$mxs = [];
 			$weights = [];
 			$has_mx = getmxrr($hostname, $mxs, $weights);
 			if (!$has_mx) {
+				/** @var Result<bool> */
 				return err('e_email_hostname_not_valid');
 			}
 		}
+		/** @var Result<bool> */
 		return ok(true);
 	}
 
@@ -181,6 +183,7 @@ final class Muvon {
 			]
 		);
 		if ($Res->err) {
+			/** @var Result<mixed> */
 			return $Res;
 		}
 		[$err, $res] = $Res->unwrap();
@@ -188,6 +191,7 @@ final class Muvon {
 			return err($err, $res);
 		}
 
+		/** @var Result<mixed> */
 		return ok($res);
 	}
 }

@@ -9,14 +9,15 @@ trait DatabaseTrait {
 	protected static int $shard_id = 0;
 	protected static string $table = '';
 	protected static string $id_field = 'id';
+	/** @var array<string,array<string>> */
 	protected static array $keys = [];
-	/** @var array<FieldInfo> */
+	/** @var array<string,array<string,FieldInfo>> */
 	protected static array $fields = [];
 	protected static bool $incremental_id = false;
 
 	/**
 	 * @access protected
-	 * @param array $params список параметров с данными
+	 * @param array<int|string,mixed> $params список параметров с данными
 	 * @param string $sep разделитель при объединении параметров
 	 * @param bool $incremental
 	 * @return string подготовленная строка для передачи в запрос
@@ -51,7 +52,7 @@ trait DatabaseTrait {
 
 	/**
 	 * @param bool $with_info Include mysql info about each field
-	 * @return array<string>
+	 * @return ($with_info is true ? array<string,FieldInfo> : array<string>)
 	 */
 	public static function fields(bool $with_info = false): array {
 		if (!isset(self::$fields[static::class])) {
@@ -69,11 +70,12 @@ trait DatabaseTrait {
 		$func = function () {
 			$incremental_id = false;
 			$fields = [];
+			/** @var array<int,array{Field:string,Type:string,Null:string,Default:mixed,Extra:string}>|null $data */
 			$data = static::dbQuery('DESCRIBE ' . static::table());
 			if ($data) {
 				for ($i = 0, $max_sz = sizeof($data); $i < $max_sz; $i++) {
 					// Find type only for non null default values
-					$type = strtok(strtok($data[$i]['Type'], ' '), '(');
+					$type = (string)strtok((string)strtok($data[$i]['Type'], ' '), '(');
 
 					$fields[$data[$i]['Field']] = [
 						'type' => $type,
@@ -114,9 +116,8 @@ trait DatabaseTrait {
 	 *
 	 * @access protected
 	 * @param string $query
-	 * @param array<mixed> $params
+	 * @param array<string,mixed> $params
 	 * @return mixed
-	 * @throws Exception
 	 */
 	// TODO: implement shard logic
 	protected static function dbQuery(string $query, array $params = []): mixed {
@@ -124,21 +125,20 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * @param array<mixed> $params
-	 * @return array<mixed>
+	 * @param array<string,mixed> $params
+	 * @return array<string,mixed>
 	 */
 	protected static function adaptParams(array $params): array {
-		return array_combine(
-			array_map(
-				function ($key) {
-					if (false !== stripos($key, ':')) {
-						return strtok($key, ':');
-					}
-					return $key;
-				}, array_keys($params)
-			),
-			$params
+		/** @var array<string> $mapped_keys */
+		$mapped_keys = array_map(
+			function (string $key): string {
+				if (false !== stripos($key, ':')) {
+					return (string)strtok($key, ':');
+				}
+				return $key;
+			}, array_keys($params)
 		);
+		return array_combine($mapped_keys, $params);
 	}
 
 	/**
@@ -148,7 +148,7 @@ trait DatabaseTrait {
 	 * @uses Database::execute()
 	 *
 	 * @access protected
-	 * @param array $params список параметров для передачи в запрос
+	 * @param array<string,mixed> $params список параметров для передачи в запрос
 	 * @return bool
 	 */
 	protected function dbInsert(array $params): bool {
@@ -159,8 +159,10 @@ trait DatabaseTrait {
 
 	/**
 	 * Get last inserted id in case of auto_increment
+	 * @return int|string
 	 */
-	protected function dbInsertId() {
+	protected function dbInsertId(): int|string {
+		/** @var array<int,array<string,int|string>>|null $result */
 		$result = static::dbQuery('SELECT LAST_INSERT_ID() AS `' . static::$id_field . '`');
 		if ($result && isset($result[0])) {
 			return $result[0][static::$id_field];
@@ -172,8 +174,8 @@ trait DatabaseTrait {
 	/**
 	 * Формирование условия WHERE по передаваемым параметрам
 	 *
-	 * @param array &$conditions
-	 * @return array
+	 * @param array<string,mixed> &$conditions
+	 * @return array<string>
 	 */
 	protected function dbGetWhere(array &$conditions): array {
 		$where = [];
@@ -200,9 +202,9 @@ trait DatabaseTrait {
 
 	/**
 	 * @param string $k
-	 * @param array $c
+	 * @param array<mixed> $c
 	 * @param string $t
-	 * @param array $conditions
+	 * @param array<string,mixed> $conditions
 	 * @param int $i
 	 * @return string
 	 */
@@ -229,7 +231,7 @@ trait DatabaseTrait {
 	/**
 	 * @param string $k
 	 * @param string $t
-	 * @param array $conditions
+	 * @param array<string,mixed> $conditions
 	 * @return string
 	 */
 	private function handleScalarCondition(string $k, string $t, array &$conditions): string {
@@ -274,17 +276,17 @@ trait DatabaseTrait {
 	 * @uses Database::query()
 	 *
 	 * @access protected
-	 * @param array<key-of<TArray>> $fields
-	 * @param array $conditions
-	 * @param array $order
-	 * @param int $offset
-	 * @param int $limit
-	 * @return array<TArray
+	 * @param array<string> $fields
+	 * @param array<string,mixed>|null $conditions
+	 * @param array<string,string>|null $order
+	 * @param int|null $offset
+	 * @param int|null $limit
+	 * @return array<int,array<string,mixed>>
 	 */
 	protected function dbSelect(
 		array $fields,
-		array $conditions = null,
-		array $order = null,
+		?array $conditions = null,
+		?array $order = null,
 		$offset = null,
 		$limit = null
 	): array {
@@ -312,12 +314,13 @@ trait DatabaseTrait {
 		. ($order_string ? ' ORDER BY ' . $order_string : '')
 		. ($limit ? ' LIMIT ' . (int)$offset . ', ' . (int)$limit : '');
 
-		return self::dbQuery($q, $conditions);
+		/** @var array<int,array<string,mixed>> */
+		return self::dbQuery($q, $conditions ?? []);
 	}
 
 	/**
 	 * Get total count by condition passed
-	 * @param array $conditions
+	 * @param array<string,mixed> $conditions
 	 * @return int
 	 */
 	public function getCount(array $conditions = []): int {
@@ -325,6 +328,7 @@ trait DatabaseTrait {
 		$q = 'SELECT COUNT(*) AS `count` FROM ' . static::table()
 		. ($where ? ' WHERE ' . implode('AND', $where) : '')
 		. ' LIMIT 1';
+		/** @var array<int,array{count:int}> $rows */
 		$rows = static::dbQuery($q, $conditions);
 		$count = 0;
 		if (isset($rows[0])) {
@@ -337,13 +341,12 @@ trait DatabaseTrait {
 	 * Получение одной строки (LIMIT 1)
 	 *
 	 * @see self::dbSelect
-	 * @param array<key-of<TArray>> $fields
-	 * @param array<mixed> $conditions
-	 * @param array<mixed> $order
-	 * @return TArray
+	 * @param array<string> $fields
+	 * @param array<string,mixed>|null $conditions
+	 * @param array<string,string>|null $order
+	 * @return array<string,mixed>
 	 */
-	protected function dbGet(array $fields, array $conditions = null, array $order = null): array {
-		/** @var array<TArray> $rows */
+	protected function dbGet(array $fields, ?array $conditions = null, ?array $order = null): array {
 		$rows = $this->dbSelect($fields, $conditions, $order, 0, 1);
 		return $rows[0] ?? [];
 	}
@@ -355,11 +358,12 @@ trait DatabaseTrait {
 	 * @uses Database::execute()
 	 *
 	 * @access protected
-	 * @param array<key-of<TArray>,value-of<TArray>> $params
-	 * @param array $conditions
-	 * @return Database::execute()
+	 * @param array<string,mixed> $params
+	 * @param array<string,mixed> $conditions
+	 * @param bool $incremental
+	 * @return mixed
 	 */
-	protected function dbUpdate(array $params, array $conditions, $incremental = false) {
+	protected function dbUpdate(array $params, array $conditions, $incremental = false): mixed {
 		$q = 'UPDATE ' . static::table()
 		. ' SET ' . self::dbGetSqlStringByParams($params, ',', $incremental)
 		. ' WHERE ' . self::dbGetSqlStringByParams($conditions, ' AND ');
@@ -368,8 +372,8 @@ trait DatabaseTrait {
 
 	/**
 	 * @access protected
-	 * @param array $params
-	 * @param array $ids
+	 * @param array<string,mixed> $params
+	 * @param array<int|string> $ids
 	 * @param bool $incremental
 	 * @return mixed
 	 */
@@ -392,7 +396,7 @@ trait DatabaseTrait {
 	 * @uses self::dbGetSqlStringByParams()
 	 * @uses Database::execute()
 	 *
-	 * @param array<mixed> $conditions список условий
+	 * @param array<string,mixed> $conditions список условий
 	 * @return mixed
 	 */
 	protected function dbDelete(array $conditions): mixed {
@@ -404,16 +408,17 @@ trait DatabaseTrait {
 	/**
 	 * Удаление по праймери
 	 *
-	 * @param array<int> $ids
+	 * @param array<int|string> $ids
 	 * @return int
 	 */
 	protected function dbDeleteByIds(array $ids): int {
+		/** @var array<int|string> $ids */
 		return $this->dbDeleteByRowValues(static::$id_field, $ids);
 	}
 
 	/**
 	 * @param string $row
-	 * @param array $values
+	 * @param array<int|string> $values
 	 * @return int
 	 */
 	protected function dbDeleteByRowValues(string $row, array $values): int {
@@ -429,17 +434,19 @@ trait DatabaseTrait {
 	 * @return int
 	 */
 	protected function dbDeleteByRowValue(string $row, mixed $value): int {
+		/** @var array<int|string> $values */
+		$values = [$value];
 		/** @var int */
-		return $this->dbDeleteByRowValues($row, [$value]);
+		return $this->dbDeleteByRowValues($row, $values);
 	}
 
 	/**
 	 * @uses self::dbGetSqlStringByParams()
 	 * @uses Database::query()
 	 *
-	 * @param array<key-of<TArray>> $fields
-	 * @param array<mixed> $ids
-	 * @return array<TArray>
+	 * @param array<string> $fields
+	 * @param array<int|string> $ids
+	 * @return array<int|string,array<string,mixed>>
 	 */
 	protected function dbGetByIds(array $fields, array $ids): array {
 		return $this->dbGetByFields($fields, static::$id_field, $ids);
@@ -450,19 +457,19 @@ trait DatabaseTrait {
 	 *
 	 * @uses self::getByIds()
 	 *
-	 * @param array<key-of<TArray>> $fields поля для выборки из таблицы
+	 * @param array<string> $fields поля для выборки из таблицы
 	 * @param int $id
-	 * @return TArray
+	 * @return array<string,mixed>
 	 */
 	protected function dbGetById(array $fields, int $id): array {
 		return $this->dbGetByField($fields, static::$id_field, $id);
 	}
 
 	/**
-	 * @param array<key-of<TArray>> $fields
+	 * @param array<string> $fields
 	 * @param string $row
-	 * @param array<value-of<TArray>> $values
-	 * @return array<TArray>
+	 * @param array<mixed> $values
+	 * @return array<int|string,array<string,mixed>>
 	 */
 	protected function dbGetByFields(array $fields, string $row, array $values): array {
 		assert(sizeof($values) > 0);
@@ -471,21 +478,26 @@ trait DatabaseTrait {
 		. ' FROM ' . static::table()
 		. ' WHERE `' . $row . '` IN (:' . $row . ')';
 		;
-		/** @var array<TArray> */
-		return ($data = self::dbQuery($q, [$row => $values]))
-		? array_combine(array_column($data, static::$id_field), $data)
-		: $data;
+		/** @var array<int,array<string,mixed>> $data */
+		$data = self::dbQuery($q, [$row => $values]);
+		if (!$data) {
+			return $data;
+		}
+		/** @var array<int|string> $id_keys */
+		$id_keys = array_column($data, static::$id_field);
+		/** @var array<int|string,array<string,mixed>> */
+		return array_combine($id_keys, $data);
 	}
 
 	/**
-	 * @param array<key-of<TArray>> $fields
+	 * @param array<string> $fields
 	 * @param string $row
 	 * @param mixed $value
-	 * @return TArray
+	 * @return array<string,mixed>
 	 */
 	protected function dbGetByField(array $fields, string $row, mixed $value): array {
 		$rows = $this->dbGetByFields($fields, $row, [$value]);
-		return array_shift($rows);
+		return array_shift($rows) ?? [];
 	}
 
 
@@ -509,6 +521,7 @@ trait DatabaseTrait {
 			$params['prev_value'] = $prev_value;
 		}
 
+		/** @var int */
 		return static::dbQuery($q, $params);
 	}
 
@@ -516,11 +529,11 @@ trait DatabaseTrait {
 	 * @param string $query
 	 * @param string $select
 	 * @param array<string,mixed> $params
-	 * @param array<key-of<TArray>,one-of<'asc',desc'>> $order
+	 * @param array<string,string> $order
 	 * @param int $offset
 	 * @param int $limit
 	 * @param int $total
-	 * @return array<TArray>
+	 * @return array<int,array<string,mixed>>
 	 */
 	protected function dbGetPaginated(
 		string $query,
@@ -546,10 +559,12 @@ trait DatabaseTrait {
 		. ' LIMIT %d, %d';
 
 		if ($total === -1) {
+			/** @var array<int,array{count:int|string}> $rows */
 			$rows = self::dbQuery(sprintf($query_cnt, ...['COUNT(*) AS `count`']), $params);
-			$total = array_sum(array_column($rows, 'count'));
+			$total = (int)array_sum(array_column($rows, 'count'));
 		}
 
+		/** @var array<int,array<string,mixed>> $result */
 		$result = $total > 0 ? self::dbQuery(sprintf($query, ...[$select, $offset, $limit]), $params) : [];
 		array_walk($result, fn (&$row) => static::transform($row, true));
 
@@ -559,13 +574,13 @@ trait DatabaseTrait {
 	/**
 	 * Получение всего списка с данными или списка по условию
 	 *
-	 * @param array<key-of<TArray>,value-of<TArray>> $conditions
-	 * @param array<key-of<TArray>,one-of<'asc',desc'>> $order
+	 * @param array<string,mixed> $conditions
+	 * @param array<string,string> $order
 	 * @param int $offset
 	 * @param int $limit
-	 * @return array<TArray>
+	 * @return array<int,array<string,mixed>>
 	 */
-	public static function getList(array $conditions = [], array $order = [], int $offset = 0, int $limit = 10) {
+	public static function getList(array $conditions = [], array $order = [], int $offset = 0, int $limit = 10): array {
 		$rows = $limit > 0 ? static::new()->dbSelect(static::fields(), $conditions, $order, $offset, $limit) : [];
 
 		array_walk(

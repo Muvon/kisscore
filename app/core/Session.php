@@ -27,7 +27,7 @@ final class Session {
 	/** @var Session $Instance */
 	protected static self $Instance;
 
-	/** @var array $container */
+	/** @var array<string,mixed> $container */
 	protected static array $container = [];
 
 	final public function __construct() {
@@ -39,7 +39,9 @@ final class Session {
 	 * @return void
 	 */
 	public static function start(): void {
-		session_name(config('session.name'));
+		/** @var string $sessionName */
+		$sessionName = config('session.name');
+		session_name($sessionName);
 		session_start();
 		static::$container = &$_SESSION;
 	}
@@ -50,7 +52,7 @@ final class Session {
 	 * @return string
 	 */
 	public static function id(): string {
-		return session_id();
+		return session_id() ?: '';
 	}
 
 	/**

@@ -2,13 +2,11 @@
 
 namespace Lib;
 
-use Beanstalk\Client;
-
 /** @package Lib */
 final class Queue {
 	const RELEASE_DELAY = 5;
 
-	protected Client $Client;
+	protected object $Client;
 
 	private function __construct() {
 	}
@@ -20,12 +18,14 @@ final class Queue {
 	 */
 	public static function new(string $host, int $port): self {
 		$Self = new self;
-		$Self->Client = new Client(
+		/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
+		$Self->Client = new \Beanstalk\Client(
 			[
 			'host' => $host,
 			'port' => $port,
 			]
 		);
+		/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 		$Self->Client->connect();
 		return $Self;
 	}
@@ -40,11 +40,14 @@ final class Queue {
 	 */
 	public function add(string $ns, mixed $job, int $delay = 0, int $ttr = 300): bool {
 		$func = function () use ($ns, $job, $delay, $ttr) {
+			/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 			if (!$this->Client->connected) {
 				return false;
 			}
 
+			/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 			$this->Client->useTube($ns);
+			/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 			$this->Client->put(0, $delay, $ttr, base64_encode(msgpack_pack($job)));
 			return true;
 		};
@@ -64,9 +67,11 @@ final class Queue {
 		pcntl_signal(SIGTERM, [static::class, 'sigHandler']);
 		pcntl_signal(SIGHUP, [static::class, 'sigHandler']);
 
+		/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 		if (!$this->Client->connected) {
 			return false;
 		}
+		/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 		$this->Client->watch($ns);
 
 		while (true) {
@@ -86,6 +91,7 @@ final class Queue {
 	 * @return bool
 	 */
 	public function fetch(callable $func): bool {
+		/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 		$job = $this->Client->reserve();
 		if ($job === false) {
 			return false;
@@ -94,8 +100,10 @@ final class Queue {
 		$result = $func($payload);
 
 		if (false === $result) {
+			/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 			$this->Client->release($job['id'], 0, static::RELEASE_DELAY);
 		} else {
+			/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 			$this->Client->delete($job['id']);
 		}
 
@@ -121,6 +129,7 @@ final class Queue {
 	 * @return void
 	 */
 	public function __destruct() {
+		/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
 		$this->Client->disconnect();
 	}
 }

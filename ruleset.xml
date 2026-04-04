@@ -4,8 +4,8 @@
 <ruleset name="muvon-codestyle">
 	<description>A custom coding standard used by Muvon Un Limited projects</description>
 	<include-pattern>*\.php$</include-pattern>
-	<exclude-pattern>app/core.php</exclude-pattern>
 	<exclude-pattern>vendor/*</exclude-pattern>
+	<exclude-pattern>app/client/*</exclude-pattern>
 	<config name="installed_paths" value="vendor/slevomat/coding-standard,vendor/muvon/coding-standard"/>
 	<arg name="encoding" value="UTF-8"/>
 	<arg name="tab-width" value="4"/>
@@ -27,7 +27,6 @@
 	<rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators" />
 	<rule ref="SlevomatCodingStandard.ControlStructures.AssignmentInCondition" />
 	<rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit" />
-	<rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators" />
 	<rule ref="SlevomatCodingStandard.Functions.UnusedInheritedVariablePassedToClosure" />
 	<rule ref="SlevomatCodingStandard.Functions.UnusedParameter" />
 	<rule ref="SlevomatCodingStandard.Variables.UnusedVariable">
@@ -48,7 +47,6 @@
 	<rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference" />
 	<rule ref="SlevomatCodingStandard.ControlStructures.RequireShortTernaryOperator" />
 	<rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses" />
-	<!-- <rule ref="SlevomatCodingStandard.TypeHints.DisallowMixedTypeHint" /> -->
 	<rule ref="SlevomatCodingStandard.PHP.TypeCast" />
 	<rule ref="Squiz.Strings.DoubleQuoteUsage.NotRequired" />
 	<rule ref="SlevomatCodingStandard.Complexity.Cognitive">
@@ -56,7 +54,6 @@
 			<property name="maxComplexity" value="14" />
 		</properties>
 	</rule>
-	<rule ref="Squiz.Strings.DoubleQuoteUsage.NotRequired" />
 	<rule ref="PSR2">
 		<exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace" />
 		<exclude name="Squiz.Functions.MultiLineFunctionDeclaration.BraceOnSameLine" />
@@ -134,7 +131,6 @@
 			<property name="eolChar" value="\n" />
 		</properties>
 	</rule>
-	<!-- Warn about lines longer than 100 chars, and error for lines longer than 135 chars. -->
 	<rule ref="Generic.Files.LineLength">
 		<properties>
 			<property name="lineLimit" value="120" />

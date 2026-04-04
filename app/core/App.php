@@ -14,13 +14,17 @@ final class App {
 	 * Fetch annotated variables from $file using $map_file
 	 * @param string $file File that was annotated with import params (action or something else)
 	 * @param ?string $map_file File with map of args or empty to use default
-	 * @return array
+	 * @return array<string>
 	 */
 	public static function getImportVarsArgs(string $file, ?string $map_file = null): array {
-		$params = Env::load($map_file ?: config('common.param_map_file'));
+		/** @var string $param_map_file */
+		$param_map_file = config('common.param_map_file');
+		$params = Env::load($map_file ?: $param_map_file);
 		$args = [];
 		if (isset($params[$file])) {
-			foreach ($params[$file] as $param) {
+			/** @var array<array{name: string, type: string, default?: string}> $file_params */
+			$file_params = $params[$file];
+			foreach ($file_params as $param) {
 				$args[] = $param['name'] . ':' . $param['type']
 				. (isset($param['default']) ? '=' . $param['default'] : '')
 				;
@@ -52,13 +56,17 @@ final class App {
 			throw new Error('Cant find file ' . $file . '. Be sure you started init script to compile application');
 		}
 
-		return json_decode(file_get_contents($file), true);
+		$contents = file_get_contents($file);
+		if ($contents === false) {
+			throw new Error('Failed to read file ' . $file);
+		}
+		return json_decode($contents, true);
 	}
 
 	/**
 	 * Log any message
 	 * @param string $message
-	 * @param array|object $dump
+	 * @param array<string, mixed>|object $dump
 	 * @param string $type error, info, wanr, notice
 	 * @return string идентификатор исключения
 	 */
@@ -79,11 +87,13 @@ final class App {
 
 	/**
 	 * Иницилизация работы приложения
-	 * @param array $config
+	 * @param array<string, mixed> $config
 	 */
 	public static function start(array $config = []): void {
 		// First detect local envs from base vars, cuz we use it
-		Env::initLocalEnv($config['root'] ?? null);
+		/** @var ?string $root */
+		$root = $config['root'] ?? null;
+		Env::initLocalEnv($root);
 		unset($config['root']);
 		foreach ($config as $param => $value) {
 			static::${$param} = $value;
@@ -91,14 +101,18 @@ final class App {
 
 		if (!isset(static::$debug)) {
 			static::$debug = getenv('APP_ENV') === 'dev';
-			static::$log_level = (int)config('common.cli_level');
+			/** @var int|string $cli_level */
+			$cli_level = config('common.cli_level');
+			static::$log_level = (int)$cli_level;
 		}
 
 		// Locale settings
 		setlocale(LC_ALL, 'en_US.UTF8');
 
 		// Timezone settings
-		date_default_timezone_set(timezone_name_from_abbr('', (int)Cookie::get('tz_offset'), 0) ?: 'UTC');
+		/** @var int|string $tz_offset */
+		$tz_offset = Cookie::get('tz_offset');
+		date_default_timezone_set(timezone_name_from_abbr('', (int)$tz_offset, 0) ?: 'UTC');
 
 		// Error handler
 		set_error_handler([static::class, 'handleError'], E_ALL);
@@ -161,7 +175,11 @@ final class App {
 	 */
 	public static function process(): View {
 		if (!isset(static::$action_map)) {
-			static::$action_map = Env::load(config('common.action_map_file'));
+			/** @var string $action_map_file */
+			$action_map_file = config('common.action_map_file');
+			/** @var array<string, string> $loaded_map */
+			$loaded_map = Env::load($action_map_file);
+			static::$action_map = $loaded_map;
 		}
 
 		$Request = Request::current();
@@ -169,7 +187,9 @@ final class App {
 
 		$process = function () use ($Request): array {
 			$action = static::$action_map[$Request->getAction()];
-			extract(Input::get(static::getImportVarsArgs($action)));
+			/** @var array<string, mixed> $input_vars */
+			$input_vars = Input::get(static::getImportVarsArgs($action));
+			extract($input_vars);
 			$response = include $action;
 
 			return [get_defined_vars(), $response];
@@ -181,24 +201,21 @@ final class App {
 			case $response === 1:
 				$Response->header('Content-type', 'text/html;charset=utf-8');
 				return View::create($Request->getAction())->set($vars);
-			break;
 
 			case $response instanceof View:
 				$Response->header('Content-type', 'text/html;charset=utf-8');
 				return $response->set($vars);
-			break;
 
 			case is_string($response):
 				$Response->header('Content-type', 'text/plain;charset=utf-8');
 				return View::fromString($response);
-			break;
 
 			case is_array($response):
 			case is_object($response):
 				$accept = Request::$headers['accept'] ?? '';
 				$type = match (true) {
-					str_contains('application/json', $accept) => 'json',
-					str_contains('application/msgpack', $accept) => 'msgpack',
+					str_contains($accept, 'application/json') => 'json',
+					str_contains($accept, 'application/msgpack') => 'msgpack',
 					default => Input::isMsgpack() ? 'msgpack' : 'json',
 				};
 				if ($response instanceof Result) {
@@ -212,10 +229,9 @@ final class App {
 					JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE
 				);
 				if (false === $encoded) {
-					throw new Error('Failed to encode ' . $type  . ' response');
+					throw new Error('Failed to encode ' . $type . ' response');
 				}
 				return View::fromString($encoded);
-			break;
 
 			default:
 				$Response->header('Content-type', 'text/plain;charset=utf-8');
@@ -226,16 +242,17 @@ final class App {
 	/**
 	 * Замена стандартного обработчика ошибок на эксепшены
 	 */
-	public static function handleError(int $errno, string $errstr, string $errfile, int $errline): void {
-		assert(isset($errno) && isset($errfile) && isset($errline)); // for phpcs
+	// phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter, Generic.CodeAnalysis.UnusedFunctionParameter
+	public static function handleError(int $errno, string $errstr, string $errfile, int $errline): bool {
 		static::error($errstr);
+		return true;
 	}
 
 	/**
 	 * Handle exception. Call handlers and do some staff
 	 * @param Throwable $Exception
 	 */
-	public static function handleException(Throwable $Exception) {
+	public static function handleException(Throwable $Exception): void {
 		$log_exception = !$Exception instanceof ResultError;
 		if ($log_exception) {
 			static::logException($Exception);
@@ -244,7 +261,8 @@ final class App {
 		$exception = $Exception::class;
 		do {
 			if (isset(static::$e_handlers[$exception])) {
-				return static::$e_handlers[$exception]($Exception);
+				static::$e_handlers[$exception]($Exception);
+				return;
 			}
 			$exception = get_parent_class($exception);
 		} while (false !== $exception);
@@ -252,7 +270,8 @@ final class App {
 		$implements = class_implements($Exception);
 		while ($implement = array_pop($implements)) {
 			if (isset(static::$e_handlers[$implement])) {
-				return static::$e_handlers[$implement]($Exception);
+				static::$e_handlers[$implement]($Exception);
+				return;
 			}
 		}
 	}
@@ -361,6 +380,8 @@ final class App {
 	 * @throws \Exception
 	 */
 	public static function error(string $error, string $class = 'Exception'): void {
-		throw new $class($error);
+		/** @var \Exception $exception */
+		$exception = new $class($error);
+		throw $exception;
 	}
 }

@@ -3,6 +3,7 @@
 namespace Plugin\List;
 
 use Error;
+use Plugin\Data\Model;
 
 /**
  * Загрузчик сущностей, доступ через объект Entity
@@ -14,21 +15,20 @@ use Error;
 final class Fetcher {
 	protected string $model = '';
 	protected string $method = '';
+	/** @var array<mixed> */
 	protected array $ids = [];
+	/** @var array<Fetcher> */
 	protected array $batch = [];
+	/** @var array<mixed>|null */
 	protected ?array $data = null;
 
-	/**
-	 * @property string $src_key
-	 * @property string $root_key
-	 * @property string $dst_key
-	 */
-	protected $src_key  = '';
-	protected $root_key = '';
-	protected $dst_key  = '';
-	protected $args = null;
+	protected string $src_key  = '';
+	protected string $root_key = '';
+	protected string $dst_key  = '';
+	/** @var array<mixed>|null */
+	protected ?array $args = null;
 
-	protected $Pagination = null;
+	protected ?Pagination $Pagination = null;
 
 	/**
 	 * Создание загрузчика данных и постановка первого задания
@@ -39,21 +39,21 @@ final class Fetcher {
 	 *   Имя маппера, которые обязауется подгружать данные
 	 * @param string $src_key
 	 *   Индекс идентификатора
-	 * @param mixed $args
+	 * @param array<mixed>|null $args
 	 *   Массив или строка/число - однозначный идентификатор
-	 * @param array $data
+	 * @param array<mixed> $data
 	 *   Массив с результатами (если была уже агрегированная выборка)
-	 * @param array $batch
+	 * @param array<Fetcher> $batch
 	 *   Массив оппераций, которые будут выполнены в параллели
 	 * @return Fetcher
 	 */
 	public static function create(
 		string|array $mapper,
 		string $src_key,
-		array $args = null,
+		?array $args = null,
 		array &$data = [],
 		array $batch = []
-	) {
+	): self {
 		$Self = new self;
 		if (is_string($mapper)) {
 			$model  = $mapper;
@@ -67,7 +67,7 @@ final class Fetcher {
 		$Self->model = $model;
 		$Self->method = $method;
 
-		$Self->src_key = strtok($src_key, ':');
+		$Self->src_key = (string)strtok($src_key, ':');
 		$Self->dst_key = $Self->getDstKey($src_key);
 		$Self->args = $args;
 		$Self->batch = $batch;
@@ -140,13 +140,17 @@ final class Fetcher {
 			return;
 		}
 
-		$Obj = $this->model::new();
-		$args = $this->args;
+		/** @var class-string<Model> $model */
+		$model = $this->model;
+		$Obj = $model::new();
+		$args = $this->args ?? [];
 		// If we have pagination and need to use dynamic count detection
 		if ($this->Pagination && $this->method !== 'get' && $this->method !== 'getByIds') {
-			$total = $this->Pagination ? $this->Pagination->getTotal() : 0;
+			$total = $this->Pagination->getTotal();
 			if (!$total) {
-				$total = $Obj->getCount(...$args);
+				/** @var array<string,mixed> $first_arg */
+				$first_arg = $args[0] ?? [];
+				$total = $Obj->getCount($first_arg);
 			}
 			$this->Pagination->setTotal($total);
 			$args = [...$args, ...[
@@ -166,7 +170,7 @@ final class Fetcher {
 			return;
 		}
 
-		$this->data = $this->Pagination->listResult($this->data);
+		$this->data = $this->Pagination->listResult($this->data ?? []);
 	}
 
 	/**
@@ -195,7 +199,9 @@ final class Fetcher {
 		$sk = $Fetcher->src_key;
 		$rk = $Fetcher->root_key ? explode('.', $Fetcher->root_key) : [];
 
-		$Obj = $Fetcher->model::new();
+		/** @var class-string<Model> $model_class */
+		$model_class = $Fetcher->model;
+		$Obj = $model_class::new();
 
 		$is_list = $this->method === 'getByIds';
 		$data = &$this->getDataReference($is_list);
@@ -211,63 +217,69 @@ final class Fetcher {
 		if ($is_list) {
 			$this->processListData($data, $Obj, $rk, $sk, $dk);
 		} else {
+			assert($this->data !== null);
 			$this->processSingleData($this->data, $Obj, $rk, $sk, $dk);
 		}
 	}
 
 	/**
 	 * @param bool $is_list
-	 * @return array
+	 * @return array<mixed>
 	 */
 	private function &getDataReference(bool &$is_list): array {
 		if (isset($this->data['items']) && is_array($this->data['items'])) {
 			$is_list = true;
 			return $this->data['items'];
 		}
+		/** @var array<mixed> */
 		return $this->data;
 	}
 
 	/**
-	 * @param array $data
-	 * @param array $rk
-	 * @return array
+	 * @param array<mixed> $data
+	 * @param array<string> $rk
+	 * @return array<mixed>
 	 */
 	private function &traverseRootKey(array &$data, array $rk): array {
+		$current = &$data;
 		foreach ($rk as $key) {
-			if (!array_key_exists($key, $data)) {
+			if (!is_array($current) || !array_key_exists($key, $current)) {
 				continue;
 			}
-			$data = &$data[$key];
+			$current = &$current[$key];
 		}
-		return $data;
+		/** @var array<mixed> $current */
+		return $current;
 	}
 
 	/**
-	 * @param array $data
-	 * @param object $Obj
-	 * @param array $rk
+	 * @param array<mixed> $data
+	 * @param Model $Obj
+	 * @param array<string> $rk
 	 * @param string $sk
 	 * @param string $dk
 	 * @return void
 	 */
-	private function processListData(array &$data, object $Obj, array $rk, string $sk, string $dk): void {
+	private function processListData(array &$data, Model $Obj, array $rk, string $sk, string $dk): void {
+		/** @var array<int|string> $ids */
 		$ids = $this->getIdsFromListData($data, $rk, $sk);
 		$items = $Obj::getByIds($ids);
 
 		foreach ($data as &$item) {
 			[$row, $keys] = $this->getRowDest($item, $rk, $sk, $dk);
-			if (!isset($row)) {
+			if (!isset($row) || !isset($keys)) {
 				continue;
 			}
+			/** @var array<mixed>|int|string $row */
 			$this->setDestination($item, $keys, $row, $items);
 		}
 	}
 
 	/**
-	 * @param array $data
-	 * @param array $rk
+	 * @param array<mixed> $data
+	 * @param array<string> $rk
 	 * @param string $sk
-	 * @return array
+	 * @return array<mixed>
 	 */
 	private function getIdsFromListData(array $data, array $rk, string $sk): array {
 		$array = $data;
@@ -286,42 +298,51 @@ final class Fetcher {
 	}
 
 	/**
-	 * @param array $data
-	 * @param object $Obj
-	 * @param array $rk
+	 * @param array<mixed> $data
+	 * @param Model $Obj
+	 * @param array<string> $rk
 	 * @param string $sk
 	 * @param string $dk
 	 * @return void
 	 */
-	private function processSingleData(array &$data, object $Obj, array $rk, string $sk, string $dk): void {
+	private function processSingleData(array &$data, Model $Obj, array $rk, string $sk, string $dk): void {
 		[$row, $keys] = $this->getRowDest($data, $rk, $sk, $dk);
-		if (!isset($row)) {
+		if (!isset($row) || !isset($keys)) {
 			return;
 		}
 		$dest = &array_value_ref($this->data, $keys);
-		$dest = is_array($row) ? array_values($Obj::getByIds($row)) : $Obj::get($row)->getData();
+		if (is_array($row)) {
+			/** @var array<int|string> $row */
+			$dest = array_values($Obj::getByIds($row));
+		} else {
+			/** @var int|string $row */
+			$dest = $Obj::get($row)->getData();
+		}
 	}
 
 	/**
-	 * @param array &$item
-	 * @param array $keys
-	 * @param array|int|string $row
-	 * @param array $items
+	 * @param array<mixed> &$item
+	 * @param array<string> $keys
+	 * @param array<mixed>|int|string $row
+	 * @param array<mixed> $items
 	 * @return void
 	 */
 	private function setDestination(array &$item, array $keys, array|int|string $row, array $items): void {
 		$dest = &array_value_ref($item, $keys);
-		$dest = is_array($row)
-		? array_values(array_intersect_key($items ?: [], array_flip($row)))
-		: ($items[$row] ?? null);
+		if (is_array($row)) {
+			/** @var array<int|string> $row */
+			$dest = array_values(array_intersect_key($items ?: [], array_flip($row)));
+		} else {
+			$dest = $items[$row] ?? null;
+		}
 	}
 
 	/**
-	 * @param array $container
-	 * @param array $rk
+	 * @param array<mixed> $container
+	 * @param array<string> $rk
 	 * @param string $sk
 	 * @param string $dk
-	 * @return array
+	 * @return array{0:mixed,1:array<string>|null}
 	 */
 	protected function getRowDest(array &$container, array $rk, string $sk, string $dk): array {
 		if ($rk) {
