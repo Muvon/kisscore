@@ -102,8 +102,6 @@ $Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
 
 			Request::$request_uri = $Request->server['request_uri'];
 			Request::$content_type = $Request->header['content-type'] ?? '';
-
-			Request::$accept_lang = $Request->header['accept-language'] ?? '';
 		});
 
 		// Process action and get view template if have

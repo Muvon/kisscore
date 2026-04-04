@@ -41,7 +41,6 @@ final class View {
 		'nl2br' => 'nl2br',
 		'count' => 'sizeof',
 		'base64' => 'base64_encode',
-		'lang' => 'Lang::translate',
 		'date' => 'view_filter_date',
 		'time' => 'view_filter_time',
 		'datetime' => 'view_filter_datetime',
@@ -510,27 +509,6 @@ final class View {
 		return $this;
 	}
 
-  // This methods initialize and configure language if its required by config
-	/**
-	 * @return self
-	 */
-	protected function initLanguage(): self {
-		if (Lang::isEnabled()) {
-			$lang = Lang::current();
-			$this->configure(
-				[
-					'compile_dir' => config('view.compile_dir') . '/' . $lang,
-				]
-			)
-			->addCompiler(Lang::getViewCompiler($lang))
-			->assign('LANGUAGE_LIST', Lang::getList($lang))
-			->assign('CURRENT_LANGUAGE', Lang::getInfo($lang))
-			->assign('LANG', $lang);
-		}
-
-		return $this;
-	}
-
 	/**
 	 * @param string $template
 	 * @return string
@@ -583,8 +561,6 @@ final class View {
    *   и возвращает ссылку на объект
    */
 	public function render(bool $quiet = false): self {
-		$this->initLanguage();
-
 		if (isset($this->body)) {
 			return $this;
 		}

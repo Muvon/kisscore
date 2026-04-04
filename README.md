@@ -2,8 +2,6 @@
 
 Muvon KISScore is a blazing fast framework built for **Swoole** - designed for rapid development with high performance async capabilities.
 
-> **⚠️ Important**: FPM support is deprecated. This framework is now **Swoole-only** for maximum performance.
-
 ## Installation
 
 Install via Composer:
@@ -25,7 +23,6 @@ require_once 'vendor/autoload.php';
 // Use core classes directly (no namespace needed)
 $result = App::getJSON('config.json');
 $input = Input::get('param');
-$response = Response::json(['status' => 'ok']);
 
 // Use Plugin classes with namespace
 $data = Plugin\Data\DB::query('SELECT * FROM users');
@@ -56,70 +53,66 @@ This will:
 - Create necessary directory structure (`env/backup`, `env/log`, etc.)
 - Generate a `.env` file with default configuration
 - Set up Swoole-optimized main application file
-- Make all scripts executable
 
 ### 3. Available Classes (Global Namespace)
 
 All core classes are available **without namespace prefix**:
 
 - `App` - Application utilities and lifecycle management
-- `Input` - Request input handling and parsing (Swoole-optimized)
+- `Input` - Request input handling and parsing
 - `Result` - Result type for error handling
 - `Cli` - Command line interface utilities
 - `View` - Template rendering and view management
-- `Request` - HTTP request handling (Swoole-compatible)
-- `Response` - HTTP response management (Swoole-compatible)
+- `Request` - HTTP request handling
+- `Response` - HTTP response management
 - `Cookie` - Cookie management
 - `Session` - Session handling
 - `Env` - Environment configuration
-- `Lang` - Internationalization
+- `Router` - URL routing engine
 - `Secret` - Secret management
 - `Fetch` - HTTP client utilities
+- `Autoload` - PSR-4 autoloader for app classes
 
 ### 4. Available Namespaced Classes
 
 - `Plugin\Data\DB` - Database operations with connection pooling
-- `Lib\IPInfo` - IP information fetching utilities
+- `Plugin\Data\Model` - ORM base class with validation and caching
+- `Plugin\List\Fetcher` - Data fetching with pagination
+- `Lib\*` - Utility libraries (AlphaId, Image, IPInfo, Queue, R2, etc.)
 
-### 5. Global Functions
-
-- `config(string $param)` - Get configuration values
-- `typify(mixed $var, string $type)` - Type conversion utilities
-- And many more utility functions for rapid development...
-
-### 6. Binary Tools
+### 5. Binary Tools
 
 After creating a project, these tools are available in `bin/`:
 
-- `init` - Project initialization
-- `php-exec` - PHP execution wrapper
-- `php-exec-one` - Single PHP execution
-- `codestyle-analyze` - Code style analysis
-- `codestyle-check` - Code style checking
-- `codestyle-fix` - Code style fixing
-- `cron` - Cron job utilities
-- `watcher` - File watching utilities
+- `init` - Project initialization and config compilation
+- `php-exec` - Execute PHP code in app context
+- `php-exec-one` - Single-instance PHP execution with locking
+- `cron` - Cron job runner with signal handling
+- `watcher` - File watcher for development (rebuilds maps + reloads Swoole)
+- `codestyle-analyze` - PHPStan static analysis
+- `codestyle-check` - PHPCS code style checking
+- `codestyle-fix` - PHPCS auto-fix
 
 ## Project Structure (After Initialization)
 
 ```
 your-project/
 ├── app/
-│   ├── actions/          # Action handlers
+│   ├── actions/          # Action handlers (@route annotations)
 │   ├── config/           # Configuration files
-│   ├── lang/             # Language files
+│   ├── triggers/         # Event trigger handlers (@event annotations)
 │   ├── scripts/          # Custom scripts
+│   ├── src/              # Application classes (App\ namespace)
 │   ├── static/           # Static assets
-│   ├── views/            # Template files
 │   ├── main.php          # Swoole HTTP Server entry point
-│   ├── start.php         # Application startup
-│   └── stop.php          # Application cleanup
+│   ├── start.php         # Application startup hooks
+│   └── stop.php          # Application cleanup hooks
 ├── bin/                  # Executable scripts
-├── env/                  # Environment directories
-│   ├── backup/
-│   ├── log/
-│   ├── tmp/
-│   └── var/
+├── env/                  # Runtime directories
+│   ├── etc/              # Compiled configuration
+│   ├── log/              # Application logs
+│   ├── tmp/              # Temporary files
+│   └── var/              # Variable data
 ├── vendor/               # Composer dependencies
 ├── .env                  # Environment configuration
 └── composer.json
@@ -127,76 +120,18 @@ your-project/
 
 ## Configuration
 
-After project initialization, configure your application by editing:
+Configure your application by editing `app/config/app.yml.tpl`. The config is compiled to PHP on `bin/init` for fast loading. Access values via `config('section.key')` dot notation.
 
-- `.env` - Environment variables
-- `app/config/` - Application configuration files
-
-## Running Your Swoole Application
+## Running
 
 ```bash
-# Start the Swoole HTTP server
 php app/main.php
-```
-
-The default configuration starts a high-performance Swoole HTTP server with:
-- Multi-worker processes
-- Coroutine support
-- Static file serving
-- HTTP/2 support (configurable)
-- Connection pooling
-- Hot reload capabilities
-
-## Swoole Features
-
-KissCore is optimized for Swoole and provides:
-
-- **Async I/O**: Non-blocking database and HTTP operations
-- **Connection Pooling**: Efficient database connection management
-- **Coroutines**: Built-in coroutine support for concurrent operations
-- **High Performance**: Handles thousands of concurrent connections
-- **Memory Resident**: Application stays in memory between requests
-- **WebSocket Support**: Built-in WebSocket capabilities (configurable)
-
-## Performance
-
-With Swoole, KissCore delivers:
-- **10x-100x** faster than traditional PHP-FPM
-- **Memory efficient** with persistent connections
-- **Low latency** response times
-- **High throughput** for concurrent requests
-
-## Development
-
-The package includes development tools:
-
-```bash
-# Code style checking
-./bin/codestyle-check
-
-# Code style fixing
-./bin/codestyle-fix
-
-# Code analysis
-./bin/codestyle-analyze
-
-# File watching for development
-./bin/watcher
 ```
 
 ## Requirements
 
-- **PHP 8.1+**
-- **Swoole Extension** (required)
-- Linux/macOS (recommended for production)
-
-## Migration from FPM
-
-If you're migrating from PHP-FPM:
-1. Install Swoole extension
-2. Update your deployment to use `php app/main.php` instead of web server
-3. Review session and global state handling (memory persistent)
-4. Test concurrent request handling
+- **PHP 8.4+**
+- **Swoole Extension**
 
 ## License
 

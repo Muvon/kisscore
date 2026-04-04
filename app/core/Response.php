@@ -149,10 +149,6 @@ final class Response {
 	public static function redirect(string $url, int $code = 302): never {
 		assert(in_array($code, [301, 302]));
 
-		if ($url[0] === '/') {
-			$url = Lang::getUrlPrefix() . $url;
-		}
-
 		(new static($code))
 		->header('Content-type', '')
 		->header('Location', $url)

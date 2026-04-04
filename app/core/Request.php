@@ -30,7 +30,6 @@ final class Request {
 
 	public static string $request_uri = '';
 	public static string $content_type = '';
-	public static string $accept_lang = '';
 	public static string $method = 'GET';
 	public static string $protocol = 'HTTP';
 	public static string $referer = '';
@@ -42,9 +41,6 @@ final class Request {
 
 	/** @var array<string,string> */
 	public static array $headers = [];
-
-	/** @var array<string,int|string> */
-	public static array $languages = [];
 
 	public static bool $is_ajax = false;
 
@@ -58,8 +54,6 @@ final class Request {
    * @return self ссылка на объекта запроса
    */
 	final protected static function create(): self {
-		static::parseAcceptLanguages();
-
 		$url = rtrim(static::$request_uri, ';&?') ?: '/';
 		$route_info = Router::match($url, static::$host);
 
@@ -76,38 +70,7 @@ final class Request {
 					->setAction('home');
 		}
 
-		Lang::init($Request);
 		return $Request;
-	}
-
-	/**
-	 * Parse Accept-Language header into weighted language list
-	 */
-	protected static function parseAcceptLanguages(): void {
-		if (!self::$accept_lang) {
-			return;
-		}
-
-		preg_match_all(
-			'/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i',
-			self::$accept_lang,
-			$lang
-		);
-
-		if (sizeof($lang[1]) === 0) {
-			return;
-		}
-
-		$langs = array_combine($lang[1], $lang[4]);
-		foreach ($langs as $k => $v) {
-			if ($v !== '') {
-				continue;
-			}
-
-			$langs[$k] = 1;
-		}
-		arsort($langs, SORT_NUMERIC);
-		static::$languages = $langs;
 	}
 
   /**
@@ -134,7 +97,6 @@ final class Request {
 		self::$time_float = 0;
 		self::$request_uri = '';
 		self::$content_type = '';
-		self::$accept_lang = '';
 		self::$method = 'GET';
 		self::$protocol = 'HTTP';
 		self::$referer = '';
@@ -144,7 +106,6 @@ final class Request {
 		self::$host = '';
 		self::$user_agent = '';
 		self::$headers = [];
-		self::$languages = [];
 		self::$is_ajax = false;
 	}
 

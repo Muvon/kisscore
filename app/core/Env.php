@@ -251,24 +251,11 @@ final class Env {
 	protected static function createViewDirs(): void {
 		/** @var string $compile_dir */
 		$compile_dir = config('view.compile_dir');
-		if (!is_dir($compile_dir)) {
-			mkdir($compile_dir, 0700, true);
-		}
-
-		if (config('common.lang_type') === 'none') {
+		if (is_dir($compile_dir)) {
 			return;
 		}
 
-		/** @var array<string> $languages */
-		$languages = config('common.languages');
-		foreach ($languages as $lang) {
-			$lang_dir = $compile_dir . '/' . $lang;
-			if (is_dir($lang_dir)) {
-				continue;
-			}
-
-			mkdir($lang_dir, 0700);
-		}
+		mkdir($compile_dir, 0700, true);
 	}
 
 	/**
