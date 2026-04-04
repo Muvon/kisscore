@@ -43,14 +43,11 @@ final class Request {
 	/** @var array<string,string> */
 	public static array $headers = [];
 
-	/** @var array<string,int> */
+	/** @var array<string,int|string> */
 	public static array $languages = [];
 
 	public static bool $is_ajax = false;
 
-  /**
-   * @param string|bool $url адрес текущего запроса
-   */
 	final protected function __construct(protected string $url) {
 	}
 
@@ -61,26 +58,9 @@ final class Request {
    * @return self ссылка на объекта запроса
    */
 	final protected static function create(): self {
-		if (self::$accept_lang) {
-			preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', self::$accept_lang, $lang);
-			if ($lang && sizeof($lang[1]) > 0) {
-				$langs = array_combine($lang[1], $lang[4]);
-
-				foreach ($langs as $k => $v) {
-					if ($v !== '') {
-						continue;
-					}
-
-					$langs[$k] = 1;
-				}
-				arsort($langs, SORT_NUMERIC);
-				static::$languages = $langs;
-			}
-		}
+		static::parseAcceptLanguages();
 
 		$url = rtrim(static::$request_uri, ';&?') ?: '/';
-
-		// Use Swoole routing instead of nginx parameters
 		$route_info = Router::match($url, static::$host);
 
 		$Request = (new static($url));
@@ -88,21 +68,46 @@ final class Request {
 		if ($route_info) {
 			$Request->setRoute($route_info['route'])
 					->setAction($route_info['action']);
-
-			// Set route parameters in Input
 			foreach ($route_info['params'] as $key => $value) {
 				Input::set($key, $value);
 			}
 		} else {
-			// Fallback to default action
 			$Request->setRoute('home')
 					->setAction('home');
 		}
 
-	// Init language
 		Lang::init($Request);
-
 		return $Request;
+	}
+
+	/**
+	 * Parse Accept-Language header into weighted language list
+	 */
+	protected static function parseAcceptLanguages(): void {
+		if (!self::$accept_lang) {
+			return;
+		}
+
+		preg_match_all(
+			'/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i',
+			self::$accept_lang,
+			$lang
+		);
+
+		if (sizeof($lang[1]) === 0) {
+			return;
+		}
+
+		$langs = array_combine($lang[1], $lang[4]);
+		foreach ($langs as $k => $v) {
+			if ($v !== '') {
+				continue;
+			}
+
+			$langs[$k] = 1;
+		}
+		arsort($langs, SORT_NUMERIC);
+		static::$languages = $langs;
 	}
 
   /**
@@ -174,7 +179,7 @@ final class Request {
    * @return string
    */
 	public function getUrlPath(): string {
-		return parse_url($this->url, PHP_URL_PATH);
+		return parse_url($this->url, PHP_URL_PATH) ?: '/';
 	}
 
   /**
@@ -183,7 +188,7 @@ final class Request {
    * @return string
    */
 	public function getUrlQuery(): string {
-		return parse_url($this->url, PHP_URL_QUERY) ?? '';
+		return parse_url($this->url, PHP_URL_QUERY) ?: '';
 	}
 
 
@@ -226,7 +231,7 @@ final class Request {
    */
 	public function setAction(?string $action): self {
 		$this->action = $action
-		? trim(preg_replace('|[^a-z0-9\_\-/]+|is', '', $action), '/')
+		? trim((string)preg_replace('|[^a-z0-9\_\-/]+|is', '', $action), '/')
 		: 'home'
 		;
 		return $this;
@@ -238,6 +243,8 @@ final class Request {
    * @return string
    */
 	public function getAction(): string {
-		return $this->action ?? config('default.action');
+		/** @var string $defaultAction */
+		$defaultAction = config('default.action');
+		return $this->action ?: $defaultAction;
 	}
 }

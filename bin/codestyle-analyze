@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-cd app || exit 1
+
+# Resolve to physical path (avoids macOS case-sensitivity issues with require_once)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+cd "$PROJECT_DIR" || exit 1
 
 if [ $# -eq 0 ]; then
-	paths=(core lib plugin)
+	paths=(app/core app/lib app/plugin)
 else
 	paths=("$@")
 fi
 
-# PHPStan is not compatible with opcache ! use enable_cli=0
-./vendor/bin/phpstan \
+# PHPStan is not compatible with opcache — use enable_cli=0
+vendor/bin/phpstan \
 	--memory-limit=-1 \
 	analyse \
-	-c "$(pwd)/phpstan.neon" \
+	-c phpstan.neon \
 	-- "${paths[@]}"

@@ -4,20 +4,14 @@ namespace Plugin\Data;
 
 trait OptionTrait {
 	/**
-	 * @param int|string $id
+	 * @param int|string|array<int|string> $id
 	 * @param array<string,mixed> $cond
-	 * @return array<mixed>
+	 * @return array<int,array<string,mixed>>
 	 */
-	public static function getOptionList(int|string $id, array $cond = []): array {
+	public static function getOptionList(int|string|array $id, array $cond = []): array {
 		$list = static::getList($cond);
 
-		$ids = [];
-		if (is_array($id)) {
-			$ids = $id;
-		} else {
-			$ids = [$id];
-		}
-
+		$ids = is_array($id) ? $id : [$id];
 
 		foreach ($list as &$item) {
 			$item['selected'] = in_array($item['id'], $ids);

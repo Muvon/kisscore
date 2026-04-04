@@ -6,12 +6,11 @@ use ArrayAccess;
 use Error;
 use InvalidArgumentException;
 use JsonSerializable;
+use Plugin\List\Pagination;
 use Result;
 
 /**
- * @template TArray of array
- * @template TId as int|string
- * @implements ArrayAccess<key-of<TArray>,value-of<TArray>>
+ * @implements ArrayAccess<string,mixed>
  */
 abstract class Model implements ArrayAccess, JsonSerializable {
 	use DatabaseTrait;
@@ -24,7 +23,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	protected bool $is_cacheable = false;
 
   /**
-	 * @var array<key-of<TArray>,value-of<TArray>>
+	 * @var array<string,mixed>
    */
 	protected array $data   = [];
 
@@ -50,7 +49,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @param TArray &$row
+	 * @param array<string,mixed> &$row
 	 * @return void
 	 */
 	// phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
@@ -84,7 +83,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 	/**
 	 * Helper to save new task to simply chain call
-	 * @param array<key-of<TArray>,value-of<TArray>> $data
+	 * @param array<string,mixed> $data
 	 * @return Result<static>
 	 */
 	public static function create(array $data): Result {
@@ -92,10 +91,10 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
   /**
-	 * Update counters in database accept keyss with change as a value
+	 * Update counters in database accept keys with change as a value
    *
-   * @param array<key-of<TArray>,int|numeric-string> $counters
-   * @param array<TId> $ids
+   * @param array<string,int|numeric-string> $counters
+   * @param array<int|string> $ids
 	 * @return static
    */
 	public function increment(array $counters, array $ids = []): static {
@@ -114,7 +113,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @param TArray $data
+	 * @param array<string,mixed> $data
 	 * @return static
 	 */
 	public function update(array $data): static {
@@ -125,7 +124,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
   /**
 	 * Store data into the model
-   * @param array<key-of<TArray>,value-of<TArray>> $data
+   * @param array<string,mixed> $data
    * @return Result<static>
    */
 	public function save(array $data): Result {
@@ -133,12 +132,14 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		$this->data = array_merge($this->data, $data);
 
 		if (!$this->data) {
+			/** @var Result<static> */
 			return err('e_data_to_update_missing');
 		}
 
 		$data = array_intersect_key($this->data, $data);
 		$errors = $this->validate($data);
 		if ($errors) {
+			/** @var Result<static> */
 			return err_list($errors);
 		}
 
@@ -152,11 +153,12 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 		$this->exists = true;
 		static::expand($this->data);
+		/** @var Result<static> */
 		return ok($this);
 	}
 
 	/**
-	 * @param TArray $data
+	 * @param array<string,mixed> $data
 	 * @return bool
 	 */
 	private function updateExistingRecord(array $data): bool {
@@ -175,7 +177,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @param TArray $data
+	 * @param array<string,mixed> $data
 	 * @return bool
 	 */
 	private function insertNewRecord(array $data): bool {
@@ -195,24 +197,28 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @param TArray $data
+	 * @param array<string,mixed> $data
 	 * @return void
 	 */
 	private function prepareId(array $data): void {
 		if (isset($data[static::$id_field])) {
-			$this->setId($data[static::$id_field]);
+			/** @var int|string $id_value */
+			$id_value = $data[static::$id_field];
+			$this->setId($id_value);
 		}
 		if ($this->getId()) {
 			return;
 		}
 
 		$shard_key = static::getShardKey();
-		$this->setId(static::generateId($shard_key ? static::dbShardId($data[$shard_key]) : ''));
+		/** @var string $shard_value */
+		$shard_value = $shard_key ? ($data[$shard_key] ?? '') : '';
+		$this->setId(static::generateId($shard_value));
 	}
 
   /**
-   * @param TArray $data
-   * @return TArray
+   * @param array<string,mixed> $data
+   * @return array<string,mixed>
    */
 	protected function appendDates(array $data) {
 		if (!isset($data['updated_at'])) {
@@ -243,7 +249,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @return TArray
+	 * @return array<string,mixed>
 	 */
 	public function getData(): array {
 		return $this->data;
@@ -251,7 +257,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
   /**
    * @access public
-   * @param TId $id
+   * @param int|string $id
    * @return static
    */
 	public static function get(int|string $id, bool $cache = false): static {
@@ -271,14 +277,14 @@ abstract class Model implements ArrayAccess, JsonSerializable {
   /**
    * That method performs direct query to database for update purspose without any caching mechanisms
    *
-   * @param TId $id
+   * @param int|string $id
    * @return static
    */
 	public static function getForUpdate(int|string $id): static {
 		if (!DB::inTransaction()) {
 			throw new Error('You must be in transaction to use getForUpdate');
 		}
-		/** @var array<TArray> */
+		/** @var array<int,array<string,mixed>> $rows */
 		$rows = static::dbQuery(
 			'SELECT * FROM ' . static::table()
 				. ' WHERE ' . static::$id_field . ' = :' . static::$id_field
@@ -305,7 +311,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 	/**
 	 * Get default values for current model
-	 * @return TArray
+	 * @return array<string,mixed>
 	 */
 	public static function getDefault(): array {
 		return array_map(fn ($v) => $v['default'], static::fields(true));
@@ -314,17 +320,17 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	/**
 	 * Получение нескольких записей по ID
 	 *
-	 * @param array<TId> $ids
-	 * @return array<TArray>
+	 * @param array<int|string> $ids
+	 * @return array<int|string,array<string,mixed>>
 	 */
 	public static function getByIds(array $ids): array {
 		$ids = array_unique($ids);
 
 		$Obj = new static;
 		$data = [];
+		$key_ptrn = static::class . ':%s';
 
 		if ($Obj->is_cacheable) {
-			$key_ptrn = static::class . ':%s';
 			foreach ((array)Cache::get(
 				array_map(
 					function ($item) use ($key_ptrn) {
@@ -366,13 +372,13 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	/**
 	 * Helper to simplify process of writing new code for the fetcher by fields
 	 * @param array<string,mixed> $fields
-	 * @param array<mixed> $oroder
+	 * @param array<string,string> $order
 	 * @return static
 	 * @throws InvalidArgumentException
 	 */
 	public static function getByFields(array $fields, array $order = []): static {
 		$Self = new static;
-		/** @var TArray $row */
+		/** @var array<string,mixed> $row */
 		$row = $Self->dbGet(static::fields(), $fields, $order);
 		if ($row) {
 			static::transform($row, true);
@@ -385,7 +391,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	/**
 	 * Загрузка из базы данных в текущий инстанс объекта
 	 *
-	 * @param TId $id
+	 * @param int|string $id
 	 * @return static
 	 */
 	public function load(int|string $id): static {
@@ -397,7 +403,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @param TArray $data
+	 * @param array<string,mixed> $data
 	 * @return static
 	 * @throws InvalidArgumentException
 	 */
@@ -405,7 +411,9 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		if (!isset($data[static::$id_field])) {
 			throw new InvalidArgumentException('There is no id field in data array');
 		}
-		$this->setId($data[static::$id_field]);
+		/** @var int|string $data_id */
+		$data_id = $data[static::$id_field];
+		$this->setId($data_id);
 		$this->data = $this->appendDates(array_replace(static::getDefault(), $data));
 		$this->exists = true;
 		static::expand($this->data);
@@ -413,14 +421,15 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @param TArray $data
+	 * @param array<string,mixed> $data
 	 * @param bool $cache
 	 * @return static
 	 * @throws InvalidArgumentException
 	 */
 	public static function fromData(array $data, bool $cache = false): static {
+		/** @var int|string|null $id */
 		$id = $data[static::$id_field] ?? null;
-		$key = "$id";
+		$key = (string)$id;
 		if (isset($id) && isset(static::$map[$key])) {
 			return static::$map[$key];
 		}
@@ -433,14 +442,15 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 	// This method used to load data and run prepare func (same as we get from db)
 	/**
-	 * @param TArray $data
+	 * @param array<string,mixed> $data
 	 * @param bool $cache
 	 * @return static
 	 * @throws InvalidArgumentException
 	 */
 	public static function fromRawData(array $data, bool $cache = false): static {
+		/** @var int|string|null $id */
 		$id = $data[static::$id_field] ?? null;
-		$key = "$id";
+		$key = (string)$id;
 		if (isset($id) && isset(static::$map[$key])) {
 			return static::$map[$key];
 		}
@@ -461,7 +471,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 * Функция валидации данных
 	 *
 	 * @access protected
-	 * @param TArray $data
+	 * @param array<string,mixed> $data
 	 * @return array<string>
 	 * </code>
 	 */
@@ -489,7 +499,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @return array{class-string,TId}
+	 * @return array{class-string,int|string}
 	 */
 	public function ref(): array {
 		return [static::class, $this->getId()];
@@ -497,7 +507,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 	/**
 	 * Transform the single data row according to our transformers returned by getTransformers
-	 * @param TArray &$row
+	 * @param array<string,mixed> &$row
 	 * @param bool $is_decode If we should decode, default false, encode
 	 * @return void
 	 */
@@ -523,30 +533,30 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 	/**
 	 * Implements JSON serialize
-	 * @return TArray
+	 * @return array<string,mixed>
 	 */
 	public function jsonSerialize(): array {
 		return $this->getData();
 	}
 
-	/** @return TId  */
+	/** @return int|string  */
 	abstract public function getId(): int|string;
 
 	/**
-	 * @param TId $id
+	 * @param int|string $id
 	 * @return static
 	 */
 	abstract public function setId(int|string $id): static;
 
 	/**
 	 * @param string $value
-	 * @return TId
+	 * @return int|string
 	 */
 	abstract protected static function generateId(string $value = ''): int|string;
 
 	/**
 	 * @param string $value
-	 * @return TId
+	 * @return int|string
 	 */
 	abstract protected static function dbShardId(string $value): int|string;
 

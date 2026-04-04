@@ -2,15 +2,11 @@
 
 namespace Lib;
 
-use Aws\Credentials\Credentials;
-use Aws\Exception\AwsException;
-use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
 use Result;
 
 /** @package Lib */
 final class R2 {
-	private S3Client $Client;
+	private object $Client;
 
 	private function __construct() {
 	}
@@ -23,7 +19,8 @@ final class R2 {
 	 * @return self
 	 */
 	public static function new(string $public, string $secret, string $region, string $endpoint): self {
-		$credentials = new Credentials($public, $secret);
+		/** @phpstan-ignore-next-line optional dependency: Aws\Credentials\Credentials */
+		$credentials = new \Aws\Credentials\Credentials($public, $secret);
 
 		$options = [
 			'region' => $region,
@@ -33,7 +30,8 @@ final class R2 {
 		];
 
 		$Self = new self;
-		$Self->Client = new S3Client($options);
+		/** @phpstan-ignore-next-line optional dependency: Aws\S3\S3Client */
+		$Self->Client = new \Aws\S3\S3Client($options);
 		return $Self;
 	}
 
@@ -47,6 +45,7 @@ final class R2 {
 	 */
 	public function getUploadUrl(string $bucket, string $key, $ttl = 1800, $maxFileSize = 10485760): Result {
 		try {
+			/** @phpstan-ignore-next-line optional dependency: Aws\S3\S3Client */
 			$cmd = $this->Client->getCommand(
 				'PutObject', [
 					'Bucket' => $bucket,
@@ -57,10 +56,13 @@ final class R2 {
 
 			$mins = (int)ceil($ttl / 60);
 			$expires = "+{$mins} mins";
+			/** @phpstan-ignore-next-line optional dependency: Aws\S3\S3Client */
 			$request = $this->Client->createPresignedRequest($cmd, $expires);
 
+			/** @var Result<string> */
 			return ok((string)$request->getUri());
-		} catch (AwsException $E) {
+		} catch (\Exception $E) {
+			/** @var Result<string> */
 			return err('e_upload_url_error', $E->getMessage());
 		}
 	}
@@ -76,17 +78,25 @@ final class R2 {
 		try {
 			$data = file_get_contents($file);
 
+			/** @var string $bucket */
+			$bucket = config('cloudflare.files_bucket');
+			/** @var string $url_prefix */
+			$url_prefix = config('cloudflare.files_url_prefix');
+
 			// Upload the object using the pre-signed URL
+			/** @phpstan-ignore-next-line optional dependency: Aws\S3\S3Client */
 			$this->Client->putObject(
 				[
-					'Bucket' => config('cloudflare.files_bucket'),
+					'Bucket' => $bucket,
 					'Key' => $path,
 					'Body' => $data,
 				]
 			);
 
-			return ok(config('cloudflare.files_url_prefix') . '/' . $path);
-		} catch (AwsException $E) {
+			/** @var Result<string> */
+			return ok($url_prefix . '/' . $path);
+		} catch (\Exception $E) {
+			/** @var Result<string> */
 			return err('e_upload_failed', $E->getMessage());
 		}
 	}
@@ -103,7 +113,7 @@ final class R2 {
 			$keys = [];
 
 			// Use the ListObjectsV2 method and specify the Prefix parameter
-			/** @var array{Contents?:array<array{Key:string}>} $result */
+			/** @phpstan-ignore-next-line optional dependency: Aws\S3\S3Client */
 			$result = $this->Client->listObjectsV2(
 				[
 					'Bucket' => $bucket,
@@ -111,6 +121,7 @@ final class R2 {
 				]
 			);
 
+			/** @var array{Contents?:array<array{Key:string}>} $result */
 			// Check if the result contains any contents
 			if (isset($result['Contents'])) {
 				foreach ($result['Contents'] as $object) {
@@ -120,9 +131,10 @@ final class R2 {
 			}
 
 			// Return the list of keys as a successful result
+			/** @var Result<array<int,string>> */
 			return ok($keys);
-		} catch (AwsException $e) {
-			// Return an error result if an exception occurs
+		} catch (\Exception $e) {
+			/** @var Result<array<int,string>> */
 			return err('e_list_keys_error', $e->getMessage());
 		}
 	}
@@ -137,6 +149,7 @@ final class R2 {
 	public function downloadByKeys(string $bucket, array $keys, string $save_to): Result {
 		try {
 			foreach ($keys as $key) {
+				/** @phpstan-ignore-next-line optional dependency: Aws\S3\S3Client */
 				$this->Client->getObject(
 					[
 						'Bucket' => $bucket,
@@ -146,8 +159,10 @@ final class R2 {
 				);
 			}
 
+			/** @var Result<bool> */
 			return ok(true);
-		} catch (AwsException $e) {
+		} catch (\Exception $e) {
+			/** @var Result<bool> */
 			return err('e_download_error', $e->getMessage());
 		}
 	}
@@ -159,22 +174,24 @@ final class R2 {
 	 */
 	public function createBucket(string $bucket): Result {
 		try {
-			/** @var array{'@metadata':array{statusCode:int}} $result */
+			/** @phpstan-ignore-next-line optional dependency: Aws\S3\S3Client */
 			$result = $this->Client->createBucket(
 				[
 				'Bucket' => $bucket,
 				]
 			);
 
+			/** @var array{'@metadata':array{statusCode:int}} $result */
 			if ($result['@metadata']['statusCode'] === 200) {
+				/** @var Result<bool> */
 				return ok(true);
 			}
 
+			/** @var Result<bool> */
 			return err('e_create_bucket_error');
-		} catch (S3Exception $e) {
-			return err('e_create_bucket_error', $e->getMessage());
 		} catch (\Exception $e) {
-			return err('e_create_bucket_error', 'Unexpected error occurred');
+			/** @var Result<bool> */
+			return err('e_create_bucket_error', $e->getMessage());
 		}
 	}
 
@@ -187,6 +204,7 @@ final class R2 {
 	public function getFileInfo(string $bucket, string $key): Result {
 		try {
 			try {
+				/** @phpstan-ignore-next-line optional dependency: Aws\S3\S3Client */
 				$result = $this->Client->headObject(
 					[
 					'Bucket' => $bucket,
@@ -194,14 +212,17 @@ final class R2 {
 					]
 				);
 
+				/** @var Result<int> */
 				return ok((int)$result['ContentLength']);
-			} catch (S3Exception $e) {
-				if ($e->getAwsErrorCode() === 'NotFound') {
+			} catch (\RuntimeException $e) {
+				if (method_exists($e, 'getAwsErrorCode') && $e->getAwsErrorCode() === 'NotFound') {
+					/** @var Result<int> */
 					return err('e_file_not_found');
 				}
 				throw $e;
 			}
-		} catch (AwsException $e) {
+		} catch (\Exception $e) {
+			/** @var Result<int> */
 			return err('e_file_info_error', $e->getMessage());
 		}
 	}

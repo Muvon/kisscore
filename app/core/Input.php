@@ -67,7 +67,7 @@ final class Input {
 	 */
 	public static function setParser(callable $fn): void {
 		static::$is_parsed = false;
-		static::$parse_fn = $fn;
+		static::$parse_fn = Closure::fromCallable($fn);
 	}
 
 	/**
@@ -104,31 +104,27 @@ final class Input {
 			return static::$params[$args[0]] ?? ($args[1] ?? null);
 		}
 
-		if (is_array($args[0])) {
-			return static::extractTypified(
-				$args[0], function ($key, $default = null) {
-					return static::get($key, $default);
-				}
-			);
-		}
-	  // Exctract typifie var by mnemonic rules as array
-
-
-		trigger_error('Error while fetch key from input');
+		return static::extractTypified(
+			(array)$args[0], function ($key, $default = null) {
+				return static::get($key, $default);
+			}
+		);
 	}
 
   /**
    * Извлекает и типизирует параметры из массива args с помощью функции $fetcher, которая
    * принимает на вход ключ из массива args и значение по умолчанию, если его там нет
    *
-   * @param array $args
+   * @param array<string> $args
    * @param Closure $fetcher ($key, $default)
 	 * @return array<string,string|int|bool>
    */
 	public static function extractTypified(array $args, Closure $fetcher): array {
 		$params = [];
 		foreach ($args as $arg) {
-			preg_match('#^([a-zA-Z0-9_]+)(?::([a-z]+))?(?:=(.+))?$#', $arg, $m);
+			if (!preg_match('#^([a-zA-Z0-9_]+)(?::([a-z]+))?(?:=(.+))?$#', $arg, $m)) {
+				continue;
+			}
 			$params[$m[1]]  = $fetcher($m[1], $m[3] ?? '');
 
 		  // Нужно ли типизировать

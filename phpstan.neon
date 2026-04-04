@@ -1,4 +1,7 @@
 parameters:
 	level: 9
 	inferPrivatePropertyTypeFromConstructor: true
-	checkGenericClassInNonGenericObjectType: true
+	paths:
+		- app/core
+		- app/lib
+		- app/plugin

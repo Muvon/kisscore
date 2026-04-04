@@ -15,6 +15,7 @@ final class Image {
 		$path = tempnam(sys_get_temp_dir(), 'image');
 		$ch = curl_init($url);
 		if (!$ch) {
+			/** @var Result<string> */
 			return err('e_image_download_failed', 'Cant create curl handle');
 		}
 		$fp = fopen($path, 'wb');
@@ -24,8 +25,10 @@ final class Image {
 		curl_exec($ch);
 		$err = curl_error($ch);
 		if ($err) {
+			/** @var Result<string> */
 			return err('e_image_download_failed', $err);
 		}
+		/** @var Result<string> */
 		return ok($path);
 	}
 
@@ -49,6 +52,7 @@ final class Image {
 			. escapeshellarg($webp_path)
 		);
 		if (!file_exists($webp_path)) {
+			/** @var Result<string> */
 			return err('e_image_convert_failed');
 		}
 

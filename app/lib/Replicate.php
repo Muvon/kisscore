@@ -56,12 +56,15 @@ final class Replicate {
 		/** @var Result<ReplicateResponse> */
 		$Res = $this->Fetch->request($api_url, $payload, 'POST', $headers);
 		if ($Res->err) {
+			/** @var Result<string> */
 			return err('e_replicate_http_error', $Res->err);
 		}
 		$result = $Res->unwrap();
 		if (isset($result['error'])) {
+			/** @var Result<string> */
 			return err('e_replicate_response_error', $result['error']);
 		}
+		/** @var Result<string> */
 		return ok($result['id']);
 	}
 
@@ -76,6 +79,7 @@ final class Replicate {
 	public function runAndWait(string $version, array $input, int $timeout = -1): Result {
 		$Res = $this->run($version, $input);
 		if ($Res->err) {
+			/** @var Result<ReplicateResponse> */
 			return err($Res->err);
 		}
 
@@ -117,10 +121,12 @@ final class Replicate {
 			}
 			$info = $Res->unwrap();
 			if ($timeout > 0 && $start > $timeout) {
+				/** @var Result<ReplicateResponse> */
 				return err('e_replicate_timeout');
 			}
 		}
 
+		/** @var Result<ReplicateResponse> */
 		return ok($info);
 	}
 
@@ -138,6 +144,7 @@ final class Replicate {
 		/** @var Result<ReplicateResponse> */
 		$Res = $this->Fetch->request($api_url, [], 'GET', $headers);
 		if ($Res->err) {
+			/** @var Result<ReplicateResponse> */
 			return err('e_replicate_http_error');
 		}
 		return $Res;

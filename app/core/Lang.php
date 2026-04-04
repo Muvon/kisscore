@@ -48,6 +48,7 @@ final class Lang {
 	 * @return string
 	 */
 	public static function init(Request|string $Request): string {
+		/** @var string $lang_type */
 		$lang_type = config('common.lang_type');
 		assert(in_array($lang_type, ['path', 'domain', 'none']));
 		if ($lang_type === 'none') {
@@ -56,30 +57,46 @@ final class Lang {
 			return static::$current;
 		}
 
-	  // Try to find current language from url match
-		if (is_string($Request)) {
-			$lang = $Request;
-		} else {
-			$lang = match ($lang_type) {
-				'domain' => strtok(getenv('HTTP_HOST'), '.'),
-				'path' => strtok(substr($Request->getUrlPath(), 1), '/'),
-				default => ''
-			};
-		}
+		$lang = static::detectLanguage($Request, $lang_type);
 
-	  // If we find current language we return as string
-		if (isset(static::LANGUAGE_MAP[$lang]) && in_array($lang, config('common.languages'))) {
+		/** @var array<string> $configLanguages */
+		$configLanguages = config('common.languages');
+		if (isset(static::LANGUAGE_MAP[$lang]) && in_array($lang, $configLanguages)) {
 			static::$current = $lang;
 			return static::$current;
 		}
 
-	  // No supported language found try to find in headers
+		// No supported language found — parse from headers and redirect
 		static::$current = static::parse();
+		static::redirectToLanguage($Request, $lang_type);
+	}
 
-		$url_path = match ($lang_type) {
-			'domain' => $Request->getUrlPath(),
-			'path' => substr($Request->getUrlPath(), 3)
-		};
+	/**
+	 * @param Request|string $Request
+	 * @param string $lang_type
+	 * @return string
+	 */
+	protected static function detectLanguage(Request|string $Request, string $lang_type): string {
+		if (is_string($Request)) {
+			return $Request;
+		}
+
+		if ($lang_type === 'domain') {
+			return strtok(getenv('HTTP_HOST') ?: '', '.') ?: '';
+		}
+
+		return strtok(substr($Request->getUrlPath(), 1), '/') ?: '';
+	}
+
+	/**
+	 * @param Request|string $Request
+	 * @param string $lang_type
+	 */
+	protected static function redirectToLanguage(Request|string $Request, string $lang_type): never {
+		/** @var Request $Request */
+		$url_path = $lang_type === 'domain'
+		? $Request->getUrlPath()
+		: substr($Request->getUrlPath(), 3);
 
 		$query_str = $Request->getUrlQuery();
 		Response::redirect(static::getUrlPrefix() . ($url_path ?: '/') . ($query_str ? '?' . $query_str : ''));
@@ -103,18 +120,26 @@ final class Lang {
 	 * @return string
 	 */
 	public static function getUrlPrefix(): string {
-		$lang_domain = match (config('common.lang_type')) {
-			'domain' => static::$current . '.' . config('common.domain'),
-			'path' => config('common.domain') . '/' . static::$current,
-			'none' => config('common.domain')
+		/** @var string $domain */
+		$domain = config('common.domain');
+		/** @var string $langType */
+		$langType = config('common.lang_type');
+		$lang_domain = match ($langType) {
+			'domain' => static::$current . '.' . $domain,
+			'path' => $domain . '/' . static::$current,
+			'none' => $domain,
+			default => $domain,
 		};
 
+		/** @var int $port */
 		$port = config('server.port');
 		if ($port !== 80) {
 			$lang_domain .= ':' . $port;
 		}
 
-		return config('common.proto') . '://' . $lang_domain;
+		/** @var string $proto */
+		$proto = config('common.proto');
+		return $proto . '://' . $lang_domain;
 	}
   /**
    * Try to parse locale from headers and auto detect it
@@ -122,7 +147,8 @@ final class Lang {
    * @return string locale that we found in headers
    */
 	public static function parse(): string {
-		$accept_language = getenv('HTTP_ACCEPT_LANGUAGE') ?? '';
+		$accept_language = getenv('HTTP_ACCEPT_LANGUAGE') ?: '';
+		/** @var array<string> $languages */
 		$languages = config('common.languages');
 		foreach (array_keys(static::LANGUAGE_MAP) as $lang) {
 			if (!isset($languages[$lang])) {
@@ -155,7 +181,7 @@ final class Lang {
 
 	/**
 	 * @param string $lang
-	 * @return array
+	 * @return array{name:string,language:string,is_active:bool}
 	 */
 	public static function getInfo(string $lang): array {
 		return [
@@ -167,9 +193,10 @@ final class Lang {
 
 	/**
 	 * @param string $lang
-	 * @return array
+	 * @return array<array{language:string,name:string,is_active:bool}>
 	 */
 	public static function getList(string $lang): array {
+		/** @var array<string> $languages */
 		$languages = config('common.languages');
 		$list = [];
 		foreach (array_keys(static::LANGUAGE_MAP) as $key) {

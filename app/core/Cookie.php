@@ -71,25 +71,27 @@ final class Cookie {
 	 * Set new cookie. Replace if exists
 	 * @param string $name
 	 * @param string $value
-	 * @param array $options
+	 * @param array<string, mixed> $options
 	 * @return void
 	 */
 	public static function set(string $name, string $value, array $options = []): void {
 		static::$cookies[$name] = $value;
-		if ($options) {
-			static::$update[$name] = [
-				'name' => $name,
-				'value' => $value,
-				'options' => $options,
-			];
+		if (!$options) {
+			return;
 		}
+
+		static::$update[$name] = [
+			'name' => $name,
+			'value' => $value,
+			'options' => $options,
+		];
 	}
 
 	/**
 	 * Add new cookie. Create new only if not exists
 	 * @param string $name
 	 * @param string $value
-	 * @param array $options
+	 * @param array<string, mixed> $options
 	 * @return void
 	 */
 	public static function add(string $name, string $value, array $options = []): void {
@@ -97,7 +99,6 @@ final class Cookie {
 		if (isset(static::$cookies[$name])) {
 			return;
 		}
-
 		static::set($name, $value, $options);
 	}
 
@@ -107,6 +108,8 @@ final class Cookie {
 	 */
 	public static function send(?callable $cookie_fn = null): void {
 		foreach (static::$update as $cookie) {
+			/** @var array{name: string, value: string, options: array<string, mixed>} $cookie */
+			/** @var array{expires?: int, path?: string, domain?: string, secure?: bool, httponly?: bool, samesite?: 'Lax'|'None'|'Strict'} $options */
 			$options = array_merge(
 				[
 					'domain' => config('common.domain'),

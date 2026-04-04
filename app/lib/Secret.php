@@ -17,7 +17,7 @@ final class Secret {
 	 * @param string $key
 	 * @return self
 	 */
-	public function new(string $key): self {
+	public static function new(string $key): self {
 		$bin = hex2bin($key);
 		if (!$bin) {
 			throw new Error('Cant decode secret key');

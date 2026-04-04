@@ -12,15 +12,18 @@ use mysqli_sql_exception;
 final class DB {
 	protected static bool $in_transaction = false;
 	protected static bool $reconnect = true;
+	/** @var array<int,mysqli> */
 	protected static array $pool = [];
+	/** @var array<int,int> */
 	protected static array $try = [];
+	/** @var array<int,string>|null */
 	protected static ?array $shards = null;
 
   // TODO: think about shards logic
   // Return false in callbable to revert transaction
 	/**
 	 * @template V
-	 * @param callable $func
+	 * @param callable():Result<V> $func
 	 * @param null|callable $rollback
 	 * @return Result<V>
 	 * @throws Throwable
@@ -31,6 +34,7 @@ final class DB {
 		if (static::$in_transaction) {
 			// Rewrap it just to make sure that we will throw exception
 			// and process rollback
+			/** @var Result<V> */
 			return ok($func()->unwrap());
 		}
 
@@ -55,7 +59,9 @@ final class DB {
 			}
 
 			// Do simple return in case if it's result
+			/** @phpstan-ignore-next-line Result may be thrown in legacy code paths */
 			if ($e instanceof Result) {
+				/** @var Result<V> $e */
 				return $e;
 			}
 			throw $e;
@@ -70,16 +76,15 @@ final class DB {
    * Выполнение запроса к базе данных, выполняет коннект на запросе
    *
    * @param string $query
-   * @param array $params
+   * @param array<string,mixed> $params
    * @param int $shard_id
 	 * @return mixed
-   * @throws Exception
    */
 	public static function query(string $query, array $params = [], $shard_id = 0): mixed {
 		assert($shard_id >= 0 && $shard_id < 2048);
 
 		$query = trim($query);
-		$type = strtolower(strtok($query, ' '));
+		$type = strtolower((string)strtok($query, ' '));
 
 		static::initShards();
 		static::validateShard($shard_id);
@@ -105,15 +110,21 @@ final class DB {
 			return;
 		}
 
-		static::$shards = config('mysql.use_env')
-		? [
-			'mysql:host=' . getenv('DB_IP')
-				. ';port=' . getenv('DB_PORT')
-				. ';dbname=' . getenv('DB_DATABASE')
-				. ';user=' . getenv('DB_USER')
-				. ';password=' . getenv('DB_PASSWORD'),
-		]
-		: config('mysql.shard');
+		/** @var bool */
+		$use_env = config('mysql.use_env');
+		if ($use_env) {
+			static::$shards = [
+				'mysql:host=' . getenv('DB_IP')
+					. ';port=' . getenv('DB_PORT')
+					. ';dbname=' . getenv('DB_DATABASE')
+					. ';user=' . getenv('DB_USER')
+					. ';password=' . getenv('DB_PASSWORD'),
+			];
+		} else {
+			/** @var array<int,string> $shard_config */
+			$shard_config = config('mysql.shard');
+			static::$shards = $shard_config;
+		}
 	}
 
 	/**
@@ -121,7 +132,7 @@ final class DB {
 	 * @return void
 	 */
 	private static function validateShard(int $shard_id): void {
-		if (isset(static::$shards[$shard_id])) {
+		if (static::$shards !== null && isset(static::$shards[$shard_id])) {
 			return;
 		}
 
@@ -134,11 +145,13 @@ final class DB {
 	 */
 	private static function getConnection(int $shard_id): mysqli {
 		if (!isset(static::$pool[$shard_id])) {
+			assert(static::$shards !== null);
 			$dsn = static::$shards[$shard_id];
 			$DB = static::createConnection($dsn);
 			static::$pool[$shard_id] = $DB;
 			static::$try[$shard_id] = 1;
 		}
+		/** @var mysqli */
 		return static::$pool[$shard_id];
 	}
 
@@ -147,14 +160,19 @@ final class DB {
 	 * @return mysqli
 	 */
 	private static function createConnection(string $dsn): mysqli {
-		$dsn_key = function ($key) use ($dsn) {
+		$dsn_key = function (string $key) use ($dsn): ?string {
 			preg_match("|$key=([^;]+)|", $dsn, $m);
 			return $m ? $m[1] : null;
 		};
 
 		$DB = mysqli_init();
-		$DB->options(MYSQLI_OPT_CONNECT_TIMEOUT, config('mysql.connect_timeout'));
-		$DB->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true);
+		if ($DB === false) {
+			throw new \RuntimeException('Failed to initialize mysqli');
+		}
+		/** @var int $connect_timeout */
+		$connect_timeout = config('mysql.connect_timeout');
+		$DB->options(MYSQLI_OPT_CONNECT_TIMEOUT, $connect_timeout);
+		$DB->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);
 		$DB->real_connect(
 			$dsn_key('host'),
 			$dsn_key('user'),
@@ -169,11 +187,12 @@ final class DB {
 
 	/**
 	 * @param string $query
-	 * @param array $params
+	 * @param array<string,mixed> $params
 	 * @param mysqli $DB
 	 * @return string
 	 */
 	private static function prepareQuery(string $query, array $params, mysqli $DB): string {
+		/** @var array<string,string|int|float> $placeholders */
 		$placeholders = [];
 		foreach ($params as $key => $value) {
 			$placeholders[':' . $key] = is_array($value)
@@ -201,7 +220,7 @@ final class DB {
 			App::log($e->getMessage(), ['query' => $query, 'trace' => $e->getTraceAsString()], 'db');
 			throw $e;
 		}
-		static::$pool[$shard_id] = null;
+		unset(static::$pool[$shard_id]);
 		return static::query($query, [], $shard_id);
 	}
 
@@ -222,6 +241,7 @@ final class DB {
 			case 'select':
 			case 'describe':
 			case 'show':
+				assert($Result instanceof mysqli_result);
 				$result = $Result->fetch_all(MYSQLI_ASSOC);
 				$Result->close();
 				return $result;
@@ -235,9 +255,8 @@ final class DB {
 	 * TODO: use ping and extract connection to separated func
 	 * @param null|callable $init_fn
 	 * @return void
-	 * @throws Throwable
 	 */
-	public static function ping(?callable $init_fn = null) {
+	public static function ping(?callable $init_fn = null): void {
 		static::query('SELECT 1');
 		if (!$init_fn) {
 			return;
@@ -249,15 +268,21 @@ final class DB {
 	/**
 	 * @param mysqli $DB
 	 * @param mixed $item
-	 * @return mixed
+	 * @return string|int|float
 	 */
-	protected static function prepare(mysqli $DB, mixed $item): mixed {
-		return match (gettype($item)) {
-			'NULL' => 'NULL',
-			'boolean' => $item ? 1 : 0,
-			'integer', 'double' => $item,
-			default => '"' . $DB->real_escape_string($item) . '"',
-		};
+	protected static function prepare(mysqli $DB, mixed $item): string|int|float {
+		if ($item === null) {
+			return 'NULL';
+		}
+		if (is_bool($item)) {
+			return $item ? 1 : 0;
+		}
+		if (is_int($item) || is_float($item)) {
+			return $item;
+		}
+		/** @var string $str_item */
+		$str_item = $item;
+		return '"' . $DB->real_escape_string($str_item) . '"';
 	}
 
 	public static function inTransaction(): bool {

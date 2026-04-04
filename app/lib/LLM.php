@@ -2,7 +2,6 @@
 
 namespace Lib;
 
-use Orhanerday\OpenAi\OpenAi;
 use Result;
 
 /** @package Lib */
@@ -15,7 +14,9 @@ final class LLM {
 	protected static function translate(string $prompt): Result {
 		$prompt = 'Translate the original input to the English and return the translated text'
 		. ' without adding anything else to it. Input: ' . $prompt;
-		$Client = new OpenAi(getenv('OPENAI_API_TOKEN'));
+		/** @phpstan-ignore-next-line optional dependency: Orhanerday\OpenAi\OpenAi */
+		$Client = new \Orhanerday\OpenAi\OpenAi(getenv('OPENAI_API_TOKEN'));
+		/** @phpstan-ignore-next-line optional dependency: Orhanerday\OpenAi\OpenAi */
 		$Client->setTimeout(10);
 		$opts = [
 			'model' => 'gpt-3.5-turbo',
@@ -36,10 +37,13 @@ final class LLM {
 			'stream' => false,
 		];
 
+		/** @phpstan-ignore-next-line optional dependency: Orhanerday\OpenAi\OpenAi */
 		$result = $Client->chat($opts);
 		if (!is_string($result)) {
+			/** @var Result<string> */
 			return err('e_translate_failed', $result);
 		}
+		/** @var Result<string> */
 		return ok($result);
 	}
 }

@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
 final class Env {
-	protected static $params = [
+	/** @var string[] */
+	protected static array $params = [
 		'APP_ENV',
 		'APP_DIR',
 		'STATIC_DIR',
@@ -90,7 +91,7 @@ final class Env {
 	 * Configure all config templates in dir $template or special $template file
 	 *
 	 * @param string $template
-	 * @param array $params
+	 * @param array<string,string> $params
 	 * @return void
 	 */
 	public static function configure(string $template, array $params = []): void {
@@ -104,10 +105,15 @@ final class Env {
 			'{{DEBUG}}' => (int)App::$debug,
 		];
 
-		foreach (is_dir($template) ? glob($template . '/*.tpl') : [$template] as $file) {
+		$files = is_dir($template) ? (glob($template . '/*.tpl') ?: []) : [$template];
+		foreach ($files as $file) {
+			$content = file_get_contents($file);
+			if ($content === false) {
+				throw new Exception("Failed to read template file: $file");
+			}
 			file_put_contents(
 				getenv('CONFIG_DIR') . '/' . basename($file, '.tpl'),
-				strtr(file_get_contents($file), $params)
+				strtr($content, $params)
 			);
 		}
 	}
@@ -142,10 +148,18 @@ final class Env {
 
 		$env = getenv('APP_ENV');
 		// Prepare production config replacement
-		foreach (yaml_parse_file(getenv('CONFIG_DIR') . '/app.yml') as $group => $block) {
+		/** @var array<string,mixed> $parsed */
+		$parsed = yaml_parse_file(getenv('CONFIG_DIR') . '/app.yml');
+		foreach ($parsed as $group => $block) {
+			$group = (string)$group;
+			/** @var mixed $block */
 			if (str_contains($group, ':') && explode(':', $group)[1] === $env) {
-				$origin = strtok($group, ':');
-				$config[$origin] = array_merge($config[$origin], $block);
+				$origin = (string)strtok($group, ':');
+				/** @var array<mixed> $existing */
+				$existing = $config[$origin] ?? [];
+				/** @var array<mixed> $blockArr */
+				$blockArr = $block;
+				$config[$origin] = array_merge($existing, $blockArr);
 				$group = $origin;
 			} else {
 				$config[$group] = $block;
@@ -166,9 +180,10 @@ final class Env {
  */
 	protected static function appendDotNotationToConfig(array $config, string $group): array {
 		$result = $config;
-
-		foreach ($config[$group] as $key => $val) {
-			if (str_contains($key, '.')) {
+		/** @var array<string,mixed> $groupData */
+		$groupData = $config[$group] ?? [];
+		foreach ($groupData as $key => $val) {
+			if (str_contains((string)$key, '.')) {
 				continue;
 			}
 			$path = $group . '.' . $key;
@@ -217,7 +232,7 @@ final class Env {
 			return include $file;
 		};
 
-		foreach (glob(getenv('APP_DIR') . '/config/*/configure.php') as $file) {
+		foreach (glob(getenv('APP_DIR') . '/config/*/configure.php') ?: [] as $file) {
 			$configure($file);
 		}
 	}
@@ -234,16 +249,20 @@ final class Env {
 	 * @return void
 	 */
 	protected static function createViewDirs(): void {
-		if (!is_dir(config('view.compile_dir'))) {
-			mkdir(config('view.compile_dir'), 0700, true);
+		/** @var string $compile_dir */
+		$compile_dir = config('view.compile_dir');
+		if (!is_dir($compile_dir)) {
+			mkdir($compile_dir, 0700, true);
 		}
 
 		if (config('common.lang_type') === 'none') {
 			return;
 		}
 
-		foreach (config('common.languages') as $lang) {
-			$lang_dir = config('view.compile_dir') . '/' . $lang;
+		/** @var array<string> $languages */
+		$languages = config('common.languages');
+		foreach ($languages as $lang) {
+			$lang_dir = $compile_dir . '/' . $lang;
 			if (is_dir($lang_dir)) {
 				continue;
 			}
@@ -256,6 +275,7 @@ final class Env {
 	 * @return void
 	 */
 	protected static function createSessionDirs(): void {
+		/** @var string $save_handler */
 		$save_handler = config('session.save_handler');
 		if ($save_handler !== 'files') {
 			return;
@@ -270,11 +290,13 @@ final class Env {
 			$chars .= 'wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-,';
 		}
 
+		/** @var string $save_path */
 		$save_path = config('session.save_path');
 		if (!is_dir($save_path)) {
 			mkdir($save_path, 0700, true);
 		}
 
+		/** @var int $depth */
 		$depth = config('session.save_depth');
 		if ($depth === 0) {
 			return;
@@ -282,7 +304,7 @@ final class Env {
 
 		$arrays = [];
 		for ($i = 0; $i < $depth; $i++) {
-			$arrays[] = str_split($chars);
+			$arrays["d$i"] = str_split($chars);
 		}
 
 		foreach (array_cartesian($arrays) as $paths) {
@@ -302,7 +324,9 @@ final class Env {
 	 */
 	protected static function generateURIMap(): void {
 		$map = [];
-		$default_zone = config('common.zones')[0];
+		/** @var array<string> $zones */
+		$zones = config('common.zones');
+		$default_zone = $zones[0];
 		foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
 			$content = file_get_contents($file);
 			if (false === $content) {
@@ -325,7 +349,9 @@ final class Env {
 				$map[$pattern] = [$zone, ...$params];
 			}
 		}
-		static::store(config('common.uri_map_file'), $map);
+		/** @var string $uri_map_file */
+		$uri_map_file = config('common.uri_map_file');
+		static::store($uri_map_file, $map);
 	}
 
 	/**
@@ -338,7 +364,9 @@ final class Env {
 		foreach (static::getPHPFiles(getenv('APP_DIR') . '/actions') as $file) {
 			$map[static::getActionByFile($file)] = $file;
 		}
-		static::store(config('common.action_map_file'), $map);
+		/** @var string $action_map_file */
+		$action_map_file = config('common.action_map_file');
+		static::store($action_map_file, $map);
 	}
 
 	/**
@@ -347,29 +375,45 @@ final class Env {
 	 * @return void
 	 */
 	protected static function generateParamMap(): void {
+		/** @var string $param_map_file */
+		$param_map_file = config('common.param_map_file');
+		/** @var string $trigger_param_file */
+		$trigger_param_file = config('common.trigger_param_file');
 		$map_files = [
-			'actions'  => config('common.param_map_file'),
-			'triggers' => config('common.trigger_param_file'),
+			'actions'  => $param_map_file,
+			'triggers' => $trigger_param_file,
 		];
 		foreach ($map_files as $folder => $map_file) {
-			$map = [];
-			foreach (static::getPHPFiles(getenv('APP_DIR') . '/' . $folder) as $file) {
-				$content = file_get_contents($file);
-				if (!preg_match_all('/^\s*\*\s*@(?:param|var)\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
-					continue;
-				}
-
-				foreach (array_keys($m[0]) as $k) {
-					$param = substr(strtok($m[2][$k], ' '), 1);
-					$map[$file][] = [
-						'name'    => $param,
-						'type'    => $m[1][$k],
-						'default' => trim(substr($m[2][$k], strlen($param) + 1)) ?: null,
-					];
-				}
-			}
+			$map = static::extractParamsFromFiles(getenv('APP_DIR') . '/' . $folder);
 			static::store($map_file, $map);
 		}
+	}
+
+	/**
+	 * @param string $dir
+	 * @return array<string, array<array{name: string, type: string, default: ?string}>>
+	 */
+	protected static function extractParamsFromFiles(string $dir): array {
+		$map = [];
+		foreach (static::getPHPFiles($dir) as $file) {
+			$content = file_get_contents($file);
+			if ($content === false) {
+				continue;
+			}
+			if (!preg_match_all('/^\s*\*\s*@(?:param|var)\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
+				continue;
+			}
+
+			foreach (array_keys($m[0]) as $k) {
+				$param = substr(strtok($m[2][$k], ' '), 1);
+				$map[$file][] = [
+					'name'    => $param,
+					'type'    => $m[1][$k],
+					'default' => trim(substr($m[2][$k], strlen($param) + 1)) ?: null,
+				];
+			}
+		}
+		return $map;
 	}
 
 	/**
@@ -381,6 +425,9 @@ final class Env {
 		$map = [];
 		foreach (static::getPHPFiles(getenv('APP_DIR') . '/triggers') as $file) {
 			$content = file_get_contents($file);
+			if ($content === false) {
+				continue;
+			}
 			if (!preg_match_all('/^\s*\*\s*@event\s+([^\$]+?)$/ium', $content, $m)) {
 				continue;
 			}
@@ -393,7 +440,9 @@ final class Env {
 				$map[$pattern] = array_merge($map[$pattern], [$file]);
 			}
 		}
-		static::store(config('common.trigger_map_file'), $map);
+		/** @var string $trigger_map_file */
+		$trigger_map_file = config('common.trigger_map_file');
+		static::store($trigger_map_file, $map);
 	}
 
 	/**
@@ -429,7 +478,7 @@ final class Env {
 
 	/**
 	 * @param string $file
-	 * @return array
+	 * @return array<mixed>
 	 */
 	public static function load(string $file): array {
 		assert(is_file($file));
