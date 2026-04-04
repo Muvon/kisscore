@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 
 [[ -z "$1" ]] && echo 'Usage: php-exec [code | php_file]' && exit 1
+
+# Determine project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ -f "$SCRIPT_DIR/../../../autoload.php" ]]; then
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+else
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
+
 php=$(which php)
 config=$($php --ini | head -n 1)
 config=${config##* }
@@ -12,11 +21,10 @@ fi
 code=$(test -f "$1" && echo "include '$1'" || echo "$1");
 $php $OPTS <<EOF
 <?php
+  require_once '$PROJECT_DIR/vendor/autoload.php';
   try {
-    // Wait for config to be processed in fpm container
-    Env::waitInit();
-
-    App::start();
+    Env::waitInit(5, '$PROJECT_DIR');
+    App::start(['root' => '$PROJECT_DIR']);
 
     \$opt_string = trim('${@:2}');
     foreach (explode('--', \$opt_string) as \$param) {
@@ -32,7 +40,7 @@ $php $OPTS <<EOF
   } catch (Throwable \$E) {
     echo 'Error: ' . \$E->getMessage() . PHP_EOL . PHP_EOL;
     echo \$E->getTraceAsString() . PHP_EOL . PHP_EOL;
-    echo 'More info: tail -f $LOG_DIR/' . gmdate('Ymd') . '-error.log';
+    echo 'More info: tail -f ' . getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-error.log';
   }
 EOF
 echo

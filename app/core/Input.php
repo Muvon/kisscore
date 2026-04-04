@@ -11,28 +11,28 @@ final class Input {
 	 * @return bool
 	 */
 	public static function isCli(): bool {
-		return !!filter_input(INPUT_SERVER, 'argc');
+		return PHP_SAPI === 'cli';
 	}
 
 	/**
 	 * @return bool
 	 */
 	public static function isJson(): bool {
-		return str_starts_with(filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '', 'application/json');
+		return str_starts_with(Request::$content_type, 'application/json');
 	}
 
 	/**
 	 * @return bool
 	 */
 	public static function isMsgpack(): bool {
-		return str_starts_with(filter_input(INPUT_SERVER, 'CONTENT_TYPE') ?? '', 'application/msgpack');
+		return str_starts_with(Request::$content_type, 'application/msgpack');
 	}
 
 	/**
 	 * @return bool
 	 */
 	public static function isRaw(): bool {
-		return filter_has_var(INPUT_SERVER, 'REQUEST_URI') && !static::isJson();
+		return Request::$request_uri !== '' && !static::isJson();
 	}
 
   /**
@@ -46,27 +46,15 @@ final class Input {
 			return;
 		}
 		$fn = static::$parse_fn ?? function () {
-
-
 			if (static::isCli()) {
-				$argv = filter_input(INPUT_SERVER, 'argv');
-				array_shift($argv); // file
-				static::$params['ACTION'] = array_shift($argv);
-				$get = $argv;
-				$post = [];
-			} elseif (static::isJson()) {
-				$get = (array)filter_input_array(INPUT_GET);
-				$post = (array)json_decode(file_get_contents('php://input'), true);
-			} elseif (static::isMsgpack()) {
-				$get = (array)filter_input_array(INPUT_GET);
-				$post = (array)msgpack_unpack(file_get_contents('php://input'));
-			} else {
-				$get = (array)filter_input_array(INPUT_GET);
-				$post = (array)filter_input_array(INPUT_POST);
+				global $argv;
+				$args = $argv ?? [];
+				array_shift($args); // file
+				static::$params['ACTION'] = array_shift($args);
+				return $args;
 			}
-				// Clean up system variables that are not supposed to be in post
-			unset($post['ROUTE'], $post['ACTION']);
-			return $get + $post;
+			// Swoole mode: parser must be set via setParser() before parse
+			return [];
 		};
 		static::$params = $fn();
 		static::$is_parsed = true;

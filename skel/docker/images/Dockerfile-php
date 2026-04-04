@@ -1,4 +1,4 @@
-FROM muvon/php:8.3.10
+FROM muvon/php:8.4
 LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
 RUN php-ext add msgpack yaml swoole && \
@@ -8,7 +8,7 @@ RUN php-ext add msgpack yaml swoole && \
 COPY . /src
 RUN ln -fs /src/docker/containers/php/config/php.ini /etc/php/php.ini && \
   ln -fs /src/docker/containers/php/config/conf.d /etc/php/conf.d && \
-	cd /src/app && \
+	cd /src && \
 	if [ -f composer.lock ]; then \
 		composer install --no-dev --optimize-autoloader; \
 	fi

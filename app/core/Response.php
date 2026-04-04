@@ -78,10 +78,11 @@ final class Response {
 
   /**
    * Return current instance or initialize and parse
+   * @param bool $reset Force new instance (for Swoole per-request reset)
    */
-	public static function current(): self {
+	public static function current(bool $reset = false): self {
 		static $instance;
-		if (!isset($instance)) {
+		if (!isset($instance) || $reset) {
 			$instance = new static(200);
 		}
 
@@ -100,6 +101,14 @@ final class Response {
 			$this->status = $status;
 		}
 		return $this;
+	}
+
+  /**
+   * Get current HTTP status code
+   * @return int
+   */
+	public function getStatus(): int {
+		return $this->status;
 	}
 
   /**

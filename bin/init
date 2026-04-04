@@ -1,16 +1,25 @@
 #!/usr/bin/env bash
 set -e
 
+# Determine project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ -f "$SCRIPT_DIR/../../../autoload.php" ]]; then
+  # Inside vendor/muvon/kisscore/bin/ — go up to project root
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+else
+  # Standalone or copied to project bin/
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
+
 if [ -e /.inited ]; then
   echo 'Skipping first initialization'
 else
-  echo "Running first initiazliation"
+  echo "Running first initialization"
 
   echo "Preparing env/* dirs"
-  mkdir -p /src/env/backup /src/env/etc /src/env/log /src/env/run /src/env/tmp /src/env/var
+  mkdir -p "$PROJECT_DIR/env/backup" "$PROJECT_DIR/env/etc" "$PROJECT_DIR/env/log" "$PROJECT_DIR/env/run" "$PROJECT_DIR/env/tmp" "$PROJECT_DIR/env/var"
 
-  echo "Touch /.inited"
-  touch /.inited
+  touch /.inited 2>/dev/null || true
 fi
 
 php=$(which php)
@@ -26,11 +35,11 @@ fi
 echo "Running Env::init()"
 $php $OPTS <<EOF
 <?php
-  Env::init();
+  require_once '$PROJECT_DIR/vendor/autoload.php';
+  Env::init('$PROJECT_DIR');
 EOF
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-APP_DIR="$(dirname "$DIR")/app"
+APP_DIR="$PROJECT_DIR/app"
 test -x "$APP_DIR/scripts/view-compile" && $_
 test -x "$APP_DIR/scripts/model-schema-cache" && $_
 

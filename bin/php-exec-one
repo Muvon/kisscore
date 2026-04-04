@@ -3,7 +3,16 @@ if [[ -z "$1" ]]; then
   echo "Usage: $0 [path-to-file]"
   exit 1
 fi
-lockfile="/src/env/run/${1##*/}.lock"
+
+# Determine project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ -f "$SCRIPT_DIR/../../../autoload.php" ]]; then
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+else
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
+
+lockfile="$PROJECT_DIR/env/run/${1##*/}.lock"
 trap release SIGSEGV SIGINT SIGTERM
 release() {
   rm -f "$lockfile"
@@ -16,5 +25,5 @@ flock -x -n 9 || {
   exit 1
 }
 
-bin/php-exec "$1" "${@:2}"
+"$SCRIPT_DIR/php-exec" "$1" "${@:2}"
 release

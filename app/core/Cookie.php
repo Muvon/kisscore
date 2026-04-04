@@ -17,28 +17,33 @@
 final class Cookie {
 	public static bool $is_parsed = false;
 
+	/** @var array<string,mixed> */
 	protected static array $update = [];
+	/** @var array<string,mixed> */
 	protected static array $cookies = [];
 	protected static Closure $parse_fn;
 
 	/**
 	 * Set parser for the cookie
-	 * @param Closure $fn [description]
+	 * @param Closure $fn
 	 */
 	public static function setParser(Closure $fn): void {
 		static::$is_parsed = false;
+		static::$cookies = [];
+		static::$update = [];
 		static::$parse_fn = $fn;
 	}
 
 	protected static function parse(): void {
 		$fn = static::$parse_fn ?? function () {
-			$cookies = (array)filter_input_array(INPUT_COOKIE);
-			foreach ($cookies as $name => $value) {
-				static::set($name, $value);
-			}
-			return static::$cookies;
+			return [];
 		};
-		static::$cookies = $fn();
+		$raw = $fn();
+		if (is_array($raw)) {
+			foreach ($raw as $name => $value) {
+				static::$cookies[$name] = $value;
+			}
+		}
 		static::$is_parsed = true;
 	}
 
@@ -46,10 +51,20 @@ final class Cookie {
 	 * Get cookie by name
 	 * @param string $name
 	 * @param mixed $default
+	 * @return mixed
 	 */
 	public static function get(string $name, mixed $default = null): mixed {
 		static::$is_parsed || static::parse();
-		return filter_has_var(INPUT_COOKIE, $name) ? filter_input(INPUT_COOKIE, $name) : $default;
+		return static::$cookies[$name] ?? $default;
+	}
+
+	/**
+	 * Get all cookies
+	 * @return array<string,mixed>
+	 */
+	public static function all(): array {
+		static::$is_parsed || static::parse();
+		return static::$cookies;
 	}
 
 	/**
@@ -60,11 +75,14 @@ final class Cookie {
 	 * @return void
 	 */
 	public static function set(string $name, string $value, array $options = []): void {
-		static::$cookies[$name] = [
-			'name' => $name,
-			'value' => $value,
-			'options' => $options,
-		];
+		static::$cookies[$name] = $value;
+		if ($options) {
+			static::$update[$name] = [
+				'name' => $name,
+				'value' => $value,
+				'options' => $options,
+			];
+		}
 	}
 
 	/**
@@ -75,7 +93,8 @@ final class Cookie {
 	 * @return void
 	 */
 	public static function add(string $name, string $value, array $options = []): void {
-		if (filter_has_var(INPUT_COOKIE, $name)) {
+		static::$is_parsed || static::parse();
+		if (isset(static::$cookies[$name])) {
 			return;
 		}
 
@@ -84,19 +103,24 @@ final class Cookie {
 
 	/**
 	 * Send cookies headers
+	 * @param ?callable $cookie_fn
 	 */
-	public static function send(): void {
-		foreach (static::$cookies as $cookie) {
+	public static function send(?callable $cookie_fn = null): void {
+		foreach (static::$update as $cookie) {
 			$options = array_merge(
-				$cookie['options'], [
-					'domain' => $cookie['domain'] ?? config('common.domain'),
-					'path' => $cookie['path'] ?? '/',
-					'expires' => $cookie['expires'] ?? 0,
-					'secure' => $cookie['secure'] ?? config('common.proto') === 'https',
-					'httponly' => $cookie['httponly'] ?? str_starts_with(getenv('SERVER_PROTOCOL'), 'HTTP'),
-				]
+				[
+					'domain' => config('common.domain'),
+					'path' => '/',
+					'expires' => 0,
+					'secure' => config('common.proto') === 'https',
+					'httponly' => true,
+				], $cookie['options']
 			);
-			setcookie($cookie['name'], $cookie['value'], $options);
+			if ($cookie_fn) {
+				$cookie_fn($cookie['name'], $cookie['value'], $options);
+			} else {
+				setcookie($cookie['name'], $cookie['value'], $options);
+			}
 		}
 	}
 }
