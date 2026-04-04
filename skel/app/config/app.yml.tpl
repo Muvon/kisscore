@@ -13,9 +13,6 @@ common:
   domain: '{{PROJECT}}.zz'
   zones:
     - 'www'
-  lang_type: 'none'
-  languages:
-    - 'en'
   cli_level: 2
 
 common:test:

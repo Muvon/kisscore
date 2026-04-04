@@ -28,15 +28,6 @@ final class Router
 			}
 		);
 
-		/** @var string $lang_type */
-		$lang_type = config('common.lang_type');
-		/** @var array<string> $configLanguages */
-		$configLanguages = config('common.languages');
-		$lang_match = match ($lang_type) {
-			'path' => implode('|', $configLanguages),
-			default => null
-		};
-
 		$map = [];
 
 		foreach ($routes as $route => $routeParams) {
@@ -45,24 +36,12 @@ final class Router
 			$zone = array_shift($params);
 			$action = array_shift($params);
 
-			$routeKey = (string)$route;
-			$data = [
-				'pattern' => $routeKey,
+			$map[] = [
+				'pattern' => (string)$route,
 				'zone' => $zone,
 				'action' => $action,
 				'params' => array_values($params),
 			];
-
-			if ($lang_match) {
-				if ($routeKey === 'home') {
-					$data['lang_pattern'] = "(?:$lang_match)/?";
-				} else {
-					$data['lang_pattern'] = "(?:$lang_match)/" . $routeKey;
-				}
-				$data['has_lang'] = true;
-			}
-
-			$map[] = $data;
 		}
 
 		// Sort by specificity
@@ -113,14 +92,7 @@ final class Router
 		foreach (static::$routes as $route) {
 			/** @var string $pattern */
 			$pattern = $route['pattern'];
-
-			if (isset($route['has_lang']) && isset($route['lang_pattern'])) {
-				/** @var string $langPattern */
-				$langPattern = $route['lang_pattern'];
-				$regex = '/^' . str_replace('/', '\/', $langPattern) . '$/';
-			} else {
-				$regex = '/^' . str_replace('/', '\/', $pattern) . '$/';
-			}
+			$regex = '/^' . str_replace('/', '\/', $pattern) . '$/';
 
 			static::$compiled[] = [
 				'pattern' => $pattern,
@@ -128,7 +100,6 @@ final class Router
 				'zone' => $route['zone'],
 				'action' => $route['action'],
 				'params' => $route['params'] ?? [],
-				'has_lang' => $route['has_lang'] ?? false,
 			];
 		}
 	}

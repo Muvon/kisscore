@@ -40,7 +40,6 @@ $php $OPTS <<EOF
 EOF
 
 APP_DIR="$PROJECT_DIR/app"
-test -x "$APP_DIR/scripts/view-compile" && $_
 test -x "$APP_DIR/scripts/model-schema-cache" && $_
 
 echo 'Done'

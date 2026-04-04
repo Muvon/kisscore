@@ -1,11 +1,28 @@
 #!/usr/bin/env bash
 set -e
 
-source "$(pwd)/docker/.yodarc"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 
-fswatch -m poll_monitor -0 -r app/actions/ app/config/ | \
+# Detect if running inside Docker
+if [[ -f /.dockerenv ]]; then
+  INIT_CMD="$PROJECT_DIR/bin/init"
+  RELOAD_CMD="kill -USR1 \$(cat $PROJECT_DIR/env/run/swoole.pid 2>/dev/null)"
+else
+  source "$PROJECT_DIR/docker/.yodarc" 2>/dev/null || true
+  CONTAINER="${COMPOSE_PROJECT_NAME:-php}.php"
+  INIT_CMD="docker exec $CONTAINER bin/init"
+  RELOAD_CMD="docker exec $CONTAINER kill -USR1 1"
+fi
+
+echo "Watching for changes in app/actions/ app/config/ app/triggers/ app/src/"
+fswatch -m poll_monitor -0 -r \
+  "$PROJECT_DIR/app/actions/" \
+  "$PROJECT_DIR/app/config/" \
+  "$PROJECT_DIR/app/triggers/" \
+  "$PROJECT_DIR/app/src/" | \
   while read -r -d "" f; do
-    echo "$f"
-    docker exec "$COMPOSE_PROJECT_NAME.php" bin/init > /dev/null
-    docker kill -s HUP "$COMPOSE_PROJECT_NAME.nginx" > /dev/null
+    echo "Changed: $f"
+    $INIT_CMD > /dev/null 2>&1 && echo "Maps rebuilt"
+    eval $RELOAD_CMD > /dev/null 2>&1 && echo "Swoole workers reloaded"
   done
