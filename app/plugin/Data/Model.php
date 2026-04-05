@@ -28,7 +28,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	protected array $data   = [];
 
   /**
-   * @var array<string,static> $map Карта всех моделей
+   * @var array<string,static> $map Map of all models
    */
 	protected static array $map = [];
 
@@ -57,8 +57,8 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
   /**
-   * Правила валидации для необходимых полей
-   * Валидирующая функция должна возвращать
+   * Validation rules for required fields
+   * Validator function must return a Result
    *
    * @access protected
    * @return array<string,callable>
@@ -318,7 +318,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * Получение нескольких записей по ID
+	 * Get multiple records by IDs
 	 *
 	 * @param array<int|string> $ids
 	 * @return array<int|string,array<string,mixed>>
@@ -342,10 +342,10 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 			}
 		}
 
-		// Если есть промахи в кэш
+		// Handle cache misses
 		$cache_size = sizeof($data);
 		if ($cache_size !== sizeof($ids)) {
-			// Вычисляем разницу для подгрузки
+			// Calculate diff to load from DB
 			$missed = array_values(
 				$cache_size
 				? array_diff(array_values($ids), array_keys($data))
@@ -389,7 +389,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * Загрузка из базы данных в текущий инстанс объекта
+	 * Load from database into current object instance
 	 *
 	 * @param int|string $id
 	 * @return static
@@ -468,7 +468,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 
 	/**
-	 * Функция валидации данных
+	 * Validate data against rules
 	 *
 	 * @access protected
 	 * @param array<string,mixed> $data
@@ -478,13 +478,13 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	protected function validate(array $data): array {
 		$errors = [];
 		foreach ($this->rules() as $field => $rule) {
-			if (!$this->exists) { // Если новая запись
-				// Еще нет такого поля? Пишем туда нуль и валидируем
+			if (!$this->exists) { // New record
+				// Field missing? Set null and validate
 				if (!isset($data[$field])) {
 					$data[$field] = null;
 				}
-			} else { // Идет обновление
-				// Не указано поле? Просто пропускаем правило
+			} else { // Updating
+				// Field not specified? Skip rule
 				if (!array_key_exists($field, $data)) {
 					continue;
 				}

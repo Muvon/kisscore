@@ -185,7 +185,7 @@ final class Fetch {
 	 */
 	public function exec(): array {
 		if (!$this->request_mh) {
-			throw new Error('Trying to exec request that ws not inited');
+			throw new Error('Trying to exec request that was not initialized');
 		}
 		do {
 			$status = curl_multi_exec($this->request_mh, $active);

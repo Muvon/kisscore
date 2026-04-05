@@ -1,13 +1,10 @@
 <?php declare(strict_types=1);
 
 /**
- * Класс для формирования ответа клиенту
- *
- * @final
+ * HTTP Response builder
  */
-
 final class Response {
-	/** @var array<string,string> $headers */
+	/** @var array<string,string> */
 	protected array $headers = [
 		'Referrer-Policy' => 'origin-when-cross-origin',
 		'X-Frame-Options' => 'DENY',
@@ -16,10 +13,7 @@ final class Response {
 		'Content-Security-Policy' => "frame-ancestors 'none'",
 	];
 
-	/** @var string */
 	protected string $body = '';
-
-	/** @var int */
 	protected int $status = 200;
 
 	/** @var array<int,string> */
@@ -67,19 +61,13 @@ final class Response {
 		505 => 'HTTP Version Not Supported',
 	];
 
-  /**
-   * Init of new response
-   * @param int $status HTTP Status of response
-   * @return void
-   */
 	final protected function __construct(int $status = 200) {
 		$this->status($status);
 	}
 
-  /**
-   * Return current instance or initialize and parse
-   * @param bool $reset Force new instance (for Swoole per-request reset)
-   */
+	/**
+	 * @param bool $reset Force new instance (for Swoole per-request reset)
+	 */
 	public static function current(bool $reset = false): self {
 		static $instance;
 		if (!isset($instance) || $reset) {
@@ -89,50 +77,39 @@ final class Response {
 		return $instance;
 	}
 
-
-  /**
-   * Change HTTP status of response
-   * @param int $status New HTTP status to be set
-   * @return $this
-   */
+	/**
+	 * @param int $status HTTP status code
+	 * @return $this
+	 */
 	public function status(int $status): self {
 		assert(isset(self::$messages[$status]));
 		$this->status = $status;
 		return $this;
 	}
 
-  /**
-   * Get current HTTP status code
-   * @return int
-   */
+	/**
+	 * @return int
+	 */
 	public function getStatus(): int {
 		return $this->status;
 	}
 
-  /**
-  * Get response body
-  * @access public
-  * @return string данные ответа клиенту
-  */
 	public function __toString(): string {
 		return $this->body;
 	}
 
-  /**
-   * Send body to output
-   * @return $this
-   */
+	/**
+	 * @return $this
+	 */
 	public function sendBody(): self {
 		echo (string)$this;
 		return $this;
 	}
 
-  /**
-   * Send all staff to output: headers, body and so on
-	 *
+	/**
 	 * @param string $content
-   * @return self
-   */
+	 * @return self
+	 */
 	public function send(string $content = ''): self {
 		$this->sendHeaders();
 		$this->setBody($content);
@@ -140,12 +117,10 @@ final class Response {
 		return $this;
 	}
 
-  /**
-  * Relocate user to url
-	*
-  * @param string $url
-  * @param int $code (301 | 302)
-  */
+	/**
+	 * @param string $url
+	 * @param int $code (301 | 302)
+	 */
 	public static function redirect(string $url, int $code = 302): never {
 		assert(in_array($code, [301, 302]));
 
@@ -156,21 +131,19 @@ final class Response {
 		exit;
 	}
 
-  /**
-  * Reset headers stack
-  * @return Response
-  */
+	/**
+	 * @return self
+	 */
 	public function flushHeaders(): self {
 		$this->headers = [];
 		return $this;
 	}
 
-  /**
-  * Push header to stack to be sent
-  * @param string $header
-  * @param string $value
-  * @return Response
-  */
+	/**
+	 * @param string $header
+	 * @param string $value
+	 * @return self
+	 */
 	public function header(string $header, string $value): self {
 		$this->headers[$header] = $value;
 		return $this;
@@ -178,7 +151,7 @@ final class Response {
 
 	/**
 	 * Send stacked headers to output
-	 * @return Response
+	 * @return self
 	 */
 	public function sendHeaders(?callable $header_fn = null, ?callable $cookie_fn = null): self {
 		if (!$header_fn) {
@@ -186,30 +159,26 @@ final class Response {
 				header($key . ': ' . $value, $replace);
 			};
 		}
-		Cookie::send($cookie_fn); // This is not good but fuck it :D
+		Cookie::send($cookie_fn);
 		if (headers_sent()) {
 			return $this;
 		}
 
-	  // HTTP-строка статуса
 		http_response_code($this->status);
 
 		foreach ($this->headers as $header => $value) {
 			$header_fn($header, $value, true);
 		}
 
-	  // Send header with execution time
 		$header_fn('X-Server-Time', (string)(int)(Request::$time_float * 1000));
 		$header_fn('X-Response-Time', (string)(int)((microtime(true) - Request::$time_float) * 1000));
 		return $this;
 	}
 
-  /**
-  * Set boy data to response
-  * @access public
-  * @param string $body
-  * @return $this
-  */
+	/**
+	 * @param string $body
+	 * @return $this
+	 */
 	public function setBody(string $body): self {
 		$this->body = $body;
 		return $this;

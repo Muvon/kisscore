@@ -10,7 +10,7 @@ final class Cache {
 	}
 
   /**
-   * Подключение к серверну мемкэша
+   * Connect to memcached server
    * @return Memcached
    */
 	protected static function connect(): Memcached {
@@ -39,12 +39,12 @@ final class Cache {
 	}
 
   /**
-   * Получение данных из кэша по ключу
+   * Get data from cache by key
    *
    * @param array<string>|string $key
-   * @param mixed $default Closure | mixed если это замыкание, то кэш записвыается
+   * @param mixed $default Closure | mixed; if callable, result is cached
    * @param int $ttl Optional TTL for expires
-   * @return mixed кэшированное данное
+   * @return mixed cached value
    */
 	public static function get(array|string $key, mixed $default = null, int $ttl = 0): mixed {
 		$items = is_string($key) ? static::connect()->get($key) : static::connect()->getMulti($key);
@@ -95,9 +95,9 @@ final class Cache {
 	}
 
   /**
-   * Установка данные для ключа, перезапись в случае нахождения
+   * Set data for key, overwrite if exists
    *
-   * @param string|array<string,mixed> $key Массив или строка
+   * @param string|array<string,mixed> $key Array or string
    * @param mixed $val
    * @param int $ttl
    * @return bool
@@ -112,11 +112,11 @@ final class Cache {
 	}
 
   /**
-   * Добавление данных в кэш, если их там нет
+   * Add data to cache only if key does not exist
    *
    * @param string $key
-   * @param mixed $val данные для добавления в кэш
-   *  @param int $ttl время жизни кэшируемого объекта
+   * @param mixed $val data to add to cache
+   *  @param int $ttl cache entry TTL
    * @return bool
    */
 	public static function add(string $key, mixed $val, int $ttl = 0): bool {
@@ -124,7 +124,7 @@ final class Cache {
 	}
 
   /**
-  * Добавление какого-то текста к данному в конец строки
+  * Append text to the end of an existing string value
   *
   * @param string $key
   * @param string $val
@@ -135,7 +135,7 @@ final class Cache {
 	}
 
   /**
-   * Добавление какого-то текста к данному в начало строки
+   * Prepend text to the beginning of an existing string value
    *
    * @param string $key
    * @param string $val
@@ -175,8 +175,7 @@ final class Cache {
 	}
 
   /**
-   * Увеличения счетчика на n число раз
-   * Если ключа нет, он создается
+   * Increment counter by n; creates key if missing
    *
    * @param string $key
    * @param int $count
@@ -203,7 +202,7 @@ final class Cache {
 	}
 
   /**
-   * Очистка всего пула кэша
+   * Flush entire cache pool
    * @return bool
    */
 	public static function flush(): bool {

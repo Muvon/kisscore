@@ -1,77 +1,38 @@
 <?php declare(strict_types=1);
 
 /**
- * Class Session
- * Work with sessions
+ * Session management (Swoole-compatible in-memory store)
  *
- * <code>
- * Session::start();
- * Session::set('key', 'Test value');
- * Session::get('key');
- * Session::remove('key');
- * if (Session::has('key')) echo 'Found key in Session';
- * Session::regenerate();
- * </code>
- *
- * Add calculated data if key not exists
- * <code>
- * Session::add('key', function () { return time(); });
- * </code>
- *
- * Get key from session with default value
- * <code>
- * Session:get('key', 'default');
- * </code>
+ * For API backends, prefer token-based auth over sessions.
+ * This class provides per-request session state — not shared across workers.
  */
 final class Session {
-	/** @var Session $Instance */
-	protected static self $Instance;
-
-	/** @var array<string,mixed> $container */
+	/** @var array<string,mixed> */
 	protected static array $container = [];
 
-	final public function __construct() {
-	}
+	protected static bool $started = false;
 
 	/**
-	 * Launch the session
-	 *
-	 * @return void
+	 * Start session for current request
 	 */
 	public static function start(): void {
-		/** @var string $sessionName */
-		$sessionName = config('session.name');
-		session_name($sessionName);
-		session_start();
-		static::$container = &$_SESSION;
+		static::$container = [];
+		static::$started = true;
 	}
 
 	/**
-	 * Get the current active session id
-	 *
-	 * @return string
-	 */
-	public static function id(): string {
-		return session_id() ?: '';
-	}
-
-	/**
-	 * Destroy the current active session
-	 *
 	 * @return bool
 	 */
-	public static function destroy(): bool {
-		return session_destroy();
+	public static function isStarted(): bool {
+		return static::$started;
 	}
 
 	/**
-	 * Regenerate new session ID
-	 *
-	 * @param bool $destroy
-	 * @return void
+	 * Reset session state (call at start of each Swoole request)
 	 */
-	public static function regenerate(bool $destroy = false): void {
-		session_regenerate_id($destroy);
+	public static function reset(): void {
+		static::$container = [];
+		static::$started = false;
 	}
 
 	/**
@@ -83,10 +44,9 @@ final class Session {
 	}
 
 	/**
-	 * Add new session var if it not exists
+	 * Add value only if key doesn't exist
 	 * @param string $key
-	 * @param mixed $value Can be callable function, so it executes and pushes
-	 * @return void
+	 * @param mixed $value Callable will be invoked and result stored
 	 */
 	public static function add(string $key, mixed $value): void {
 		if (static::has($key)) {
@@ -97,47 +57,59 @@ final class Session {
 	}
 
 	/**
-	 * Set new var into session
 	 * @param string $key
 	 * @param mixed $value
-	 * @return void
 	 */
 	public static function set(string $key, mixed $value): void {
 		static::$container[$key] = $value;
 	}
 
 	/**
-	 * Remove the key from session array
 	 * @param string $key
 	 * @return bool
 	 */
 	public static function remove(string $key): bool {
-		if (isset(static::$container[$key])) {
-			unset(static::$container[$key]);
-			return true;
+		if (!isset(static::$container[$key])) {
+			return false;
 		}
-		return  false;
+
+		unset(static::$container[$key]);
+		return true;
 	}
 
 	/**
-	 * Alias for self::remove
-	 * @see self::remove
+	 * @param string $key
+	 * @return bool
 	 */
 	public static function delete(string $key): bool {
 		return static::remove($key);
 	}
 
 	/**
-	 * Get var with key from session array
 	 * @param string $key
-	 * @param mixed $default Return default there is no such key, set on closure
+	 * @param mixed $default Callable will be invoked, result stored and returned
 	 * @return mixed
 	 */
 	public static function get(string $key, mixed $default = null): mixed {
-		if (!static::has($key) && $default && is_callable($default)) {
+		if (!static::has($key) && $default !== null && is_callable($default)) {
 			$default = $default();
 			static::set($key, $default);
 		}
-		return static::has($key) ? static::$container[$key] : $default;
+		return static::$container[$key] ?? $default;
+	}
+
+	/**
+	 * @return array<string,mixed>
+	 */
+	public static function all(): array {
+		return static::$container;
+	}
+
+	/**
+	 * Destroy all session data
+	 */
+	public static function destroy(): void {
+		static::$container = [];
+		static::$started = false;
 	}
 }

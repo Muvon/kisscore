@@ -17,13 +17,13 @@ trait DatabaseTrait {
 
 	/**
 	 * @access protected
-	 * @param array<int|string,mixed> $params список параметров с данными
-	 * @param string $sep разделитель при объединении параметров
+	 * @param array<int|string,mixed> $params parameter list with data
+	 * @param string $sep separator for joining parameters
 	 * @param bool $incremental
-	 * @return string подготовленная строка для передачи в запрос
+	 * @return string prepared string for query
 	 */
 	protected static function dbGetSqlStringByParams(array $params, $sep = ',', $incremental = false) {
-		$data = []; // массив данных для объединения
+		$data = []; // data array to join
 		foreach ($params as $param => $value) {
 			if (is_string($param)) {
 				$data[] = '`' . $param . '` = ' . ($incremental ? '`' . $param . '` + ' : '' ) . ' :' . $param;
@@ -42,7 +42,7 @@ trait DatabaseTrait {
 		if (!static::$table) {
 			static::$table = strtolower(str_replace(chr(92), '_', get_class_name(static::class)));
 
-			// Инициализация таблицы
+			// Initialize table name
 			if (static::table()[0] !== '`') {
 				static::$table = '`' . static::table() . '`';
 			}
@@ -112,7 +112,7 @@ trait DatabaseTrait {
 
 
 	/**
-	 * Выполнение запросов к базе данных
+	 * Execute database query
 	 *
 	 * @access protected
 	 * @param string $query
@@ -142,13 +142,13 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Выполнение запроса вставки в базу данных
+	 * Execute INSERT query
 	 *
 	 * @uses self::dbGetSqlStringByParams()
 	 * @uses Database::execute()
 	 *
 	 * @access protected
-	 * @param array<string,mixed> $params список параметров для передачи в запрос
+	 * @param array<string,mixed> $params parameters for the query
 	 * @return bool
 	 */
 	protected function dbInsert(array $params): bool {
@@ -172,7 +172,7 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Формирование условия WHERE по передаваемым параметрам
+	 * Build WHERE clause from given parameters
 	 *
 	 * @param array<string,mixed> &$conditions
 	 * @return array<string>
@@ -270,7 +270,7 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Выполнение SELECT-запроса из базы данных
+	 * Execute SELECT query
 	 *
 	 * @uses self::dbGetSqlStringByParams()
 	 * @uses Database::query()
@@ -290,7 +290,7 @@ trait DatabaseTrait {
 		$offset = null,
 		$limit = null
 	): array {
-		// Если нужно формировать строку сортировки
+		// Build ORDER BY string if needed
 		$order_string = '';
 
 		if ($order) {
@@ -300,7 +300,7 @@ trait DatabaseTrait {
 			$order_string = trim($order_string, ', ');
 		}
 
-		// Строка условия - special logic :)
+		// WHERE clause - special logic :)
 		$where = $conditions ? $this->dbGetWhere($conditions) : null;
 		/*
 		if (!isset($offset) || !isset($limit)) {
@@ -338,7 +338,7 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Получение одной строки (LIMIT 1)
+	 * Get single row (LIMIT 1)
 	 *
 	 * @see self::dbSelect
 	 * @param array<string> $fields
@@ -352,7 +352,7 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Выполнение UPDATE-запроса в базу данных
+	 * Execute UPDATE query
 	 *
 	 * @uses self::dbGetSqlStringByParams()
 	 * @uses Database::execute()
@@ -391,12 +391,12 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Выполнение DELETE-запроса в базе данных
+	 * Execute DELETE query
 	 *
 	 * @uses self::dbGetSqlStringByParams()
 	 * @uses Database::execute()
 	 *
-	 * @param array<string,mixed> $conditions список условий
+	 * @param array<string,mixed> $conditions condition list
 	 * @return mixed
 	 */
 	protected function dbDelete(array $conditions): mixed {
@@ -406,7 +406,7 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Удаление по праймери
+	 * Delete by primary key
 	 *
 	 * @param array<int|string> $ids
 	 * @return int
@@ -453,11 +453,11 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Получение данных из таблиы по одному ид
+	 * Get data from table by single id
 	 *
 	 * @uses self::getByIds()
 	 *
-	 * @param array<string> $fields поля для выборки из таблицы
+	 * @param array<string> $fields fields to select from table
 	 * @param int $id
 	 * @return array<string,mixed>
 	 */
@@ -502,11 +502,11 @@ trait DatabaseTrait {
 
 
 	/**
-	 * Переключение состояния у поля в базе
+	 * Toggle field value in database (0/1)
 	 *
 	 * @param string $field
 	 * @param int $id
-	 * @param null|int $prev_value Предыдущее значение поля
+	 * @param null|int $prev_value Previous field value
 	 * @return int
 	 */
 	protected function dbToggleField(string $field, int $id, ?int $prev_value = null): int {
@@ -572,7 +572,7 @@ trait DatabaseTrait {
 	}
 
 	/**
-	 * Получение всего списка с данными или списка по условию
+	 * Get full list or filtered list by conditions
 	 *
 	 * @param array<string,mixed> $conditions
 	 * @param array<string,string> $order

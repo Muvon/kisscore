@@ -241,21 +241,7 @@ final class Env {
 	 * @return void
 	 */
 	protected static function prepareDirs(): void {
-		static::createViewDirs();
 		static::createSessionDirs();
-	}
-
-	/**
-	 * @return void
-	 */
-	protected static function createViewDirs(): void {
-		/** @var string $compile_dir */
-		$compile_dir = config('view.compile_dir');
-		if (is_dir($compile_dir)) {
-			return;
-		}
-
-		mkdir($compile_dir, 0700, true);
 	}
 
 	/**

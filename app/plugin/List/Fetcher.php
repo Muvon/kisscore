@@ -6,7 +6,7 @@ use Error;
 use Plugin\Data\Model;
 
 /**
- * Загрузчик сущностей, доступ через объект Entity
+ * Entity data loader
  *
  * @final
  * @package Core
@@ -31,20 +31,20 @@ final class Fetcher {
 	protected ?Pagination $Pagination = null;
 
 	/**
-	 * Создание загрузчика данных и постановка первого задания
+	 * Create data loader and queue first task
 	 *
 	 * @access public
 	 * @static
 	 * @param string|array{0:string,1:string} $mapper
-	 *   Имя маппера, которые обязауется подгружать данные
+	 *   Mapper name for loading data
 	 * @param string $src_key
-	 *   Индекс идентификатора
+	 *   Identifier key
 	 * @param array<mixed>|null $args
-	 *   Массив или строка/число - однозначный идентификатор
+	 *   Identifier (array, string, or number)
 	 * @param array<mixed> $data
-	 *   Массив с результатами (если была уже агрегированная выборка)
+	 *   Result array (if already aggregated)
 	 * @param array<Fetcher> $batch
-	 *   Массив оппераций, которые будут выполнены в параллели
+	 *   Operations to execute in parallel
 	 * @return Fetcher
 	 */
 	public static function create(
@@ -76,7 +76,7 @@ final class Fetcher {
 	}
 
 	/**
-	 * Установка корневого ключа, откуда будет браться src_key
+	 * Set root key from which src_key is resolved
 	 *
 	 * @param string $root_key
 	 * @return static
@@ -100,7 +100,7 @@ final class Fetcher {
 	}
 
 	/**
-	 * Инициализцаия постраничной выборки
+	 * Initialize paginated fetching
 	 *
 	 * @access public
 	 * @param int $page
@@ -120,7 +120,7 @@ final class Fetcher {
 	}
 
 	/**
-	 * Выполнение в последовательном режиме
+	 * Execute sequentially
 	 *
 	 * @access public
 	 * @return static

@@ -104,8 +104,7 @@ $Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
 			Request::$content_type = $Request->header['content-type'] ?? '';
 		});
 
-		// Process action and get view template if have
-		$View = App::process();
+		$response = App::process();
 
 		$Resp = Response::current();
 		$Resp->sendHeaders(
@@ -114,23 +113,21 @@ $Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
 				$Response->cookie($name, $value, ...$options)
 		);
 		$Response->status($Resp->getStatus());
-		$response = (string) $View->render();
 	} catch (Throwable $T) {
 		App::logException($T);
-		$response = [
-			$T instanceof ResultError ? $T->getMessage() : 'e_error',
-			App::$debug ? $T->getMessage() . PHP_EOL . PHP_EOL . $T->getTraceAsString() : null,
-		];
 		Response::current()
 			->status(400)
-			->header('Content-type', 'application/json; charset=utf8');
-		$Response->status(Response::current()->getStatus());
+			->header('Content-type', 'application/json; charset=utf-8');
 		Response::current()->sendHeaders(
 			$Response->header(...),
 			fn($name, $value, $options) =>
 				$Response->cookie($name, $value, ...$options)
 		);
-		$response = (string)json_encode($response);
+		$Response->status(Response::current()->getStatus());
+		$response = (string)json_encode([
+			$T instanceof ResultError ? $T->getMessage() : 'e_error',
+			App::$debug ? $T->getMessage() . PHP_EOL . $T->getTraceAsString() : null,
+		]);
 	}
 
 	$Response->end($response);

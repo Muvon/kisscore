@@ -58,8 +58,8 @@ class Item {
 
   /**
    * @param string|array{0:string,1:string} $mapper
-   * @param string $src_key Если не указано, автогенерация из $mapper
-   * @param string $root_key Ключ родителя, из которого берется src_key
+   * @param string $src_key Auto-generated from $mapper if not specified
+   * @param string $root_key Parent key from which src_key is taken
    * @return Fetcher
    */
 	public static function fetch(string|array $mapper, string $src_key = '', string $root_key = ''): Fetcher {

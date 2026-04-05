@@ -54,7 +54,7 @@ final class Pagination {
 	}
 
   /**
-   * Получение текущей страницы
+   * Get current page
    *
    * @return int
    */
@@ -105,7 +105,7 @@ final class Pagination {
 	}
 
   /**
-   * Получение номера последней страницы
+   * Get last page number
    *
    * @return int
    */
@@ -116,7 +116,7 @@ final class Pagination {
 	}
 
   /**
-   * Получение итогового массива страниц для отображения
+   * Get pagination data array
    *
 	 * @return PaginationInfo
    */
@@ -139,7 +139,7 @@ final class Pagination {
 			$data['next_page'] = $cur_page + 1;
 		}
 
-	// // @TODO: сформировать страницы
+	// // @TODO: build page list
 	// for ($i = 1; $i <= $last_page; $i++) {
 	//   $data['pages'][] = ['page' => $i, 'current' => $i === $cur_page];
 	// }

@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 
 /**
- * Config workout for whole app
- * @param  string $param Param using dot for separate packages
+ * Get config value by dot-notation key
+ * @param string $param
  * @return mixed
  */
 function config(string $param): mixed {
+	/** @var array<string, mixed> $config */
 	static $config = [];
-	if (!$config) {
+	if ($config === []) {
 		$config = include getenv('CONFIG_DIR') . '/config.php';
 	}
 
@@ -15,16 +16,10 @@ function config(string $param): mixed {
 }
 
 /**
- * Typify var to special type
- * @param mixed $var Reference to the var that should be typified
- * @param string $type [int|integer, uint|uinteger, double|float, udboule|ufloat, bool|boolean, array, string]
+ * Cast variable to specified type
+ * @param mixed $var
+ * @param string $type int|uint|float|ufloat|bool|array|string
  * @return mixed
- *
- * <code>
- * $var = '1'; // string(1) "1"
- * $var = typify($var, $type);
- * var_dump($var); // int(1)
- * </code>
  */
 function typify(mixed $var, string $type): mixed {
 	/** @var scalar|null $s */
@@ -72,7 +67,7 @@ function typify(mixed $var, string $type): mixed {
 /**
  * Triggered events
  * @param string $event
- * @param array<string, mixed> $payload Дополнительные данные для манипуляции
+ * @param array<string, mixed> $payload Additional data for event handlers
  * @return void
  */
 function trigger_event(string $event, array $payload = []): void {
@@ -104,24 +99,25 @@ function trigger_event(string $event, array $payload = []): void {
 	);
 }
 /**
- * This is helper function to control dependencies in one container
+ * Simple dependency container — set once, get many
  *
  * @param string $name
- * @param mixed $value if not set we do get container if set we do set container value
+ * @param mixed $value If provided, sets the value; if null, retrieves it
  * @return mixed
  */
 function container(string $name, mixed $value = null): mixed {
+	/** @var array<string, mixed> $container */
 	static $container = [];
 
-	// Set container logic
 	if (isset($value)) {
-		assert(!isset($container[$name]));
 		$container[$name] = $value;
 		return $value;
 	}
 
-	// Get container logic
-	assert(isset($container[$name]));
+	if (!isset($container[$name])) {
+		throw new Error("Container key '$name' not found");
+	}
+
 	$res = &$container[$name];
 	if (is_callable($res)) {
 		$res = $res();
@@ -265,14 +261,15 @@ function array_cartesian(array $arrays): array {
 	return $result;
 }
 
-// $state_map = array_order_by($state_map, 'created_at', SORT_DESC, SORT_NUMERIC/*, 'id', SORT_DESC, SORT_NUMERIC*/);
 /**
+ * Sort multi-dimensional array by one or more columns
+ * Usage: array_order_by($data, 'created_at', SORT_DESC, SORT_NUMERIC)
+ *
+ * @param array<mixed> $data
+ * @param mixed ...$args Column name followed by SORT_* flags
  * @return array<mixed>
  */
-function array_order_by(): array {
-	$args = func_get_args();
-	/** @var array<mixed> $data */
-	$data = array_shift($args);
+function array_order_by(array $data, mixed ...$args): array {
 	foreach ($args as $n => $field) {
 		if (!is_string($field)) {
 			continue;
@@ -349,40 +346,4 @@ if (!function_exists('defer')) {
 			}
 		);
 	}
-}
-
-// Filter function to format output
-/**
- * @param string $v
- * @return string
- */
-function view_filter_date(string $v): string {
-	$ts = is_numeric($v) ? (int)$v : strtotime("$v UTC");
-	return $ts ? date('Y-m-d', $ts) : $v;
-}
-
-/**
- * @param string $v
- * @return string
- */
-function view_filter_time(string $v): string {
-	$ts = is_numeric($v) ? (int)$v : strtotime("$v UTC");
-	return $ts ? date('H:i', $ts) : $v;
-}
-
-/**
- * @param string $v
- * @Return string
- */
-function view_filter_datetime(string $v): string {
-	$ts = is_numeric($v) ? (int)$v : strtotime("$v UTC");
-	return $ts ? date('Y-m-d H:i:s', $ts) : $v;
-}
-
-/**
- * @param string $v
- * @return string
- */
-function view_filter_timestamp(string $v): string {
-	return (string)(strtotime($v) ?: $v);
 }
