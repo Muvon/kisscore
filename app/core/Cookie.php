@@ -1,21 +1,10 @@
 <?php declare(strict_types=1);
 
 /**
- * Class Cookie
- * Work with cookies
- *
- * <code>
- * Cookie::add('first', 'value', time() + 100);
- * Cookie::add('onemore', 'value', time() + 100);
- * Cookie::send(); // Be sure to send cookie before headers sent
- * </code>
- *
- * <code>
- * $first = Cookie:get('first');
- * </code>
+ * Cookie management
  */
 final class Cookie {
-	public static bool $is_parsed = false;
+	protected static bool $is_parsed = false;
 
 	/** @var array<string,mixed> */
 	protected static array $update = [];

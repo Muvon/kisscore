@@ -20,7 +20,7 @@ final class DB {
 	protected static ?array $shards = null;
 
   // TODO: think about shards logic
-  // Return false in callbable to revert transaction
+  // Return false in callable to revert transaction
 	/**
 	 * @template V
 	 * @param callable():Result<V> $func
@@ -73,7 +73,7 @@ final class DB {
 	}
 
   /**
-   * Выполнение запроса к базе данных, выполняет коннект на запросе
+   * Execute database query, connects on first request
    *
    * @param string $query
    * @param array<string,mixed> $params

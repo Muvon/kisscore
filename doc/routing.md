@@ -1,218 +1,161 @@
-# Swoole Routing System
+# Routing
 
-KissCore now uses a powerful annotation-based routing system optimized for Swoole. This system automatically parses route annotations from action files and provides fast URL matching and parameter extraction.
+KissCore uses annotation-based routing. Routes are defined in action files and compiled to a fast lookup map.
 
-## How It Works
+## Route Annotations
 
-### 1. Route Annotations
-
-Actions are single PHP files with route annotations in comments:
+Actions are PHP files in `app/actions/` with route annotations in PHPDoc comments:
 
 ```php
 <?php declare(strict_types=1);
-
 /**
- * @route task/get-by-slug/([a-z0-9A-Z\-]+): slug
- * @var string $slug
+ * @route user/profile/(\d+): user_id
+ * @var int $user_id
  * @zone www
  */
 
-// Action code here
-$task = Task::getBySlug($slug);
-return ['task' => $task];
+$user = User::get($user_id);
+return ['user' => $user->getData()];
 ```
 
-### 2. Route Components
+### Annotation Reference
 
-- **@route pattern**: URL pattern with optional regex groups
-- **@route pattern: param1, param2**: Parameters extracted from URL groups
-- **@zone zone_name**: Zone/subdomain (optional, defaults to first zone in config)
-- **@var type $param**: Variable type hints for IDE support
+| Annotation | Purpose | Example |
+|-----------|---------|---------|
+| `@route pattern: params` | URL pattern with regex groups mapped to named params | `@route api/users/(\d+): id` |
+| `@zone name` | Subdomain zone (defaults to first zone in config) | `@zone api` |
+| `@var type $name` | Parameter type hint (auto-typified) | `@var int $user_id` |
+| `@param type $name default` | Same as @var, with optional default value | `@param string $format json` |
 
-### 3. Route Examples
+## Pattern Examples
 
 ```php
-/**
- * @route home
- */
-// Matches: / or /home
+// Static route
+@route home                    // matches: /
 
-/**
- * @route api/users/(\d+): id
- * @var int $id
- */
-// Matches: /api/users/123 → $id = "123"
+// Single parameter
+@route user/(\d+): id         // matches: /user/123 -> $id = 123
 
-/**
- * @route blog/([^/]+)/(\d+): category, post_id
- * @var string $category
- * @var int $post_id
- */
-// Matches: /blog/tech/456 → $category = "tech", $post_id = "456"
+// Multiple parameters
+@route blog/([^/]+)/(\d+): slug, post_id
+// matches: /blog/hello-world/42 -> $slug = "hello-world", $post_id = 42
 
-/**
- * @route admin/dashboard
- * @zone admin
- */
-// Matches: /admin/dashboard on admin.example.com
+// Complex regex
+@route task/([a-z0-9\-]+): slug
+// matches: /task/my-first-task -> $slug = "my-first-task"
 ```
 
-## Route Generation
+## Zones
 
-Routes are automatically generated when you run:
-
-```bash
-./bin/init
-```
-
-This scans all files in `app/actions/` and creates a route cache file.
-
-## URL Matching Process
-
-1. **Request comes in**: Swoole receives HTTP request
-2. **URL extraction**: Clean URL path is extracted from request URI
-3. **Zone detection**: Zone is determined from request host
-4. **Pattern matching**: URL is matched against compiled route patterns
-5. **Parameter extraction**: URL parameters are extracted and set in Input
-6. **Action execution**: Matched action file is included with parameters available
-
-## Router API
-
-### Router::match(string $url, string $host): ?array
-
-Match URL against route patterns:
-
-```php
-$result = Router::match('/task/get-by-slug/my-task', 'example.com');
-// Returns:
-// [
-//     'action' => 'task-detail',
-//     'params' => ['slug' => 'my-task'],
-//     'route' => 'task/get-by-slug/([a-z0-9A-Z\-]+)',
-//     'zone' => 'www'
-// ]
-```
-
-### Router::url(string $action, array $params, string $zone): ?string
-
-Generate URL for action:
-
-```php
-$url = Router::url('task-detail', ['slug' => 'my-task'], 'www');
-// Returns: "/task/get-by-slug/my-task"
-```
-
-### Router::getRoutes(): array
-
-Get all compiled routes for debugging.
-
-## Zone Configuration
-
-Zones are configured in your app config:
+Zones map to subdomains. Configured in `app/config/app.yml.tpl`:
 
 ```yaml
-# app/config/app.yml
 common:
   domain: example.com
   zones: [www, api, admin]
 ```
 
 This creates:
-- `example.com` → www zone
-- `api.example.com` → api zone
-- `admin.example.com` → admin zone
+- `example.com` / `www.example.com` -> `www` zone
+- `api.example.com` -> `api` zone
+- `admin.example.com` -> `admin` zone
 
-## Parameter Access in Actions
+Use `@zone` in actions to restrict to a zone:
 
-Parameters are automatically available in action files:
-
-```php
-<?php declare(strict_types=1);
-
-/**
- * @route user/profile/(\d+): user_id
- * @var int $user_id
- */
-
-// $user_id is automatically available
-$user = User::find($user_id);
-
-if (!$user) {
-    Response::current()->status(404);
-    return "User not found";
-}
-
-return ['user' => $user];
-```
-
-## Performance Features
-
-- **Route Compilation**: Patterns are compiled to regex once and cached
-- **Smart Sorting**: Routes are sorted by specificity for optimal matching
-- **Memory Resident**: Routes stay in memory between requests (Swoole benefit)
-- **Fast Matching**: Regex matching is much faster than string operations
-
-## Migration from Nginx
-
-The old nginx rewrite system is no longer needed:
-
-**Before (nginx):**
-```nginx
-rewrite '^/task/get-by-slug/([a-z0-9A-Z\-]+)/?$' '/?ROUTE=task/get-by-slug/([a-z0-9A-Z\-]+)&ACTION=task-detail&slug=$1';
-```
-
-**Now (Swoole):**
 ```php
 /**
- * @route task/get-by-slug/([a-z0-9A-Z\-]+): slug
+ * @route users
+ * @zone api
  */
+// Only matches requests to api.example.com/users
 ```
 
-## Debugging Routes
+Without `@zone`, the action uses the first configured zone (typically `www`).
 
-To see all compiled routes:
+## Route Compilation
+
+Routes are compiled to a PHP array on `bin/init`:
+
+```bash
+bin/init    # Scans app/actions/, generates env/etc/uri_request_map.php
+```
+
+The Router loads this map once at Swoole startup and keeps it in memory.
+
+## URL Matching Flow
+
+1. Swoole receives HTTP request
+2. `Router::match($url, $host)` is called
+3. Zone is determined from host header
+4. URL is matched against compiled regex patterns (filtered by zone)
+5. Captured groups are mapped to named parameters
+6. Parameters are set in `Input` for the action to use
+
+## Router API
 
 ```php
-$routes = Router::getRoutes();
-var_dump($routes);
+// Match URL — returns match info or null
+$result = Router::match('/user/123', 'api.example.com');
+// [
+//   'action' => 'user/profile',
+//   'params' => ['id' => '123'],
+//   'route'  => 'user/(\d+)',
+//   'zone'   => 'api'
+// ]
+
+// Clear cached routes (useful in tests)
+Router::clearCache();
 ```
 
-To test route matching:
+## Parameter Typification
+
+Parameters from routes are strings. Use `@var` / `@param` annotations to auto-cast:
 
 ```php
-$result = Router::match('/your/test/url', 'your-host.com');
-var_dump($result);
+/**
+ * @route order/(\d+): order_id
+ * @var int $order_id
+ * @var string $format json
+ */
+// $order_id is int, $format defaults to "json"
 ```
 
-## Error Handling
+Supported types: `int`, `uint`, `float`, `ufloat`, `bool`, `string`, `array`.
 
-- **No route found**: Returns null, falls back to default action
-- **Missing route file**: Auto-generates if Env class available
-- **Invalid patterns**: Logged as warnings during compilation
-- **Zone mismatch**: Route skipped if zone doesn't match request host
+## Action Return Values
 
-## Best Practices
+The return value of an action file determines the response:
 
-1. **Use specific patterns**: More specific routes are matched first
-2. **Name parameters clearly**: Use descriptive parameter names
-3. **Group related routes**: Keep related actions in same zone
-4. **Test your patterns**: Use Router::match() to test URL patterns
-5. **Document complex routes**: Add comments for complex regex patterns
+| Return | Response |
+|--------|----------|
+| `array` or `object` | JSON (or MessagePack based on Accept header) |
+| `Result` instance | Unwrapped to `[err, data]` JSON |
+| `string` | Plain text |
 
-## Example Action Structure
+## File Organization
 
 ```
 app/actions/
-├── home.php              # @route home
-├── user/
-│   ├── profile.php       # @route user/profile/(\d+): user_id
-│   └── settings.php      # @route user/settings
-├── api/
-│   ├── users.php         # @route api/users, @zone api
-│   └── posts.php         # @route api/posts/(\d+): post_id, @zone api
-└── admin/
-    ├── dashboard.php     # @route admin/dashboard, @zone admin
-    └── users.php         # @route admin/users, @zone admin
+  home.php              # @route home
+  user/
+    profile.php         # @route user/profile/(\d+): id
+    settings.php        # @route user/settings
+  api/
+    users.php           # @route api/users, @zone api
+    orders.php          # @route api/orders/(\d+): id, @zone api
 ```
 
-This routing system provides the flexibility of nginx rewrites with the performance benefits of Swoole's memory-resident architecture.
+The action name is derived from the file path relative to `app/actions/` (minus `.php`).
+
+## Route Priority
+
+Routes are sorted by specificity:
+1. Routes with fewer regex groups are matched first
+2. Longer patterns take priority over shorter ones
+3. Exact matches beat wildcard patterns
+
+## Error Handling
+
+- **No route match**: Falls back to `default.action` from config (typically `home`)
+- **Missing action file**: Throws error (action_map references nonexistent file)
+- **Zone mismatch**: Route is skipped, matching continues

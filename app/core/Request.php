@@ -1,27 +1,9 @@
 <?php declare(strict_types=1);
 
 /**
- * Класс для работы с запросом и переменными запроса
- *
- * @final
+ * HTTP Request wrapper
  */
 final class Request {
-  /**
-   * @property array $params все параметры, переданные в текущем запросе
-   *
-   * @property string $route имя действия, которое должно выполнится в выполняемом запросе
-   * @property string $url адрес обрабатываемого запроса
-   *
-   * @property string $method вызываемый метод на данном запросе (GET | POST)
-   * @property string $protocol протокол соединения, например HTTP, CLI и т.п.
-   * @property string $referer реферер, если имеется
-   * @property string $ip IP-адрес клиента
-   * @property string $xff ip адрес при использовании прокси, заголовок: X-Forwarded-For
-   * @property string $user_agent строка, содержащая USER AGENT браузера клиента
-   * @property string $host Хост, который выполняет запрос
-   * @property bool $is_ajax запрос посылается через ajax
-   */
-
 	private string $action = '';
 	private string $route = '';
 
@@ -47,12 +29,9 @@ final class Request {
 	final protected function __construct(protected string $url) {
 	}
 
-  /**
-   * Получение ссылки на экземпляр объекта исходного запроса
-   *
-   * @static
-   * @return self ссылка на объекта запроса
-   */
+	/**
+	 * Create request instance from current static state
+	 */
 	final protected static function create(): self {
 		$url = rtrim(static::$request_uri, ';&?') ?: '/';
 		$route_info = Router::match($url, static::$host);
@@ -73,9 +52,9 @@ final class Request {
 		return $Request;
 	}
 
-  /**
-   * Return current instance or initialize and parse
-   */
+	/**
+	 * Return current instance or initialize and parse
+	 */
 	public static function current(?Closure $init_fn = null): self {
 		static $instance;
 		if (!isset($instance) || isset($init_fn)) {
@@ -109,13 +88,9 @@ final class Request {
 		self::$is_ajax = false;
 	}
 
-
-  /**
-   * Parse IPS to prepare request
-	 *
-	 * @static
-   * @return void
-   */
+	/**
+	 * Parse real IP from X-Forwarded-For header
+	 */
 	protected static function parseRealIp(): void {
 		self::$real_ip = self::$ip;
 		if (!self::$xff || self::$xff === self::$ip) {
@@ -125,71 +100,56 @@ final class Request {
 		self::$real_ip = trim(strtok(self::$xff, ','));
 	}
 
-  /**
-   * Get current handled url for this request
-	 *
-   * @return string
-   */
+	/**
+	 * @return string
+	 */
 	public function getUrl(): string {
 		return $this->url;
 	}
 
-  /**
-   * Get part of url as path. /some/path for url /some/path?fuck=yea
-	 *
-   * @return string
-   */
+	/**
+	 * Get path part of URL (without query string)
+	 * @return string
+	 */
 	public function getUrlPath(): string {
 		return parse_url($this->url, PHP_URL_PATH) ?: '/';
 	}
 
-  /**
-   * Get url query
-	 *
-   * @return string
-   */
+	/**
+	 * @return string
+	 */
 	public function getUrlQuery(): string {
 		return parse_url($this->url, PHP_URL_QUERY) ?: '';
 	}
 
-
-  /**
-   * Get requested header
-	 *
-   * @param string $header
-   * @return string
-   */
+	/**
+	 * @param string $header
+	 * @return string
+	 */
 	public function getHeader(string $header): string {
 		return static::$headers[strtolower($header)] ?? '';
 	}
 
-  /**
-   * Установка текущего роута с последующим парсингом его в действие и модуль
-   *
-   * @access public
-   * @param string|null $route
-   * @return $this
-   */
+	/**
+	 * @param string|null $route
+	 * @return $this
+	 */
 	public function setRoute(?string $route): self {
 		$this->route = $route ?? '/home';
 		return $this;
 	}
 
-  /**
-   * Current route
-   * @access public
-   * @return string
-   */
+	/**
+	 * @return string
+	 */
 	public function getRoute(): string {
 		return $this->route ?? '';
 	}
 
-  /**
-   * Set action that's processing now
-   * @access public
-   * @param string|null $action
-   * @return self
-   */
+	/**
+	 * @param string|null $action
+	 * @return self
+	 */
 	public function setAction(?string $action): self {
 		$this->action = $action
 		? trim((string)preg_replace('|[^a-z0-9\_\-/]+|is', '', $action), '/')
@@ -198,11 +158,9 @@ final class Request {
 		return $this;
 	}
 
-  /**
-   * Get current action
-   * @access public
-   * @return string
-   */
+	/**
+	 * @return string
+	 */
 	public function getAction(): string {
 		/** @var string $defaultAction */
 		$defaultAction = config('default.action');

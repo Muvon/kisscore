@@ -60,7 +60,9 @@ final class Autoload {
 	 * @param bool $prepend Priority for this
 	 */
 	public static function register(string $prefix, string $dir, bool $prepend = false): void {
-		assert(is_dir($dir) /* Dir $dir does not exist */);
+		if (!is_dir($dir)) {
+			throw new Error("Autoload directory does not exist: $dir");
+		}
 
 		if (!static::$inited) {
 			static::init();

@@ -1,10 +1,13 @@
 <?php declare(strict_types=1);
 
+/**
+ * Request input handling
+ */
 final class Input {
-	public static bool $is_parsed = false;
+	protected static bool $is_parsed = false;
 
 	/** @var array<string,mixed> */
-	public static array $params = [];
+	protected static array $params = [];
 
 	protected static Closure $parse_fn;
 	/**
@@ -36,9 +39,7 @@ final class Input {
 	}
 
   /**
-   * Парсит и сохраняет все параметры в переменной self::$params
-   *
-   * @return void
+   * Parse and store all request parameters
    */
 	protected static function parse(): void {
 
@@ -81,13 +82,7 @@ final class Input {
 	}
 
   /**
-   * Получение переменной запроса
-   *
-   * <code>
-   * $test = Input::get('test');
-   *
-   * $params = Input::get(['test:int=1']);
-   * </code>
+	 * Get request parameter(s)
 	 *
 	 * @param string|string[] $args
 	 * @return mixed
@@ -112,12 +107,11 @@ final class Input {
 	}
 
   /**
-   * Извлекает и типизирует параметры из массива args с помощью функции $fetcher, которая
-   * принимает на вход ключ из массива args и значение по умолчанию, если его там нет
+   * Extract and typify parameters using a fetcher function
    *
    * @param array<string> $args
    * @param Closure $fetcher ($key, $default)
-	 * @return array<string,string|int|bool>
+	 * @return array<string,mixed>
    */
 	public static function extractTypified(array $args, Closure $fetcher): array {
 		$params = [];
@@ -127,7 +121,7 @@ final class Input {
 			}
 			$params[$m[1]]  = $fetcher($m[1], $m[3] ?? '');
 
-		  // Нужно ли типизировать
+		  // Typify if type specified
 			if (!isset($m[2])) {
 				continue;
 			}
