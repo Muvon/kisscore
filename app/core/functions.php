@@ -293,10 +293,13 @@ function array_order_by(array $data, mixed ...$args): array {
 
 // Helpers for Result class
 /**
- * Shortcut for Result::ok()
+ * Shortcut for `Result::ok()`. The template parameter is inferred from `$res`
+ * so callers get a precisely-typed `Result<T>` back (e.g. `ok($user)` produces
+ * `Result<User>` rather than `Result<mixed>`).
  *
- * @param mixed $res
- * @return Result<mixed>
+ * @template T
+ * @param T $res
+ * @return Result<T>
  */
 function ok(mixed $res = null): Result {
 	return Result::ok($res);
@@ -304,20 +307,26 @@ function ok(mixed $res = null): Result {
 
 
 /**
- * Shortcut for Result::err()
+ * Shortcut for `Result::err()`. Returns `Result<never>` because a failed result
+ * never resolves a success value — and `never` is the bottom type, so the
+ * failure flows into any `Result<X>` slot at the call site (with the `Result`
+ * class declared `@template-covariant T`). This lets methods declare narrow
+ * success types like `Result<User>` and still `return err('e_…')` without
+ * having to widen every signature to `Result<mixed>`.
  *
- * @param string $err
- * @param mixed $res
- * @return Result<mixed>
+ * @return Result<never>
  */
 function err(string $err, mixed $res = null): Result {
 	return Result::err($err, $res);
 }
 
 /**
- * Multiple errors creation for single response
+ * Multiple errors creation for single response. Returns `Result<never>` for
+ * the same reason as `err()` — failure carries no success value, so the
+ * bottom-type return composes into any caller's `Result<X>` declaration.
+ *
  * @param array<string> $errs
- * @return Result<mixed>
+ * @return Result<never>
  */
 function err_list(array $errs): Result {
 	return Result::err('e_error_list', $errs);

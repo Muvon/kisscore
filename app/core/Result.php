@@ -1,7 +1,14 @@
 <?php declare(strict_types=1);
 
 /**
- * @template T
+ * Lightweight Rust-style Result wrapper. `T` is the success payload — covariant
+ * so a `Result<Specific>` flows naturally into a caller declaring `Result<Wider>`
+ * (e.g. composing `Result<User>` into a method that returns `Result<mixed>`).
+ * The class is final, mutation-free past construction, and only ever exposes
+ * `T` via read accessors (`->res`, `unwrap()`, `unwrapOr()`), so covariance is
+ * sound here — there is no consumer position that would observe `T`.
+ *
+ * @template-covariant T
  */
 final class Result {
 	/**
