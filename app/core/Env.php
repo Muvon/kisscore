@@ -373,7 +373,11 @@ final class Env {
 			if ($content === false) {
 				continue;
 			}
-			if (!preg_match_all('/^\s*\*\s*@(?:param|var)\s+([a-z]+)\s+(.+?)$/ium', $content, $m)) {
+			// Tolerate an optional PHPDoc generic suffix on the base type
+			// (`array<int,string>`) so value-typed @param/@var annotations keep the
+			// static analyser happy while we still extract + typify on the base
+			// type alone. Mirrors the runtime extractor in Input::extractTypified().
+			if (!preg_match_all('/^\s*\*\s*@(?:param|var)\s+([a-z]+)(?:<[^=]*>)?\s+(.+?)$/ium', $content, $m)) {
 				continue;
 			}
 
