@@ -19,18 +19,27 @@ final class Result {
 	}
 
 	/**
-	 * @param T $res
-	 * @return self<T>
+	 * Static factories can't reference the class template `T` (it's bound per
+	 * instance, not at the class), so this declares its own method template and
+	 * infers the payload type straight from `$res` — `Result::ok($user)` yields
+	 * `Result<User>`, not `Result<mixed>`.
+	 * @template TValue
+	 * @param TValue $res
+	 * @return self<TValue>
 	 */
 	public static function ok(mixed $res): self {
 		return new self(null, $res);
 	}
 
 	/**
-	 * @param T $res
-	 * @return self<T>
+	 * A failed result carries no success value, so its payload type is the
+	 * bottom type `never` — which, with the covariant template, lets it flow
+	 * into any `Result<X>` slot. `$res` is optional error *context*, not a
+	 * success payload, hence the local `@var` override rather than a `T` binding.
+	 * @return self<never>
 	 */
 	public static function err(string $err, mixed $res = null): self {
+		/** @var self<never> $Result */
 		return new self($err, $res);
 	}
 
@@ -51,9 +60,12 @@ final class Result {
 	}
 
 	/**
-	 * In case of error return default value
-	 * @param T $default
-	 * @return T
+	 * In case of error return default value. `$default` gets its own template so
+	 * the covariant `T` never lands in a parameter (contravariant) position, and
+	 * the caller gets the precise `T|TDefault` union back.
+	 * @template TDefault
+	 * @param TDefault $default
+	 * @return T|TDefault
 	 */
 	public function unwrapOr(mixed $default): mixed {
 		if ($this->err) {
