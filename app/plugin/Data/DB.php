@@ -10,14 +10,53 @@ use mysqli_result;
 use mysqli_sql_exception;
 
 final class DB {
-	protected static bool $in_transaction = false;
-	protected static bool $reconnect = true;
-	/** @var array<int,mysqli> */
-	protected static array $pool = [];
-	/** @var array<int,int> */
+	/**
+	 * Swoole-safe per-coroutine connection model.
+	 *
+	 * `enable_coroutine` wraps every request in its own coroutine, and any
+	 * coroutine switch (hooked I/O, Co::sleep, a realtime push, a deferred
+	 * callback) can hand execution to another coroutine mid-flight. A single
+	 * shared mysqli session is therefore unsafe: two coroutines would interleave
+	 * queries on one connection and corrupt each other's results / transactions
+	 * (and a half-read result wedges the very next query).
+	 *
+	 * So each coroutine gets its OWN connection for its lifetime, taken from a
+	 * small per-shard free list (reused — not reconnected every time) and handed
+	 * back on coroutine exit. Transaction state is tracked per coroutine too.
+	 * Outside a coroutine (CLI, the cron loop, FPM) there is no concurrency, so a
+	 * single long-lived connection is used under coroutine id -1.
+	 *
+	 * Swoole is detected at runtime — there is no compile-time dependency on the
+	 * extension, so the same code runs unchanged without it.
+	 */
+	private const NO_CO = -1;
+	/** Idle connections kept per shard for reuse; extras are closed on release. */
+	private const MAX_IDLE = 32;
+
+	/** Connection bound to a coroutine for its lifetime. @var array<int,array<int,mysqli>> [shard_id][cid] */
+	protected static array $bound = [];
+	/** Idle connections available for reuse. @var array<int,list<mysqli>> [shard_id] */
+	protected static array $free = [];
+	/** Reconnect-attempt counter. @var array<int,array<int,int>> [shard_id][cid] */
 	protected static array $try = [];
+	/** Open-transaction flag, per coroutine. @var array<int,bool> [cid] */
+	protected static array $in_transaction = [];
+	/** Whether a 2006 reconnect is allowed (disabled mid-transaction). @var array<int,bool> [cid] */
+	protected static array $allow_reconnect = [];
 	/** @var array<int,string>|null */
 	protected static ?array $shards = null;
+
+	/** Current Swoole coroutine id, or -1 outside a coroutine. Runtime-detected. */
+	private static function cid(): int {
+		if (\class_exists('\Swoole\Coroutine', false)) {
+			/** @var int $cid */
+			$cid = \Swoole\Coroutine::getCid();
+			if ($cid >= 0) {
+				return $cid;
+			}
+		}
+		return self::NO_CO;
+	}
 
   // TODO: think about shards logic
   // Return false in callable to revert transaction
@@ -29,21 +68,20 @@ final class DB {
 	 * @throws Throwable
 	 */
 	public static function transaction(callable $func, ?callable $rollback = null): Result {
-		// If we are already in transaction just call func
-		// Cuz anyway it all goes to the single big transaction
-		if (static::$in_transaction) {
-			// Rewrap it just to make sure that we will throw exception
-			// and process rollback
+		$cid = self::cid();
+		// If we are already in THIS coroutine's transaction just call func — it
+		// all folds into the single outer transaction (and rethrows to roll back).
+		if (self::$in_transaction[$cid] ?? false) {
 			/** @var Result<V> */
 			return ok($func()->unwrap());
 		}
 
-	  /** @var \mysqli $DB */
-		$DB = static::$pool[0];
+		/** @var \mysqli $DB */
+		$DB = self::getConnection(0);
 		$DB->autocommit(false);
 		$DB->begin_transaction();
-		static::$in_transaction = true;
-		static::$reconnect = false;
+		self::$in_transaction[$cid] = true;
+		self::$allow_reconnect[$cid] = false;
 		try {
 			/** @var Result<V> $result */
 			$result = $func();
@@ -67,13 +105,13 @@ final class DB {
 			throw $e;
 		} finally {
 			$DB->autocommit(true);
-			static::$reconnect = true;
-			static::$in_transaction = false;
+			self::$allow_reconnect[$cid] = true;
+			self::$in_transaction[$cid] = false;
 		}
 	}
 
   /**
-   * Execute database query, connects on first request
+   * Execute database query, connecting (per coroutine) on first use
    *
    * @param string $query
    * @param array<string,mixed> $params
@@ -91,12 +129,16 @@ final class DB {
 
 		$DB = static::getConnection($shard_id);
 
-		$query = static::prepareQuery($query, $params, $DB);
+		$prepared = static::prepareQuery($query, $params, $DB);
 
 		try {
-			$Result = $DB->query($query, MYSQLI_USE_RESULT);
+			// STORE_RESULT (buffered): query() pulls the whole result client-side,
+			// so the connection is never left mid-result — a half-read USE_RESULT
+			// set would wedge the next query on this connection ("commands out of
+			// sync"), which is what corrupts the sequential cron loop.
+			$Result = $DB->query($prepared, MYSQLI_STORE_RESULT);
 		} catch (mysqli_sql_exception $e) {
-			return static::handleQueryException($e, $query, $shard_id);
+			return static::handleQueryException($e, $query, $params, $shard_id);
 		}
 
 		return static::processResult($Result, $type, $DB);
@@ -140,19 +182,81 @@ final class DB {
 	}
 
 	/**
+	 * Get (or open) the connection bound to the current coroutine for $shard_id.
+	 * Reuses an idle connection from the per-shard free list when available.
+	 *
 	 * @param int $shard_id
 	 * @return mysqli
 	 */
 	private static function getConnection(int $shard_id): mysqli {
-		if (!isset(static::$pool[$shard_id])) {
-			assert(static::$shards !== null);
-			$dsn = static::$shards[$shard_id];
-			$DB = static::createConnection($dsn);
-			static::$pool[$shard_id] = $DB;
-			static::$try[$shard_id] = 1;
+		$cid = static::cid();
+
+		if (isset(static::$bound[$shard_id][$cid])) {
+			return static::$bound[$shard_id][$cid];
 		}
+
+		assert(static::$shards !== null);
+		$DB = empty(static::$free[$shard_id])
+			? static::createConnection(static::$shards[$shard_id])
+			: array_pop(static::$free[$shard_id]);
+
+		static::$bound[$shard_id][$cid] = $DB;
+		static::$try[$shard_id][$cid] ??= 1;
+
+		// Hand the connection back to the free list when the coroutine finishes,
+		// so it is reused instead of churned. The non-coroutine slot (-1) lives
+		// for the whole process and is never released here.
+		if ($cid !== self::NO_CO && \class_exists('\Swoole\Coroutine', false)) {
+			\Swoole\Coroutine::defer(static function () use ($shard_id, $cid): void {
+				static::release($shard_id, $cid);
+			});
+		}
+
 		/** @var mysqli */
-		return static::$pool[$shard_id];
+		return $DB;
+	}
+
+	/**
+	 * Return a coroutine's connection to the free list (or drop it if unhealthy)
+	 * once the coroutine ends, and clear its per-coroutine state.
+	 *
+	 * @param int $shard_id
+	 * @param int $cid
+	 * @return void
+	 */
+	private static function release(int $shard_id, int $cid): void {
+		$DB = static::$bound[$shard_id][$cid] ?? null;
+		unset(
+			static::$bound[$shard_id][$cid],
+			static::$try[$shard_id][$cid],
+			static::$in_transaction[$cid],
+			static::$allow_reconnect[$cid]
+		);
+		if (!($DB instanceof mysqli)) {
+			return;
+		}
+		// Reset to a clean session before pooling: roll back anything dangling and
+		// restore autocommit. A dead/erroring connection is dropped, not pooled.
+		try {
+			$DB->rollback();
+			$DB->autocommit(true);
+		} catch (Throwable) {
+			static::closeQuietly($DB);
+			return;
+		}
+		if (count(static::$free[$shard_id] ?? []) >= self::MAX_IDLE) {
+			static::closeQuietly($DB);
+			return;
+		}
+		static::$free[$shard_id][] = $DB;
+	}
+
+	private static function closeQuietly(mysqli $DB): void {
+		try {
+			$DB->close();
+		} catch (Throwable) {
+			// connection already gone — nothing to do
+		}
 	}
 
 	/**
@@ -209,19 +313,32 @@ final class DB {
 	}
 
 	/**
+	 * Reconnect-on-2006 (server gone away). Re-prepares the raw query+params on
+	 * the fresh connection (escaping is connection-specific). Bounded retries.
+	 *
 	 * @param Throwable $e
 	 * @param string $query
+	 * @param array<string,mixed> $params
 	 * @param int $shard_id
 	 * @return mixed
 	 * @throws Throwable
 	 */
-	private static function handleQueryException(Throwable $e, string $query, int $shard_id): mixed {
-		if ($e->getCode() !== 2006 || !static::$reconnect || ++static::$try[$shard_id] > 2) {
+	private static function handleQueryException(Throwable $e, string $query, array $params, int $shard_id): mixed {
+		$cid = static::cid();
+		$can_reconnect = static::$allow_reconnect[$cid] ?? true;
+		// Counter survives the retry because we only drop $bound below (not $try),
+		// and getConnection preserves an existing $try with `??=`.
+		static::$try[$shard_id][$cid] = (static::$try[$shard_id][$cid] ?? 1) + 1;
+		if ($e->getCode() !== 2006 || !$can_reconnect || static::$try[$shard_id][$cid] > 2) {
 			App::log($e->getMessage(), ['query' => $query, 'trace' => $e->getTraceAsString()], 'db');
 			throw $e;
 		}
-		unset(static::$pool[$shard_id]);
-		return static::query($query, [], $shard_id);
+		$dead = static::$bound[$shard_id][$cid] ?? null;
+		unset(static::$bound[$shard_id][$cid]);
+		if ($dead instanceof mysqli) {
+			static::closeQuietly($dead);
+		}
+		return static::query($query, $params, $shard_id);
 	}
 
 	/**
@@ -246,6 +363,11 @@ final class DB {
 				$Result->close();
 				return $result;
 			default:
+				// Drain any result a non-standard statement (CALL/REPLACE/…) may
+				// have produced, so the connection isn't left mid-result.
+				if ($Result instanceof mysqli_result) {
+					$Result->close();
+				}
 				return null;
 		}
 	}
@@ -286,6 +408,6 @@ final class DB {
 	}
 
 	public static function inTransaction(): bool {
-		return static::$in_transaction;
+		return static::$in_transaction[static::cid()] ?? false;
 	}
 }
