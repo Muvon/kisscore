@@ -507,24 +507,64 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 	/**
 	 * Transform the single data row according to our transformers returned by getTransformers
+	 *
+	 * A transformer key is one or more comma-separated fields:
+	 *   'name'            => [$encode, $decode]   single field: encode/decode fn($value): mixed
+	 *   'amount,currency' => [$encode, $decode]   multi field
+	 *
+	 * Multi-field transformers are asymmetric and use the first field as the single storage column:
+	 *   encode: fn($amount, $currency): mixed  fields fold into one value stored in the first field
+	 *   decode: fn($stored): array{mixed,...}  the stored value spreads positionally back into all fields
+	 *
+	 * Encode skips unless all fields are present; decode skips unless the storage field is present.
+	 *
 	 * @param array<string,mixed> &$row
 	 * @param bool $is_decode If we should decode, default false, encode
 	 * @return void
 	 */
 	protected static function transform(array &$row, bool $is_decode = false): void {
-		foreach (static::getTransformers() as $field => [$encode, $decode]) {
-			if (!isset($row[$field])) {
+		foreach (static::getTransformers() as $key => [$encode, $decode]) {
+			if (!str_contains($key, ',')) {
+				if (!isset($row[$key])) {
+					continue;
+				}
+				$row[$key] = ($is_decode ? $decode : $encode)($row[$key]);
 				continue;
 			}
 
-			$fn = $is_decode ? $decode : $encode;
-			$row[$field] = $fn($row[$field]);
+			$fields = array_map('trim', explode(',', $key));
+			$storage = $fields[0];
+
+			if ($is_decode) {
+				if (!isset($row[$storage])) {
+					continue;
+				}
+				$values = $decode($row[$storage]);
+				foreach ($fields as $i => $field) {
+					$row[$field] = $values[$i];
+				}
+				continue;
+			}
+
+			$args = [];
+			foreach ($fields as $field) {
+				if (!isset($row[$field])) {
+					continue 2;
+				}
+				$args[] = $row[$field];
+			}
+
+			$row[$storage] = $encode(...$args);
+			foreach (array_slice($fields, 1) as $field) {
+				unset($row[$field]);
+			}
 		}
 	}
 
 	/**
 	 * Return list of current transformers for fields
 	 * This is overloadable methods
+	 * Key is a single field or comma-separated fields mapped positionally (see transform)
 	 * @return array<string,array{0:callable,1:callable}>
 	 */
 	protected static function getTransformers(): array {
