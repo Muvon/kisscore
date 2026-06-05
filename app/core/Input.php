@@ -1,15 +1,25 @@
 <?php declare(strict_types=1);
 
 /**
- * Request input handling
+ * Request input handling.
+ *
+ * Parsed parameters and the parser closure are coroutine-local (see Coro), so
+ * concurrent requests sharing a worker never read each other's input.
  */
 final class Input {
-	protected static bool $is_parsed = false;
+	/**
+	 * Per-coroutine input state.
+	 * @return array{parsed:bool,params:array<string,mixed>,parser:?Closure}
+	 */
+	private static function &state(): array {
+		/** @var array{parsed:bool,params:array<string,mixed>,parser:?Closure} $s */
+		$s = &Coro::bag(
+			'input',
+			static fn(): array => ['parsed' => false, 'params' => [], 'parser' => null]
+		);
+		return $s;
+	}
 
-	/** @var array<string,mixed> */
-	protected static array $params = [];
-
-	protected static Closure $parse_fn;
 	/**
 	 * @return bool
 	 */
@@ -38,37 +48,47 @@ final class Input {
 		return Request::$request_uri !== '' && !static::isJson();
 	}
 
-  /**
-   * Parse and store all request parameters
-   */
+	/**
+	 * Parse and store all request parameters for the current coroutine.
+	 * @return void
+	 */
 	protected static function parse(): void {
-
-		if (static::$is_parsed) {
+		$s = &static::state();
+		if ($s['parsed']) {
 			return;
 		}
-		$fn = static::$parse_fn ?? function () {
-			if (static::isCli()) {
-				global $argv;
-				$args = $argv ?? [];
-				array_shift($args); // file
-				static::$params['ACTION'] = array_shift($args);
-				return $args;
+
+		$parser = $s['parser'] ?? static function (): array {
+			if (!static::isCli()) {
+				// Swoole mode: parser must be set via setParser() before parse.
+				return [];
 			}
-			// Swoole mode: parser must be set via setParser() before parse
-			return [];
+
+			global $argv;
+			$args = $argv ?? [];
+			array_shift($args); // strip script name
+			$action = array_shift($args);
+			// Keep positional args AND expose the action under ACTION. The action
+			// is the first CLI argument; remaining args stay numerically indexed.
+			$params = $args;
+			if ($action !== null) {
+				$params['ACTION'] = $action;
+			}
+			return $params;
 		};
-		static::$params = $fn();
-		static::$is_parsed = true;
+		$s['params'] = $parser();
+		$s['parsed'] = true;
 	}
 
 	/**
-	 * Set parser
-	 * @param Callable $fn [description]
+	 * Set parser for the current coroutine.
+	 * @param callable $fn
 	 * @return void
 	 */
 	public static function setParser(callable $fn): void {
-		static::$is_parsed = false;
-		static::$parse_fn = Closure::fromCallable($fn);
+		$s = &static::state();
+		$s['parsed'] = false;
+		$s['parser'] = Closure::fromCallable($fn);
 	}
 
 	/**
@@ -77,51 +97,57 @@ final class Input {
 	 * @return void
 	 */
 	public static function set(string $key, mixed $value): void {
-		static::$is_parsed || static::parse();
-		static::$params[$key] = $value;
+		$s = &static::state();
+		if (!$s['parsed']) {
+			static::parse();
+		}
+		$s['params'][$key] = $value;
 	}
 
-  /**
-	 * Get request parameter(s)
+	/**
+	 * Get request parameter(s).
 	 *
 	 * @param string|string[] $args
 	 * @return mixed
-   */
+	 */
 	public static function get(...$args): mixed {
-		static::$is_parsed || static::parse();
-
-		if (!isset($args[0])) {
-			return static::$params;
+		$s = &static::state();
+		if (!$s['parsed']) {
+			static::parse();
 		}
 
-	  // String key?
+		if (!isset($args[0])) {
+			return $s['params'];
+		}
+
+		// String key?
 		if (is_string($args[0])) {
-			return static::$params[$args[0]] ?? ($args[1] ?? null);
+			return $s['params'][$args[0]] ?? ($args[1] ?? null);
 		}
 
 		return static::extractTypified(
-			(array)$args[0], function ($key, $default = null) {
+			(array)$args[0], static function ($key, $default = null) {
 				return static::get($key, $default);
 			}
 		);
 	}
 
-  /**
-   * Extract and typify parameters using a fetcher function
-   *
-   * @param array<string> $args
-   * @param Closure $fetcher ($key, $default)
+	/**
+	 * Extract and typify parameters using a fetcher function.
+	 *
+	 * @param array<string> $args
+	 * @param Closure $fetcher ($key, $default)
 	 * @return array<string,mixed>
-   */
+	 */
 	public static function extractTypified(array $args, Closure $fetcher): array {
 		$params = [];
 		foreach ($args as $arg) {
 			if (!preg_match('#^([a-zA-Z0-9_]+)(?::([a-z]+))?(?:=(.+))?$#', $arg, $m)) {
 				continue;
 			}
-			$params[$m[1]]  = $fetcher($m[1], $m[3] ?? '');
+			$params[$m[1]] = $fetcher($m[1], $m[3] ?? '');
 
-		  // Typify if type specified
+			// Typify if type specified
 			if (!isset($m[2])) {
 				continue;
 			}

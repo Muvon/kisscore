@@ -35,11 +35,12 @@ final class Result {
 	 * A failed result carries no success value, so its payload type is the
 	 * bottom type `never` — which, with the covariant template, lets it flow
 	 * into any `Result<X>` slot. `$res` is optional error *context*, not a
-	 * success payload, hence the local `@var` override rather than a `T` binding.
+	 * success payload. The constructor binds `T` to the `mixed` context value,
+	 * so the `never` narrowing is asserted here rather than inferred.
 	 * @return self<never>
 	 */
 	public static function err(string $err, mixed $res = null): self {
-		/** @var self<never> $Result */
+		/** @phpstan-ignore-next-line err() narrows the payload to never; see above */
 		return new self($err, $res);
 	}
 

@@ -524,40 +524,56 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 */
 	protected static function transform(array &$row, bool $is_decode = false): void {
 		foreach (static::getTransformers() as $key => [$encode, $decode]) {
-			if (!str_contains($key, ',')) {
-				if (!isset($row[$key])) {
-					continue;
-				}
-				$row[$key] = ($is_decode ? $decode : $encode)($row[$key]);
+			$fn = $is_decode ? $decode : $encode;
+			if (str_contains($key, ',')) {
+				self::transformMulti($row, $key, $fn, $is_decode);
 				continue;
 			}
-
-			$fields = array_map('trim', explode(',', $key));
-			$storage = $fields[0];
-
-			if ($is_decode) {
-				if (!isset($row[$storage])) {
-					continue;
-				}
-				$values = $decode($row[$storage]);
-				foreach ($fields as $i => $field) {
-					$row[$field] = $values[$i];
-				}
+			if (!isset($row[$key])) {
 				continue;
 			}
+			$row[$key] = $fn($row[$key]);
+		}
+	}
 
-			$args = [];
-			foreach ($fields as $field) {
-				if (!isset($row[$field])) {
-					continue 2;
-				}
-				$args[] = $row[$field];
-			}
+	/**
+	 * Apply one multi-field transformer (see transform() for the contract).
+	 * The first field is the storage column; encode folds all fields into it,
+	 * decode spreads it positionally back. Encode skips unless every field is
+	 * present; decode skips unless the storage field is present.
+	 *
+	 * @param array<string,mixed> &$row
+	 * @param string $key Comma-separated field list
+	 * @param callable $fn Encode or decode transformer for this pass
+	 * @param bool $is_decode
+	 * @return void
+	 */
+	private static function transformMulti(array &$row, string $key, callable $fn, bool $is_decode): void {
+		$fields = array_map('trim', explode(',', $key));
+		$storage = $fields[0];
 
-			$row[$storage] = $encode(...$args);
-			foreach (array_slice($fields, 1) as $field) {
-				unset($row[$field]);
+		if ($is_decode) {
+			if (!isset($row[$storage])) {
+				return;
 			}
+			$values = $fn($row[$storage]);
+			foreach ($fields as $i => $field) {
+				$row[$field] = $values[$i];
+			}
+			return;
+		}
+
+		$args = [];
+		foreach ($fields as $field) {
+			if (!isset($row[$field])) {
+				return;
+			}
+			$args[] = $row[$field];
+		}
+
+		$row[$storage] = $fn(...$args);
+		foreach (array_slice($fields, 1) as $field) {
+			unset($row[$field]);
 		}
 	}
 

@@ -33,29 +33,37 @@ final class DB {
 	/** Idle connections kept per shard for reuse; extras are closed on release. */
 	private const MAX_IDLE = 32;
 
-	/** Connection bound to a coroutine for its lifetime. @var array<int,array<int,mysqli>> [shard_id][cid] */
+	/**
+	 * Connection bound to a coroutine for its lifetime. Keyed [shard_id][cid].
+	 * @var array<int,array<int,mysqli>>
+	 */
 	protected static array $bound = [];
-	/** Idle connections available for reuse. @var array<int,list<mysqli>> [shard_id] */
+	/**
+	 * Idle connections available for reuse. Keyed [shard_id].
+	 * @var array<int,list<mysqli>>
+	 */
 	protected static array $free = [];
-	/** Reconnect-attempt counter. @var array<int,array<int,int>> [shard_id][cid] */
+	/**
+	 * Reconnect-attempt counter. Keyed [shard_id][cid].
+	 * @var array<int,array<int,int>>
+	 */
 	protected static array $try = [];
-	/** Open-transaction flag, per coroutine. @var array<int,bool> [cid] */
+	/**
+	 * Open-transaction flag, per coroutine. Keyed [cid].
+	 * @var array<int,bool>
+	 */
 	protected static array $in_transaction = [];
-	/** Whether a 2006 reconnect is allowed (disabled mid-transaction). @var array<int,bool> [cid] */
+	/**
+	 * Whether a 2006 reconnect is allowed (disabled mid-transaction). Keyed [cid].
+	 * @var array<int,bool>
+	 */
 	protected static array $allow_reconnect = [];
 	/** @var array<int,string>|null */
 	protected static ?array $shards = null;
 
 	/** Current Swoole coroutine id, or -1 outside a coroutine. Runtime-detected. */
 	private static function cid(): int {
-		if (\class_exists('\Swoole\Coroutine', false)) {
-			/** @var int $cid */
-			$cid = \Swoole\Coroutine::getCid();
-			if ($cid >= 0) {
-				return $cid;
-			}
-		}
-		return self::NO_CO;
+		return \Coro::id();
 	}
 
   // TODO: think about shards logic
@@ -197,8 +205,8 @@ final class DB {
 
 		assert(static::$shards !== null);
 		$DB = empty(static::$free[$shard_id])
-			? static::createConnection(static::$shards[$shard_id])
-			: array_pop(static::$free[$shard_id]);
+		? static::createConnection(static::$shards[$shard_id])
+		: array_pop(static::$free[$shard_id]);
 
 		static::$bound[$shard_id][$cid] = $DB;
 		static::$try[$shard_id][$cid] ??= 1;
@@ -207,9 +215,11 @@ final class DB {
 		// so it is reused instead of churned. The non-coroutine slot (-1) lives
 		// for the whole process and is never released here.
 		if ($cid !== self::NO_CO && \class_exists('\Swoole\Coroutine', false)) {
-			\Swoole\Coroutine::defer(static function () use ($shard_id, $cid): void {
-				static::release($shard_id, $cid);
-			});
+			\Swoole\Coroutine::defer(
+				static function () use ($shard_id, $cid): void {
+					static::release($shard_id, $cid);
+				}
+			);
 		}
 
 		/** @var mysqli */
@@ -244,7 +254,7 @@ final class DB {
 			static::closeQuietly($DB);
 			return;
 		}
-		if (count(static::$free[$shard_id] ?? []) >= self::MAX_IDLE) {
+		if (sizeof(static::$free[$shard_id] ?? []) >= self::MAX_IDLE) {
 			static::closeQuietly($DB);
 			return;
 		}

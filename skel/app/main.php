@@ -32,8 +32,9 @@ $Server->set([
 	// Kernel
 	'backlog' => 8192,
 
-	// TCP Parser
-	'package_max_length' => 8192,
+	// TCP Parser — max accepted request size incl. body. 8 KiB rejects normal
+	// API payloads (JSON/uploads); raise to a sane default.
+	'package_max_length' => 8 * 1024 * 1024,
 
 	// Coroutine
 	'enable_coroutine' => true,

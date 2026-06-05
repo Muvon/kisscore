@@ -1,38 +1,51 @@
 <?php declare(strict_types=1);
 
 /**
- * Session management (Swoole-compatible in-memory store)
+ * Session management (Swoole-compatible in-memory store).
  *
- * For API backends, prefer token-based auth over sessions.
- * This class provides per-request session state — not shared across workers.
+ * For API backends, prefer token-based auth over sessions. State is
+ * coroutine-local (see Coro): per-request, never shared across concurrent
+ * requests or workers.
  */
 final class Session {
-	/** @var array<string,mixed> */
-	protected static array $container = [];
-
-	protected static bool $started = false;
+	/**
+	 * Per-coroutine session state.
+	 * @return array{started:bool,container:array<string,mixed>}
+	 */
+	private static function &state(): array {
+		/** @var array{started:bool,container:array<string,mixed>} $s */
+		$s = &Coro::bag(
+			'session',
+			static fn(): array => ['started' => false, 'container' => []]
+		);
+		return $s;
+	}
 
 	/**
-	 * Start session for current request
+	 * Start session for current request.
+	 * @return void
 	 */
 	public static function start(): void {
-		static::$container = [];
-		static::$started = true;
+		$s = &static::state();
+		$s['container'] = [];
+		$s['started'] = true;
 	}
 
 	/**
 	 * @return bool
 	 */
 	public static function isStarted(): bool {
-		return static::$started;
+		return static::state()['started'];
 	}
 
 	/**
-	 * Reset session state (call at start of each Swoole request)
+	 * Reset session state (per-request; coroutine-local).
+	 * @return void
 	 */
 	public static function reset(): void {
-		static::$container = [];
-		static::$started = false;
+		$s = &static::state();
+		$s['container'] = [];
+		$s['started'] = false;
 	}
 
 	/**
@@ -40,13 +53,14 @@ final class Session {
 	 * @return bool
 	 */
 	public static function has(string $key): bool {
-		return isset(static::$container[$key]);
+		return isset(static::state()['container'][$key]);
 	}
 
 	/**
-	 * Add value only if key doesn't exist
+	 * Add value only if key doesn't exist.
 	 * @param string $key
 	 * @param mixed $value Callable will be invoked and result stored
+	 * @return void
 	 */
 	public static function add(string $key, mixed $value): void {
 		if (static::has($key)) {
@@ -59,9 +73,11 @@ final class Session {
 	/**
 	 * @param string $key
 	 * @param mixed $value
+	 * @return void
 	 */
 	public static function set(string $key, mixed $value): void {
-		static::$container[$key] = $value;
+		$s = &static::state();
+		$s['container'][$key] = $value;
 	}
 
 	/**
@@ -69,11 +85,12 @@ final class Session {
 	 * @return bool
 	 */
 	public static function remove(string $key): bool {
-		if (!isset(static::$container[$key])) {
+		$s = &static::state();
+		if (!isset($s['container'][$key])) {
 			return false;
 		}
 
-		unset(static::$container[$key]);
+		unset($s['container'][$key]);
 		return true;
 	}
 
@@ -91,25 +108,28 @@ final class Session {
 	 * @return mixed
 	 */
 	public static function get(string $key, mixed $default = null): mixed {
-		if (!static::has($key) && $default !== null && is_callable($default)) {
+		$s = &static::state();
+		if (!isset($s['container'][$key]) && $default !== null && is_callable($default)) {
 			$default = $default();
-			static::set($key, $default);
+			$s['container'][$key] = $default;
 		}
-		return static::$container[$key] ?? $default;
+		return $s['container'][$key] ?? $default;
 	}
 
 	/**
 	 * @return array<string,mixed>
 	 */
 	public static function all(): array {
-		return static::$container;
+		return static::state()['container'];
 	}
 
 	/**
-	 * Destroy all session data
+	 * Destroy all session data.
+	 * @return void
 	 */
 	public static function destroy(): void {
-		static::$container = [];
-		static::$started = false;
+		$s = &static::state();
+		$s['container'] = [];
+		$s['started'] = false;
 	}
 }

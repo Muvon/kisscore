@@ -66,15 +66,21 @@ final class Response {
 	}
 
 	/**
-	 * @param bool $reset Force new instance (for Swoole per-request reset)
+	 * Current coroutine's response instance (coroutine-local — see Coro), so
+	 * concurrent requests in a worker build separate responses.
+	 * @param bool $reset Force new instance (per-request reset)
+	 * @return self
 	 */
 	public static function current(bool $reset = false): self {
-		static $instance;
-		if (!isset($instance) || $reset) {
-			$instance = new static(200);
+		/** @var array{instance:?self} $bag */
+		$bag = &Coro::bag('response', static fn(): array => ['instance' => null]);
+		if ($bag['instance'] === null || $reset) {
+			$bag['instance'] = new static(200);
 		}
 
-		return $instance;
+		/** @var self $current */
+		$current = $bag['instance'];
+		return $current;
 	}
 
 	/**
