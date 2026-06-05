@@ -437,8 +437,23 @@ final class Env {
 	 */
 	protected static function getPHPFiles(string $dir): array {
 		assert(is_dir($dir));
-		$output = shell_exec("find -L $dir -name '*.php'");
-		return $output ? explode(PHP_EOL, trim($output)) : [];
+		// Recursively collect *.php, following symlinks (replaces `find -L`) — no
+		// shell dependency, portable, and immune to spaces/quoting in $dir.
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator(
+				$dir,
+				FilesystemIterator::SKIP_DOTS | FilesystemIterator::FOLLOW_SYMLINKS
+			)
+		);
+		$files = [];
+		foreach ($iterator as $file) {
+			/** @var SplFileInfo $file */
+			if (!$file->isFile() || $file->getExtension() !== 'php') {
+				continue;
+			}
+			$files[] = $file->getPathname();
+		}
+		return $files;
 	}
 
 	/**

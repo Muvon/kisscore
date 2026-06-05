@@ -18,7 +18,8 @@
 		"phpstan/phpstan": "^1.11.7",
 		"slevomat/coding-standard": "^8.22",
 		"squizlabs/php_codesniffer": "^3.13",
-		"muvon/coding-standard": "dev-master"
+		"muvon/coding-standard": "dev-master",
+		"phpunit/phpunit": "^11"
 	},
 	"autoload": {
 		"psr-4": {
@@ -50,7 +51,10 @@
 			"@kisscore-init"
 		],
 		"kisscore-init": "KC\\Installer::init",
-		"kisscore-create-project": "KC\\Installer::createProject"
+		"kisscore-create-project": "KC\\Installer::createProject",
+		"test": "phpunit",
+		"analyze": "@php -d memory_limit=-1 vendor/bin/phpstan analyse -c phpstan.neon",
+		"codestyle": "phpcs --standard=ruleset.xml app/"
 	},
 	"config": {
 		"allow-plugins": {

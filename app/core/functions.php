@@ -119,7 +119,10 @@ function container(string $name, mixed $value = null): mixed {
 	}
 
 	$res = &$container[$name];
-	if (is_callable($res)) {
+	// Only Closures are resolved lazily-and-memoized. Using is_callable() here
+	// would invoke any stored string/array that happens to name a function
+	// (e.g. 'time', [$obj, 'method']) — a footgun for plain stored values.
+	if ($res instanceof Closure) {
 		$res = $res();
 	}
 	return $res;

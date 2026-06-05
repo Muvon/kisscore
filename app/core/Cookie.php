@@ -1,75 +1,100 @@
 <?php declare(strict_types=1);
 
 /**
- * Cookie management
+ * Cookie management.
+ *
+ * Parsed cookies, pending updates and the parser closure are coroutine-local
+ * (see Coro), so concurrent requests in a worker keep separate cookie jars.
  */
 final class Cookie {
-	protected static bool $is_parsed = false;
-
-	/** @var array<string,mixed> */
-	protected static array $update = [];
-	/** @var array<string,mixed> */
-	protected static array $cookies = [];
-	protected static Closure $parse_fn;
+	/**
+	 * Per-coroutine cookie state.
+	 * @return array{parsed:bool,cookies:array<string,mixed>,update:array<string,mixed>,parser:?Closure}
+	 */
+	private static function &state(): array {
+		/** @var array{parsed:bool,cookies:array<string,mixed>,update:array<string,mixed>,parser:?Closure} $s */
+		$s = &Coro::bag(
+			'cookie',
+			static fn(): array => ['parsed' => false, 'cookies' => [], 'update' => [], 'parser' => null]
+		);
+		return $s;
+	}
 
 	/**
-	 * Set parser for the cookie
+	 * Set parser for the current coroutine and reset its cookie jar.
 	 * @param Closure $fn
+	 * @return void
 	 */
 	public static function setParser(Closure $fn): void {
-		static::$is_parsed = false;
-		static::$cookies = [];
-		static::$update = [];
-		static::$parse_fn = $fn;
-	}
-
-	protected static function parse(): void {
-		$fn = static::$parse_fn ?? function () {
-			return [];
-		};
-		$raw = $fn();
-		if (is_array($raw)) {
-			foreach ($raw as $name => $value) {
-				static::$cookies[$name] = $value;
-			}
-		}
-		static::$is_parsed = true;
+		$s = &static::state();
+		$s['parsed'] = false;
+		$s['cookies'] = [];
+		$s['update'] = [];
+		$s['parser'] = $fn;
 	}
 
 	/**
-	 * Get cookie by name
+	 * @return void
+	 */
+	protected static function parse(): void {
+		$s = &static::state();
+		$parser = $s['parser'] ?? static fn(): array => [];
+		$raw = $parser();
+		if (is_array($raw)) {
+			foreach ($raw as $name => $value) {
+				$s['cookies'][$name] = $value;
+			}
+		}
+		$s['parsed'] = true;
+	}
+
+	/**
+	 * Get cookie by name.
 	 * @param string $name
 	 * @param mixed $default
 	 * @return mixed
 	 */
 	public static function get(string $name, mixed $default = null): mixed {
-		static::$is_parsed || static::parse();
-		return static::$cookies[$name] ?? $default;
+		$s = &static::state();
+		if (!$s['parsed']) {
+			static::parse();
+		}
+		return $s['cookies'][$name] ?? $default;
 	}
 
 	/**
-	 * Get all cookies
+	 * Get all cookies.
 	 * @return array<string,mixed>
 	 */
 	public static function all(): array {
-		static::$is_parsed || static::parse();
-		return static::$cookies;
+		$s = &static::state();
+		if (!$s['parsed']) {
+			static::parse();
+		}
+		return $s['cookies'];
 	}
 
 	/**
-	 * Set new cookie. Replace if exists
+	 * Set new cookie. Replace if exists.
 	 * @param string $name
 	 * @param string $value
 	 * @param array<string, mixed> $options
 	 * @return void
 	 */
 	public static function set(string $name, string $value, array $options = []): void {
-		static::$cookies[$name] = $value;
+		$s = &static::state();
+		// Parse incoming cookies first; otherwise a later lazy parse would
+		// overwrite this freshly-set value with the request's original cookie of
+		// the same name. set() must win — it is an explicit override.
+		if (!$s['parsed']) {
+			static::parse();
+		}
+		$s['cookies'][$name] = $value;
 		if (!$options) {
 			return;
 		}
 
-		static::$update[$name] = [
+		$s['update'][$name] = [
 			'name' => $name,
 			'value' => $value,
 			'options' => $options,
@@ -77,26 +102,31 @@ final class Cookie {
 	}
 
 	/**
-	 * Add new cookie. Create new only if not exists
+	 * Add new cookie. Create new only if not exists.
 	 * @param string $name
 	 * @param string $value
 	 * @param array<string, mixed> $options
 	 * @return void
 	 */
 	public static function add(string $name, string $value, array $options = []): void {
-		static::$is_parsed || static::parse();
-		if (isset(static::$cookies[$name])) {
+		$s = &static::state();
+		if (!$s['parsed']) {
+			static::parse();
+		}
+		if (isset($s['cookies'][$name])) {
 			return;
 		}
 		static::set($name, $value, $options);
 	}
 
 	/**
-	 * Send cookies headers
+	 * Send cookies headers.
 	 * @param ?callable $cookie_fn
+	 * @return void
 	 */
 	public static function send(?callable $cookie_fn = null): void {
-		foreach (static::$update as $cookie) {
+		$s = &static::state();
+		foreach ($s['update'] as $cookie) {
 			/** @var array{name: string, value: string, options: array<string, mixed>} $cookie */
 			/** @var array{expires?: int, path?: string, domain?: string, secure?: bool, httponly?: bool, samesite?: 'Lax'|'None'|'Strict'} $options */
 			$options = array_merge(

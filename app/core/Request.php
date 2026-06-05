@@ -1,7 +1,13 @@
 <?php declare(strict_types=1);
 
 /**
- * HTTP Request wrapper
+ * HTTP Request wrapper.
+ *
+ * The per-request instance (url/route/action) is coroutine-local (see Coro).
+ * The public static properties below (headers, ip, …) are part of the public
+ * interface and remain process-shared; they are written once per request before
+ * processing. Under runtime coroutine hooks they are NOT concurrency-safe — see
+ * improve.md for the accessor-based migration that would make them so.
  */
 final class Request {
 	private string $action = '';
@@ -53,19 +59,24 @@ final class Request {
 	}
 
 	/**
-	 * Return current instance or initialize and parse
+	 * Return current coroutine's instance or initialize and parse.
+	 * @param ?Closure $init_fn
+	 * @return self
 	 */
 	public static function current(?Closure $init_fn = null): self {
-		static $instance;
-		if (!isset($instance) || isset($init_fn)) {
+		/** @var array{instance:?self} $bag */
+		$bag = &Coro::bag('request', static fn(): array => ['instance' => null]);
+		if ($bag['instance'] === null || isset($init_fn)) {
 			if (isset($init_fn)) {
 				$init_fn();
 			}
 			static::parseRealIp();
-			$instance = static::create();
+			$bag['instance'] = static::create();
 		}
 
-		return $instance;
+		/** @var self $current */
+		$current = $bag['instance'];
+		return $current;
 	}
 
 	/**
