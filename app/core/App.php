@@ -195,7 +195,11 @@ final class App {
 		}
 
 		if ($response instanceof Result) {
-			if ($response->err) {
+			// Default an err Result to 400 ONLY when the action didn't already
+			// set an error status — actions call http_status(404/409/…) before
+			// `return $Result` and that explicit mapping must win. An
+			// unconditional 400 here silently clobbers every such mapping.
+			if ($response->err && $Response->getStatus() < 400) {
 				$Response->status(400);
 			}
 			$response = $response->toArray();
