@@ -1,6 +1,6 @@
+includes:
+	- phpstan-base.neon
 parameters:
-	level: 9
-	inferPrivatePropertyTypeFromConstructor: true
 	paths:
 		- app/core
 		- app/lib
