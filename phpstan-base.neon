@@ -1,0 +1,15 @@
+# Shared PHPStan defaults for Muvon / kisscore-based projects.
+#
+# Consumers inherit these by adding to their own phpstan.neon:
+#
+#     includes:
+#         - vendor/muvon/kisscore/phpstan-base.neon
+#     parameters:
+#         paths: [ ...project paths... ]
+#
+# Anything a project does NOT define falls back to here (level, infer flags).
+# Override any inherited value in the local file to diverge. Keep this file
+# PATH-FREE — paths are inherently per-project and belong in the consumer.
+parameters:
+	level: 9
+	inferPrivatePropertyTypeFromConstructor: true
