@@ -618,4 +618,29 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 
 	/** @return string  */
 	abstract protected static function getShardKey(): string;
+
+	/**
+	 * (Re)build the field-schema cache for every concrete model under the App
+	 * namespace (App\<Domain>\<Name>Model). DB-layer bootstrap step: it only
+	 * needs config + a DB connection, so it runs on the lightweight Env::init
+	 * path (no App::start) — which is what lets it create the cache that the
+	 * model reader fields() depends on without a cold-boot deadlock.
+	 *
+	 * @return int Number of models cached
+	 */
+	public static function generateSchemaCache(): int {
+		$count = 0;
+		foreach (glob(getenv('APP_DIR') . '/src/*/*Model.php') ?: [] as $file) {
+			$class = 'App\\' . basename(dirname($file)) . '\\' . basename($file, '.php');
+			if (!class_exists($class) || (new \ReflectionClass($class))->isAbstract()) {
+				continue;
+			}
+			if (!is_a($class, self::class, true)) {
+				continue;
+			}
+			$class::generateFieldsCache();
+			$count++;
+		}
+		return $count;
+	}
 }

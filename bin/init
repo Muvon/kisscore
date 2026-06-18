@@ -37,9 +37,12 @@ $php $OPTS <<EOF
 <?php
   require_once '$PROJECT_DIR/vendor/autoload.php';
   Env::init('$PROJECT_DIR');
-EOF
 
-APP_DIR="$PROJECT_DIR/app"
-test -x "$APP_DIR/scripts/model-schema-cache" && $_
+  // Rebuild the model field-schema cache on the Env::init path (NOT App::start,
+  // which reads this cache and would deadlock a cold env). No DB -> skip; ping
+  // throws when it's down. Build is unguarded so a real failure aborts init.
+  try { Plugin\Data\DB::ping(); } catch (\Throwable \$e) { return; }
+  echo 'Model schema cache: ' . Plugin\Data\Model::generateSchemaCache() . ' models' . PHP_EOL;
+EOF
 
 echo 'Done'
