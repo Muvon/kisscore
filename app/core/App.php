@@ -184,10 +184,16 @@ final class App {
 		$Response = Response::current();
 
 		$action = static::$action_map[$Request->getAction()];
-		/** @var array<string, mixed> $input_vars */
-		$input_vars = Input::get(static::getImportVarsArgs($action));
-		extract($input_vars);
-		$response = include $action;
+
+		// Enforce the action's @method annotation before running it: a 405 payload
+		// short-circuits the include, null means the method is allowed.
+		$response = static::enforceMethod($Request, $Response);
+		if ($response === null) {
+			/** @var array<string, mixed> $input_vars */
+			$input_vars = Input::get(static::getImportVarsArgs($action));
+			extract($input_vars);
+			$response = include $action;
+		}
 
 		if (is_string($response)) {
 			$Response->header('Content-type', 'text/plain;charset=utf-8');
@@ -228,6 +234,26 @@ final class App {
 
 		$Response->header('Content-type', 'text/plain;charset=utf-8');
 		return (string)$response;
+	}
+
+	/**
+	 * Enforce the matched route's @method annotation. Returns a 405 error
+	 * payload (and stamps status + Allow header on the response) when the request
+	 * method isn't allowed, or null when it is. An empty allow-list means the
+	 * route accepts any method (enforcement is opt-in per action).
+	 *
+	 * @param Request $Request
+	 * @param Response $Response
+	 * @return array{error:string}|null
+	 */
+	protected static function enforceMethod(Request $Request, Response $Response): ?array {
+		$allowed = $Request->getRouteMethod();
+		if ($allowed === '' || in_array(strtoupper(Request::$method), explode(',', $allowed), true)) {
+			return null;
+		}
+
+		$Response->status(405)->header('Allow', str_replace(',', ', ', $allowed));
+		return ['error' => 'e_method_not_allowed'];
 	}
 
 	/**

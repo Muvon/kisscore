@@ -34,11 +34,13 @@ final class Router
 			/** @var array<mixed> $params */
 			$params = $routeParams;
 			$zone = array_shift($params);
+			$method = array_shift($params);
 			$action = array_shift($params);
 
 			$map[] = [
 				'pattern' => (string)$route,
 				'zone' => $zone,
+				'method' => $method,
 				'action' => $action,
 				'params' => array_values($params),
 			];
@@ -98,6 +100,7 @@ final class Router
 				'pattern' => $pattern,
 				'regex' => $regex,
 				'zone' => $route['zone'],
+				'method' => $route['method'] ?? '',
 				'action' => $route['action'],
 				'params' => $route['params'] ?? [],
 			];
@@ -106,7 +109,7 @@ final class Router
 
 	/**
 	 * Match URL against routes
-	 * @return array{action:string,params:array<string,string>,route:string,zone:string}|null
+	 * @return array{action:string,params:array<string,string>,route:string,zone:string,method:string}|null
 	 */
 	public static function match(string $url, string $host = ''): ?array {
 		static::init();
@@ -145,11 +148,14 @@ final class Router
 				$routeAction = $route['action'];
 				/** @var string $routePattern */
 				$routePattern = $route['pattern'];
+				/** @var string $routeMethod */
+				$routeMethod = $route['method'] ?? '';
 				return [
 					'action' => $routeAction,
 					'params' => $params,
 					'route' => $routePattern,
 					'zone' => $routeZone,
+					'method' => $routeMethod,
 				];
 			}
 		}

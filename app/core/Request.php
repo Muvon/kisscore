@@ -12,6 +12,8 @@
 final class Request {
 	private string $action = '';
 	private string $route = '';
+	/** Allowed HTTP method(s) for the matched route ('' = any). @see App::process */
+	private string $route_method = '';
 
 	public static int $time = 0;
 	public static float $time_float = 0;
@@ -46,7 +48,8 @@ final class Request {
 
 		if ($route_info) {
 			$Request->setRoute($route_info['route'])
-					->setAction($route_info['action']);
+					->setAction($route_info['action'])
+					->setRouteMethod($route_info['method']);
 			foreach ($route_info['params'] as $key => $value) {
 				Input::set($key, $value);
 			}
@@ -155,6 +158,24 @@ final class Request {
 	 */
 	public function getRoute(): string {
 		return $this->route ?? '';
+	}
+
+	/**
+	 * Allowed HTTP method(s) for the matched route, comma-joined uppercase
+	 * (e.g. "POST" or "GET,POST"). '' means any method is accepted.
+	 * @param string $method
+	 * @return self
+	 */
+	public function setRouteMethod(string $method): self {
+		$this->route_method = $method;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRouteMethod(): string {
+		return $this->route_method;
 	}
 
 	/**
