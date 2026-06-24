@@ -58,4 +58,16 @@ final class RouterTest extends TestCase {
 		// "users/(\d+)" lives in the api zone; the www zone must not match it.
 		$this->assertNull(Router::match('users/42', ''));
 	}
+
+	public function testMatchCarriesRouteMethod(): void {
+		$match = Router::match('users/42', 'api.example.com');
+		$this->assertNotNull($match);
+		$this->assertSame('POST', $match['method'], 'method annotation flows through to the match');
+	}
+
+	public function testMatchDefaultsToAnyMethodWhenUnset(): void {
+		$match = Router::match('home', '');
+		$this->assertNotNull($match);
+		$this->assertSame('', $match['method'], "no @method => '' (any method allowed)");
+	}
 }

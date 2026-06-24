@@ -311,6 +311,8 @@ final class Env {
 				$zone = $zoneMatch[1];
 			}
 
+			$method = static::parseMethodAnnotation($content);
+
 			if (!preg_match_all('/^\s*\*\s*@route\s+([^:]+?)(:(.+))?$/ium', $content, $m)) {
 				continue;
 			}
@@ -319,12 +321,28 @@ final class Env {
 				$pattern = trim($m[1][$k]);
 				$params  = isset($m[2][$k]) && $m[2][$k] ? array_map('trim', explode(',', substr($m[2][$k], 1))) : [];
 				array_unshift($params, static::getActionByFile($file));
-				$map[$pattern] = [$zone, ...$params];
+				$map[$pattern] = [$zone, $method, ...$params];
 			}
 		}
 		/** @var string $uri_map_file */
 		$uri_map_file = config('common.uri_map_file');
 		static::store($uri_map_file, $map);
+	}
+
+	/**
+	 * Parse an optional `@method` annotation into a normalised, comma-joined
+	 * uppercase list (e.g. "GET,POST"). Returns '' when absent — '' means the
+	 * route accepts any HTTP method (enforcement is opt-in per action).
+	 *
+	 * @param string $content
+	 * @return string
+	 */
+	protected static function parseMethodAnnotation(string $content): string {
+		if (!preg_match('/^\s*\*\s*@method\s+([A-Za-z][A-Za-z,\s]*?)\s*$/im', $content, $m)) {
+			return '';
+		}
+		$parts = preg_split('/[\s,]+/', strtoupper(trim($m[1])), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+		return implode(',', $parts);
 	}
 
 	/**

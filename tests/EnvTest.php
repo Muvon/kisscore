@@ -18,4 +18,20 @@ final class EnvTest extends TestCase {
 			$this->assertStringStartsWith($dir, $file, 'returns full paths');
 		}
 	}
+
+	public function testParseMethodAnnotationSingle(): void {
+		$method = new ReflectionMethod(Env::class, 'parseMethodAnnotation');
+		$this->assertSame('POST', $method->invoke(null, "<?php\n/**\n * @route foo\n * @method POST\n */"));
+	}
+
+	public function testParseMethodAnnotationMultipleAndNormalises(): void {
+		$method = new ReflectionMethod(Env::class, 'parseMethodAnnotation');
+		// mixed case + comma/space separators collapse to an uppercase CSV list
+		$this->assertSame('GET,POST', $method->invoke(null, "/**\n * @method get, post\n */"));
+	}
+
+	public function testParseMethodAnnotationAbsentMeansAny(): void {
+		$method = new ReflectionMethod(Env::class, 'parseMethodAnnotation');
+		$this->assertSame('', $method->invoke(null, "/**\n * @route foo\n */"));
+	}
 }
