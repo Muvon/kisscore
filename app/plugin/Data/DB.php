@@ -84,6 +84,11 @@ final class DB {
 			return ok($func()->unwrap());
 		}
 
+		// query() lazily inits shards, but a transaction as the FIRST db op in a
+		// process/coroutine would reach getConnection() with $shards still null and
+		// crash on $shards[$shard_id]. Init here too (idempotent).
+		static::initShards();
+
 		/** @var \mysqli $DB */
 		$DB = self::getConnection(0);
 		$DB->autocommit(false);
