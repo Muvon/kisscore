@@ -153,6 +153,12 @@ final class DB {
 		} catch (mysqli_sql_exception $e) {
 			return static::handleQueryException($e, $query, $params, $shard_id);
 		}
+		// A successful round-trip proves the connection is live: the 2006 budget
+		// counts CONSECUTIVE failures, so it resets here. Coroutines got this for
+		// free via release(); the non-coroutine slot (-1) lives for the whole
+		// process and would otherwise spend its budget once and never reconnect
+		// again (a long-lived process died permanently on its second gone-away).
+		static::$try[$shard_id][static::cid()] = 1;
 
 		return static::processResult($Result, $type, $DB);
 	}
@@ -292,6 +298,10 @@ final class DB {
 		$connect_timeout = config('mysql.connect_timeout');
 		$DB->options(MYSQLI_OPT_CONNECT_TIMEOUT, $connect_timeout);
 		$DB->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);
+		// Long-lived server connections must own their idle timeout: a shared MySQL
+		// with a short global wait_timeout (seen: 60s) otherwise kills every
+		// connection between ticks, turning each into a reconnect round-trip.
+		$DB->options(MYSQLI_INIT_COMMAND, 'SET SESSION wait_timeout = 28800');
 		$DB->real_connect(
 			$dsn_key('host'),
 			$dsn_key('user'),
@@ -341,17 +351,28 @@ final class DB {
 	private static function handleQueryException(Throwable $e, string $query, array $params, int $shard_id): mixed {
 		$cid = static::cid();
 		$can_reconnect = static::$allow_reconnect[$cid] ?? true;
-		// Counter survives the retry because we only drop $bound below (not $try),
-		// and getConnection preserves an existing $try with `??=`.
-		static::$try[$shard_id][$cid] = (static::$try[$shard_id][$cid] ?? 1) + 1;
-		if ($e->getCode() !== 2006 || !$can_reconnect || static::$try[$shard_id][$cid] > 2) {
+		if ($e->getCode() !== 2006 || !$can_reconnect) {
+			// Not a reconnectable failure — and it must NOT spend the 2006 budget:
+			// an unrelated SQL error (dup key, lock timeout, a KILL) would otherwise
+			// burn the reconnect and leave the next real gone-away unrecoverable.
 			App::log($e->getMessage(), ['query' => $query, 'trace' => $e->getTraceAsString()], 'db');
 			throw $e;
 		}
+		// The connection is dead — never leave it bound, or every later query on
+		// this cid replays the same 2006 with no path back even after the server
+		// returns. The budget counts CONSECUTIVE gone-aways: it survives the retry
+		// (getConnection preserves it with `??=`), resets on any successful query
+		// (see query()) and below when exhausted, so the NEXT query starts fresh.
+		static::$try[$shard_id][$cid] = (static::$try[$shard_id][$cid] ?? 1) + 1;
 		$dead = static::$bound[$shard_id][$cid] ?? null;
 		unset(static::$bound[$shard_id][$cid]);
 		if ($dead instanceof mysqli) {
 			static::closeQuietly($dead);
+		}
+		if (static::$try[$shard_id][$cid] > 2) {
+			App::log($e->getMessage(), ['query' => $query, 'trace' => $e->getTraceAsString()], 'db');
+			unset(static::$try[$shard_id][$cid]);
+			throw $e;
 		}
 		return static::query($query, $params, $shard_id);
 	}
