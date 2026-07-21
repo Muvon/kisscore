@@ -232,7 +232,6 @@ final class Fetch {
 			if ($this->request_mh) {
 				curl_multi_remove_handle($this->request_mh, $ch);
 			}
-			curl_close($ch);
 			if (($httpcode !== 200 && $httpcode !== 201)) {
 				$error = match ($httpcode) {
 					429 => 'e_http_too_many_request',

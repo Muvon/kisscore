@@ -39,7 +39,6 @@ final class IPInfo {
 		}
 
 		// close cURL resource, and free up system resources
-		curl_close($ch);
 
 		// Decode JSON response
 		try {
