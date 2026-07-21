@@ -1,0 +1,41 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+/**
+ * KISScore test runner. Discovers `*Test.php`, runs the matching ones in one
+ * process, reports PASS/FAIL, and (with pcov) emits coverage. Fast by design —
+ * no per-test process, no reflection.
+ *
+ * Usage:
+ *   bin/test [--dir=tests] [--bootstrap=file] [options] [dir|file ...]
+ *
+ * Options:
+ *   --filter=<substr|/regex/>   run only tests whose name matches
+ *   --bootstrap=<file>          require before discovery (app env setup)
+ *   --coverage-clover=<file>    write Clover XML (needs the pcov extension)
+ *   --coverage-text             print a line-coverage summary (needs pcov)
+ *   --coverage-src=<a,b>        limit coverage to these path prefixes
+ *   --junit=<file>              write JUnit XML
+ *   --stop-on-fail              stop at the first failure
+ *   --list                      list matching test names, don't run
+ *   --quiet                     only print failures + the summary
+ */
+
+// Project root: works both inside vendor/muvon/kisscore/bin and standalone.
+$here = __DIR__;
+if (is_file($here . '/../../../autoload.php')) {          // vendor/muvon/kisscore/bin/test
+	$root = dirname($here, 4);
+} elseif (is_file($here . '/../vendor/autoload.php')) {    // app-root/bin/test
+	$root = dirname($here);
+} else {
+	$root = getcwd() !== false ? getcwd() : $here;
+}
+
+$autoload = $root . '/vendor/autoload.php';
+if (!is_file($autoload)) {
+	fwrite(STDERR, "cannot locate vendor/autoload.php from {$root}\n");
+	exit(2);
+}
+require $autoload;
+
+exit(KC\Test\Runner::main($argv, $root));
