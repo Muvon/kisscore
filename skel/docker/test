@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#
+# Ephemeral, isolated test run — PROJECT infrastructure, not the framework.
+# The framework (`vendor/bin/test`) only runs tests inside whatever env it is
+# given; this script provides that env the same way you deploy: throwaway
+# containers from your own images, on a private network, source mounted
+# read-only, everything torn down on exit. Nothing here can touch a running
+# dev/prod container or a named volume, so it is safe to run in parallel.
+#
+# Config: `docker/test.env` (sourced). yoda vars (COMPOSE_PROJECT_NAME,
+# REVISION) are picked up from `.yodarc` for sensible image defaults. Extra CLI
+# args are forwarded to the in-container test command (so `docker/test --filter=X`
+# works).
+set -euo pipefail
+
+docker_root="$(cd "$(dirname "$0")" && pwd)"
+proj_root="$(cd "$docker_root/.." && pwd)"
+cd "$proj_root"
+
+# yoda-derived defaults (image naming), then test-specific overrides.
+[[ -f "$docker_root/.yodarc" ]] && . "$docker_root/.yodarc"
+[[ -f "$docker_root/test.env" ]] && . "$docker_root/test.env"
+
+TEST_IMAGE="${TEST_IMAGE:-${COMPOSE_PROJECT_NAME:-app}/php:${REVISION:-latest}}"
+TEST_CMD="${TEST_CMD:-php vendor/muvon/kisscore/bin/test tests}"
+TEST_DB_PORT="${TEST_DB_PORT:-3306}"
+TEST_DB_USER="${TEST_DB_USER:-root}"
+TEST_DB_PASSWORD="${TEST_DB_PASSWORD:-}"
+TEST_DB_NAME="${TEST_DB_NAME:-app_test}"
+
+abspath() { case "$1" in /*) printf '%s' "$1";; *) printf '%s/%s' "$proj_root" "$1";; esac; }
+
+run_id="$$-$(date +%s)"
+network="kc-test-$run_id"; php_c="kc-test-php-$run_id"; db_c="kc-test-db-$run_id"
+plat=(); [[ -n "${TEST_PLATFORM:-}" ]] && plat=(--platform "$TEST_PLATFORM")
+cleanup() { docker rm -f "$php_c" "$db_c" >/dev/null 2>&1 || true; docker network rm "$network" >/dev/null 2>&1 || true; }
+trap cleanup EXIT INT TERM
+docker network create "$network" >/dev/null
+
+php_env=()
+# --- optional throwaway database ---------------------------------------------
+if [[ -n "${TEST_DB_IMAGE:-}" ]]; then
+	da=("${plat[@]}" -d --rm --name "$db_c" --network "$network")
+	[[ -n "${TEST_DB_TMPFS:-}" ]] && da+=(--tmpfs "$TEST_DB_TMPFS")
+	[[ -n "${TEST_DB_INITDB:-}" ]] && da+=(-v "$(abspath "$TEST_DB_INITDB"):/docker-entrypoint-initdb.d:ro")
+	da+=(-e "MYSQL_ROOT_PASSWORD=$TEST_DB_PASSWORD" -e MYSQL_ROOT_HOST=% -e "MYSQL_DATABASE=$TEST_DB_NAME")
+	# shellcheck disable=SC2206
+	[[ -n "${TEST_DB_ENV:-}" ]] && da+=($TEST_DB_ENV)
+	da+=("$TEST_DB_IMAGE")
+	# shellcheck disable=SC2206
+	[[ -n "${TEST_DB_CMD:-}" ]] && da+=($TEST_DB_CMD)
+	docker run "${da[@]}" >/dev/null
+
+	ready="${TEST_DB_READY:-mysqladmin -u $TEST_DB_USER -p$TEST_DB_PASSWORD -h 127.0.0.1 -P $TEST_DB_PORT ping --silent}"
+	ok=0
+	for _ in $(seq 1 90); do
+		docker exec "$db_c" sh -c "$ready" >/dev/null 2>&1 && { ok=1; break; }
+		sleep 1
+	done
+	[[ "$ok" == 1 ]] || { docker logs "$db_c" || true; echo 'test: database did not become ready' >&2; exit 1; }
+	php_env+=(-e "DB_IP=$db_c" -e "DB_PORT=$TEST_DB_PORT" -e "DB_USER=$TEST_DB_USER" -e "DB_PASSWORD=$TEST_DB_PASSWORD" -e "DB_DATABASE=$TEST_DB_NAME")
+fi
+
+# --- the php test run --------------------------------------------------------
+pa=("${plat[@]}" --rm --name "$php_c" --network "$network" -v "$(abspath "${TEST_SRC:-$proj_root}"):/src:ro" -w /src)
+if [[ -n "${TEST_PHP_TMPFS:-}" ]]; then
+	IFS=';' read -ra tm <<< "$TEST_PHP_TMPFS"
+	for m in "${tm[@]}"; do [[ -n "$m" ]] && pa+=(--tmpfs "$m"); done
+fi
+pa+=("${php_env[@]}")
+# shellcheck disable=SC2206
+[[ -n "${TEST_PHP_ENV:-}" ]] && pa+=($TEST_PHP_ENV)
+prep="${TEST_PREP:-true}"
+pa+=(--entrypoint /bin/sh "$TEST_IMAGE" -c "$prep && exec $TEST_CMD \"\$@\"" -- "$@")
+docker run "${pa[@]}"
