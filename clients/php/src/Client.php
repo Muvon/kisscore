@@ -129,11 +129,9 @@ final class Client {
 
 		if ($err_no) {
 			$err_msg = curl_error($ch);
-			curl_close($ch);
 			return [$this->curlError($err_no, $err_msg), null];
 		}
 
-		curl_close($ch);
 
 		if (!is_string($response) || $response === '') {
 			return ['e_empty_response', null];

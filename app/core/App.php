@@ -261,6 +261,14 @@ final class App {
 	 */
 	// phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter, Generic.CodeAnalysis.UnusedFunctionParameter
 	public static function handleError(int $errno, string $errstr, string $errfile, int $errline): bool {
+		// Deprecations are advisories about FUTURE breakage — turning them into
+		// exceptions makes every dependency's deprecation fatal the day a new PHP
+		// lands (8.5's curl_close() notice broke every Fetch call this way).
+		// Log so they get cleaned up; never throw.
+		if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
+			error_log('[deprecated] ' . $errstr . ' in ' . $errfile . ':' . $errline);
+			return true;
+		}
 		static::error($errstr);
 		return true;
 	}
