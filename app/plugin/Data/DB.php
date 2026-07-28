@@ -369,6 +369,18 @@ final class DB {
 		if ($dead instanceof mysqli) {
 			static::closeQuietly($dead);
 		}
+		// A gone-away on one connection condemns the shard's whole IDLE pool: the
+		// pooled handles shared the same server event and a longer idle window
+		// (wait_timeout, server restart), and release()'s health check cannot see
+		// a death that happens later. Without this, the retry pops the NEXT
+		// corpse from the free list and the two-attempt budget exhausts without
+		// ever reaching a live connection (seen in production). Flushing idle
+		// handles is cheap and touches nothing bound to other coroutines — the
+		// retry below then always CREATES a fresh connection.
+		foreach (static::$free[$shard_id] ?? [] as $Idle) {
+			static::closeQuietly($Idle);
+		}
+		static::$free[$shard_id] = [];
 		if (static::$try[$shard_id][$cid] > 2) {
 			App::log($e->getMessage(), ['query' => $query, 'trace' => $e->getTraceAsString()], 'db');
 			unset(static::$try[$shard_id][$cid]);
