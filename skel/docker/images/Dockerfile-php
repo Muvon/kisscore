@@ -1,4 +1,4 @@
-FROM muvon/php:8.5.7
+FROM muvon/php:8.5.9
 LABEL maintainer="Muvon Un Limited <hello@muvon.io>"
 
 RUN php-ext add msgpack yaml swoole && \
