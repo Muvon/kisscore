@@ -51,6 +51,7 @@ final class Response {
 		415 => 'Unsupported Media Type',
 		416 => 'Requested Range Not Satisfiable',
 		417 => 'Expectation Failed',
+		424 => 'Failed Dependency',
 		429 => 'Too Many Requests',
 
 		500 => 'Internal Server Error',
