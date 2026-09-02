@@ -31,21 +31,21 @@ final class Input {
 	 * @return bool
 	 */
 	public static function isJson(): bool {
-		return str_starts_with(Request::$content_type, 'application/json');
+		return str_starts_with(Request::contentType(), 'application/json');
 	}
 
 	/**
 	 * @return bool
 	 */
 	public static function isMsgpack(): bool {
-		return str_starts_with(Request::$content_type, 'application/msgpack');
+		return str_starts_with(Request::contentType(), 'application/msgpack');
 	}
 
 	/**
 	 * @return bool
 	 */
 	public static function isRaw(): bool {
-		return Request::$request_uri !== '' && !static::isJson();
+		return Request::uri() !== '' && !static::isJson();
 	}
 
 	/**

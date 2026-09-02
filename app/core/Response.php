@@ -177,8 +177,8 @@ final class Response {
 			$header_fn($header, $value, true);
 		}
 
-		$header_fn('X-Server-Time', (string)(int)(Request::$time_float * 1000));
-		$header_fn('X-Response-Time', (string)(int)((microtime(true) - Request::$time_float) * 1000));
+		$header_fn('X-Server-Time', (string)(int)(Request::timeFloat() * 1000));
+		$header_fn('X-Response-Time', (string)(int)((microtime(true) - Request::timeFloat()) * 1000));
 		return $this;
 	}
 

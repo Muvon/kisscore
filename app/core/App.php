@@ -212,7 +212,7 @@ final class App {
 		}
 
 		if (is_array($response) || is_object($response)) {
-			$accept = Request::$headers['accept'] ?? '';
+			$accept = Request::header('accept');
 			$type = match (true) {
 				str_contains($accept, 'application/msgpack') => 'msgpack',
 				Input::isMsgpack() => 'msgpack',
@@ -248,7 +248,7 @@ final class App {
 	 */
 	protected static function enforceMethod(Request $Request, Response $Response): ?array {
 		$allowed = $Request->getRouteMethod();
-		if ($allowed === '' || in_array(strtoupper(Request::$method), explode(',', $allowed), true)) {
+		if ($allowed === '' || in_array(strtoupper(Request::method()), explode(',', $allowed), true)) {
 			return null;
 		}
 

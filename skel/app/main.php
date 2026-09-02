@@ -86,23 +86,21 @@ $Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Respo
 		Cookie::setParser(fn() => $Request->cookie);
 
 		Request::current(function() use ($Request) {
-			Request::$time = $Request->server['request_time'];
-			Request::$time_float = $Request->server['request_time_float'];
-
-			Request::$protocol = $Request->server['server_protocol'];
-			Request::$headers = (array)$Request->header;
-			Request::$host = $Request->header['host'] ?? '';
-
-			Request::$is_ajax = !!($Request->header['x-requested-with'] ?? false);
-			Request::$referer = $Request->header['referer'] ?? '';
-			Request::$xff = $Request->header['x-forwarded-for'] ?? '';
-
-			Request::$method = $Request->server['request_method'];
-			Request::$user_agent = $Request->header['user-agent'] ?? '';
-			Request::$ip = $Request->server['remote_addr'];
-
-			Request::$request_uri = $Request->server['request_uri'];
-			Request::$content_type = $Request->header['content-type'] ?? '';
+			Request::init(
+				time: $Request->server['request_time'],
+				time_float: $Request->server['request_time_float'],
+				protocol: $Request->server['server_protocol'],
+				headers: (array)$Request->header,
+				host: $Request->header['host'] ?? '',
+				is_ajax: !!($Request->header['x-requested-with'] ?? false),
+				referer: $Request->header['referer'] ?? '',
+				xff: $Request->header['x-forwarded-for'] ?? '',
+				method: $Request->server['request_method'],
+				user_agent: $Request->header['user-agent'] ?? '',
+				ip: $Request->server['remote_addr'],
+				request_uri: $Request->server['request_uri'],
+				content_type: $Request->header['content-type'] ?? '',
+			);
 		});
 
 		$response = App::process();
