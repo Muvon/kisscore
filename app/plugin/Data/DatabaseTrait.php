@@ -3,7 +3,7 @@
 namespace Plugin\Data;
 
 /**
- * @phpstan-type FieldInfo array{type:string,null:bool,default:mixed}
+ * @phpstan-type FieldInfo array{type:string,null:bool,default:?string}
  */
 trait DatabaseTrait {
 	protected static int $shard_id = 0;
@@ -70,7 +70,7 @@ trait DatabaseTrait {
 		$func = function () {
 			$incremental_id = false;
 			$fields = [];
-			/** @var array<int,array{Field:string,Type:string,Null:string,Default:mixed,Extra:string}>|null $data */
+			/** @var array<int,array{Field:string,Type:string,Null:string,Default:?string,Extra:string}>|null $data */
 			$data = static::dbQuery('DESCRIBE ' . static::table());
 			if ($data) {
 				for ($i = 0, $max_sz = sizeof($data); $i < $max_sz; $i++) {

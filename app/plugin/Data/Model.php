@@ -10,11 +10,18 @@ use Plugin\List\Pagination;
 use Result;
 
 /**
- * @implements ArrayAccess<string,mixed>
+ * @template TRow of array<string,mixed> The table row as each model declares
+ *   it (`@extends Model<array{col: type, ...}>`): column types for
+ *   `$Model['col']`, `getData()`, `getList()` and `getByIds()` come from it.
+ * @implements ArrayAccess<key-of<TRow>,value-of<TRow>>
  */
 abstract class Model implements ArrayAccess, JsonSerializable {
-	use DatabaseTrait;
-	use ArrayTrait;
+	use DatabaseTrait {
+		getList as protected traitGetList;
+	}
+	use ArrayTrait {
+		offsetGet as protected traitOffsetGet;
+	}
 	use OptionTrait;
 	protected string $label = '';
 	protected bool $exists = false;
@@ -78,7 +85,9 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	public static function new(): static {
-		return new static;
+		/** @var static $Obj */
+		$Obj = new static;
+		return $Obj;
 	}
 
 	/**
@@ -249,10 +258,40 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * @return array<string,mixed>
+	 * The loaded row: every declared column, typed as the model declares it.
+	 *
+	 * @return TRow
 	 */
 	public function getData(): array {
-		return $this->data;
+		/** @var TRow $row */
+		$row = $this->data;
+		return $row;
+	}
+
+	/**
+	 * One column, typed as the model declares it.
+	 *
+	 * @template TKey of key-of<TRow>
+	 * @param TKey $k
+	 * @return TRow[TKey]
+	 */
+	public function offsetGet(mixed $k): mixed {
+		/** @var TRow[TKey] $value */
+		$value = $this->traitOffsetGet($k);
+		return $value;
+	}
+
+	/**
+	 * Get full list or filtered list by conditions
+	 *
+	 * @param array<string,mixed> $conditions
+	 * @param array<string,string> $order
+	 * @return array<int,TRow>
+	 */
+	public static function getList(array $conditions = [], array $order = [], int $offset = 0, int $limit = 10): array {
+		/** @var array<int,TRow> $rows */
+		$rows = static::traitGetList($conditions, $order, $offset, $limit);
+		return $rows;
 	}
 
   /**
@@ -310,18 +349,32 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	/**
-	 * Get default values for current model
+	 * Get default values for current model. DESCRIBE reports every default as a
+	 * string, while a row read back from the database carries native scalars —
+	 * cast by column type so a freshly created model and a reloaded one agree.
+	 *
 	 * @return array<string,mixed>
 	 */
 	public static function getDefault(): array {
-		return array_map(fn ($v) => $v['default'], static::fields(true));
+		return array_map(static fn (array $v): mixed => static::castDefault($v['type'], $v['default']), static::fields(true));
+	}
+
+	protected static function castDefault(string $type, ?string $default): int|float|string|null {
+		if ($default === null) {
+			return null;
+		}
+		return match ($type) {
+			'tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'year' => (int)$default,
+			'float', 'double' => (float)$default,
+			default => $default,
+		};
 	}
 
 	/**
 	 * Get multiple records by IDs
 	 *
 	 * @param array<int|string> $ids
-	 * @return array<int|string,array<string,mixed>>
+	 * @return array<int|string,TRow>
 	 */
 	public static function getByIds(array $ids): array {
 		$ids = array_unique($ids);
@@ -363,10 +416,11 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 			}
 			$data = &$result;
 		}
-		$data = array_filter($data);
-		array_walk($data, fn (&$row) => static::transform($row, true));
-		array_map($Obj::expand(...), $data);
-		return $data;
+		/** @var array<int|string,TRow> $rows */
+		$rows = array_filter($data);
+		array_walk($rows, fn (&$row) => static::transform($row, true));
+		array_map($Obj::expand(...), $rows);
+		return $rows;
 	}
 
 	/**
@@ -377,6 +431,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 * @throws InvalidArgumentException
 	 */
 	public static function getByFields(array $fields, array $order = []): static {
+		/** @var static $Self */
 		$Self = new static;
 		/** @var array<string,mixed> $row */
 		$row = $Self->dbGet(static::fields(), $fields, $order);
@@ -456,6 +511,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		}
 
 		// This helps to prevent sisegv
+		/** @var static $Obj */
 		$Obj = new static;
 		static::transform($data, true);
 		$Obj->loadByData($data);
