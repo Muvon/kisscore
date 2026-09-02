@@ -1,6 +1,6 @@
 {
 	"name": "muvon/kisscore",
-	"description": "Muvon KISScore is blazing fast Swoole-based framework for rapid development with high performance async capabilities",
+	"description": "Swoole-powered PHP micro-framework: memory-resident server, coroutine-safe state, zero production dependencies — rapid API development with an [err, data] protocol and typed TS/Python/PHP clients",
 	"type": "library",
 	"license": "MIT",
 	"keywords": [

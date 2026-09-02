@@ -27,8 +27,9 @@ without per-request framework overhead.
 ## Quick Start
 
 ```bash
-# Install
-composer require muvon/kisscore
+# Install — add the VCS repo until the package lands on Packagist
+composer config repositories.kisscore vcs https://github.com/Muvon/kisscore
+composer require muvon/kisscore:dev-master
 
 # Scaffold project (copies app skeleton, creates .env, makes bin/ executable)
 ./vendor/bin/kisscore-init init
@@ -74,11 +75,12 @@ app/
   src/           Application classes (App\ namespace)
   scripts/       Build/utility scripts
   static/        Static files served by Swoole
-  tests/         App tests (run with bin/test)
+  tests/         App tests
   main.php       Swoole HTTP server entry point
   start.php      Startup hooks (runs once on App::start)
   stop.php       Shutdown hooks
 bin/             CLI tools
+docker/          Docker build and container setup
 env/
   log/           Application logs
   tmp/           Temp files
@@ -276,7 +278,6 @@ bin/php-exec script.php    # Execute PHP file in app context
 bin/php-exec-one script    # Same but with file locking (single instance)
 bin/cron script [timeout]  # Run script in loop with optional sleep between runs
 bin/watcher                # Watch files, rebuild maps, reload Swoole workers
-bin/test                   # Built-in test runner (KC\Test) for app tests
 bin/codestyle-check        # PHPCS code style check
 bin/codestyle-fix          # PHPCS auto-fix
 bin/codestyle-analyze      # PHPStan level 9 analysis
@@ -308,9 +309,6 @@ dependencies and return native `[err, data]` tuples.
 ## Documentation
 
 - [doc/routing.md](doc/routing.md) — routing reference
-- [doc/database.md](doc/database.md) — `Plugin\Data\DB`
-- [doc/model.md](doc/model.md) — `Plugin\Data\Model`
-- [doc/http-client.md](doc/http-client.md) — `Fetch` HTTP client
 
 ## Docker
 
