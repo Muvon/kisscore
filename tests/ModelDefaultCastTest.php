@@ -26,6 +26,10 @@ final class DefaultCastModel extends Model {
 	protected static function dbShardId(string $value): int|string {
 		return 0;
 	}
+
+	protected static function getShardKey(): string {
+		return '';
+	}
 }
 
 // DESCRIBE reports defaults as strings; reads use MYSQLI_OPT_INT_AND_FLOAT_NATIVE.
