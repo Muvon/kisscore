@@ -1,8 +1,28 @@
 # KissCore
 
-Swoole-based PHP framework for rapid API development. Async, high-performance, zero bloat.
+> Swoole-based PHP framework for rapid API development — async, high-performance, zero bloat.
 
-**PHP 8.4+ | Swoole required**
+[![CI](https://github.com/Muvon/kisscore/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Muvon/kisscore/actions/workflows/ci.yml)
+[![PHP](https://img.shields.io/badge/PHP-8.4%2B-8892BF)](https://www.php.net/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**Contents:** [Why](#why-kisscore) · [Quick Start](#quick-start) · [Requirements](#requirements) · [Structure](#project-structure) · [Core Concepts](#core-concepts) · [Coroutine Safety](#coroutine-safety) · [API Reference](#api-reference) · [CLI Tools](#cli-tools) · [Swoole](#swoole-integration) · [Clients](#api-clients) · [Docs](#documentation) · [Docker](#docker) · [Contributing](#contributing)
+
+## Why KissCore?
+
+Most PHP frameworks bootstrap themselves on every request. KissCore runs as a
+memory-resident [Swoole](https://www.swoole.co.uk/) server: config and route maps are compiled
+to plain PHP arrays at init, files load once at startup, and requests are served
+without per-request framework overhead.
+
+- **Zero bloat** — no production Composer dependencies at all (`require` is `php` only)
+- **`[err, data]` response protocol** — every action returns `ok(...)`/`err(...)`;
+  typed client libraries (TypeScript, Python, PHP) consume the protocol out of the box
+- **File-based actions** — one action = one PHP file, routed via `@route` annotations;
+  no controllers, no routing config to maintain
+- **Coroutine-safe by design** — per-request state (`Input`, `Cookie`, `Session`,
+  `Response`) and DB connections are coroutine-local under Swoole
+- **JSON and MessagePack** — request/response encoding negotiated automatically
 
 ## Quick Start
 
@@ -10,7 +30,7 @@ Swoole-based PHP framework for rapid API development. Async, high-performance, z
 # Install
 composer require muvon/kisscore
 
-# Scaffold project
+# Scaffold project (copies app skeleton, creates .env, makes bin/ executable)
 ./vendor/bin/kisscore-init init
 
 # Compile config and route maps
@@ -20,7 +40,30 @@ bin/init
 php app/main.php
 ```
 
+The default `home` action is already there:
+
+```bash
+curl http://localhost/
+# [null,{"status":"running"}]
+```
+
+The server listens on port 80 by default — set `server.port` in
+`app/config/app.yml.tpl` and re-run `bin/init` to change it.
+
+## Requirements
+
+| Requirement | Used for |
+|-------------|----------|
+| PHP 8.4+ | everything |
+| [Swoole](https://www.swoole.co.uk/) extension | HTTP server runtime |
+| `yaml` extension | config compilation (`bin/init`) |
+| `msgpack` extension | MessagePack request/response protocol |
+| `bcmath` extension | numeric helpers |
+| `mysqli` / `memcached` extensions | `DB` / `Cache` plugins (only if used) |
+
 ## Project Structure
+
+After scaffolding, your project looks like this:
 
 ```
 app/
@@ -59,16 +102,16 @@ Each action is a PHP file in `app/actions/` with route annotations:
 $user = User::get($user_id);
 if (!$user->exists()) {
     Response::current()->status(404);
-    return err('not_found');
+    return err('e_not_found', ['user_id' => $user_id]);
 }
 
 return ok($user->getData());
 ```
 
 **Return value determines response type:**
-- `array`/`object` -> JSON (or MessagePack based on Accept header)
-- `Result` -> unwrapped to `[err, data]` JSON
-- `string` -> plain text
+- `Result` — unwrapped to `[err, data]` JSON
+- `array`/`object` — encoded directly (JSON or MessagePack based on `Accept` header)
+- `string` — plain text
 
 ### Routing
 
@@ -78,12 +121,17 @@ Routes are defined via `@route` annotations and compiled to a map on `bin/init`.
 @route home                              // GET /
 @route api/users                         // GET /api/users
 @route api/users/(\d+): id              // GET /api/users/123 -> $id=123
-@route blog/([^/]+)/(\d+): slug, id    // GET /blog/hello/5 -> $slug=hello, $id=5
+@route blog/([^/]+)/(\d+): slug, id    // GET /blog/hello/5 -> $slug='hello', $id=5
+
+@method POST                             // restrict to HTTP methods (any if absent) —
+                                         // mismatched methods get 405 with an Allow header
+@zone api                                // match api.example.com
 ```
 
-**Zones** map to subdomains: `@zone api` matches `api.example.com`.
+**Zones** map to subdomains: `@zone api` matches `api.example.com`. Unmatched URLs
+fall back to the `default.action` from config.
 
-See [doc/routing.md](doc/routing.md) for full routing reference.
+See [doc/routing.md](doc/routing.md) for the full routing reference.
 
 ### Result Type (Error Handling)
 
@@ -99,7 +147,7 @@ $value = $result->unwrap();           // throws ResultError if error
 $value = $result->unwrapOr($default); // returns default if error
 
 // In actions — return directly as JSON response
-return ok(['users' => $users]);       // [null, {users: [...]}]
+return ok(['users' => $users]);       // [null, {"users": [...]}]
 return err('e_invalid_input');        // ["e_invalid_input", null]
 
 // Checking
@@ -128,7 +176,9 @@ session:
 
 Access with dot notation: `config('common.domain')`, `config('server.port')`.
 
-Environment-specific overrides: `common:production:`, `common:test:`.
+Environment-specific overrides: a `common:production:` block in the template replaces
+`common` keys when `APP_ENV=production` (same for any environment). `bin/init`
+recompiles the config after edits.
 
 ### Events / Triggers
 
@@ -146,6 +196,15 @@ trigger_event('user.registered', ['user_id' => $id, 'email' => $email]);
  */
 // send welcome email...
 ```
+
+## Coroutine Safety
+
+KissCore runs on Swoole with coroutine handling enabled per worker. Anything
+per-request is stored via the `Coro` helper (coroutine-local state), so concurrent
+requests inside one worker can't clobber each other:
+
+- `Input`, `Cookie`, `Session`, `Response` — all coroutine-local, reset per request
+- `Plugin\Data\DB` — one connection per coroutine, pooled per shard for reuse
 
 ## API Reference
 
@@ -184,9 +243,11 @@ trigger_event('user.registered', ['user_id' => $id, 'email' => $email]);
 
 ### Plugins
 
-**`Plugin\Data\DB`** — MySQL with connection pooling, parameter binding, transactions, sharding.
+**`Plugin\Data\DB`** — MySQL with per-coroutine connection pooling, parameter
+binding, transactions, and configurable shards.
 
-**`Plugin\Data\Model`** — Abstract ORM: CRUD, validation, caching, field transformers. ID strategies via `NumericIdTrait` / `StringIdTrait`.
+**`Plugin\Data\Model`** — Abstract ORM: CRUD, validation, caching, field
+transformers. ID strategies via `NumericIdTrait` / `StringIdTrait`.
 
 **`Plugin\List\Fetcher`** — Entity batch loading with pagination.
 
@@ -223,7 +284,8 @@ bin/codestyle-analyze      # PHPStan level 9 analysis
 
 ## Swoole Integration
 
-KissCore runs as a memory-resident Swoole HTTP server. Files are loaded once at startup — no per-request overhead.
+KissCore runs as a memory-resident Swoole HTTP server. Files are loaded once at
+startup — no per-request overhead.
 
 **Per-request state reset** is handled automatically in `main.php`:
 - `Response::current(true)` — fresh response
@@ -231,13 +293,17 @@ KissCore runs as a memory-resident Swoole HTTP server. Files are loaded once at 
 - `Cookie::setParser(...)` — fresh cookies
 - `Request::current(fn)` — fresh request metadata
 
-**Hot reload** during development: `bin/watcher` watches for file changes, rebuilds maps, and sends `USR1` to Swoole to reload workers.
+**Hot reload** during development: `bin/watcher` watches for file changes, rebuilds
+maps, and sends `USR1` to Swoole to reload workers.
 
 **Static files** are served directly by Swoole's static handler from `app/static/`.
 
 ## API Clients
 
-Client libraries for the `[err, data]` response protocol live in [clients/](clients/README.md): TypeScript (`@muvon/kisscore-client`), Python, and PHP.
+Client libraries for the `[err, data]` response protocol live in
+[clients/](clients/README.md): TypeScript (`@muvon/kisscore-client`), Python
+(`kisscore-client`), and PHP (`muvon/kisscore-client`). All have zero external
+dependencies and return native `[err, data]` tuples.
 
 ## Documentation
 
@@ -248,15 +314,30 @@ Client libraries for the `[err, data]` response protocol live in [clients/](clie
 
 ## Docker
 
-Skeleton includes Docker setup in `docker/`:
+The skeleton includes Docker setup in `docker/`:
 
 ```bash
 # Build
 docker build -f docker/images/Dockerfile-php -t myapp .
 
-# The entrypoint runs bin/init then php app/main.php
+# Run — the entrypoint runs bin/init, then php app/main.php
+docker run myapp
 ```
+
+The image is based on PHP 8.5 with Swoole, msgpack and yaml extensions preinstalled.
+
+## Contributing
+
+```bash
+composer install        # dev dependencies
+composer test           # PHPUnit test suite
+composer analyze        # PHPStan level 9
+composer codestyle      # PHPCS check (auto-fix: bin/codestyle-fix)
+```
+
+CI runs all three on PHP 8.4 and 8.5 — keep them green. See
+[INSTRUCTIONS.md](INSTRUCTIONS.md) for the code style guide.
 
 ## License
 
-MIT - Muvon Un Limited <hello@muvon.io>
+MIT — Muvon Un Limited <hello@muvon.io>. See [LICENSE](LICENSE).
