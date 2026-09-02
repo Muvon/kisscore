@@ -26,18 +26,19 @@ php app/main.php
 app/
   actions/       Action handlers with @route annotations
   triggers/      Event handlers with @event annotations
-  config/        Configuration (app.yml.tpl)
+  config/        Configuration (app.yml.tpl) + compiled config and route maps
+  plugin/        Project-local plugins
   src/           Application classes (App\ namespace)
   scripts/       Build/utility scripts
   static/        Static files served by Swoole
+  tests/         App tests (run with bin/test)
   main.php       Swoole HTTP server entry point
   start.php      Startup hooks (runs once on App::start)
   stop.php       Shutdown hooks
 bin/             CLI tools
 env/
-  etc/           Compiled config + route maps
   log/           Application logs
-  tmp/           Temp files + compiled views
+  tmp/           Temp files
   var/           Variable data
 ```
 
@@ -146,27 +147,6 @@ trigger_event('user.registered', ['user_id' => $id, 'email' => $email]);
 // send welcome email...
 ```
 
-### View Templates
-
-Simple template engine with `.tpl` files:
-
-```
-{variable}
-{nested.property}
-{value|html}              // filter: html, url, json, upper, lower, date, time, raw...
-
-{items}                   // loop over array
-  {iteration}. {name}     // context vars: first, last, odd, even, iteration
-{/items}
-
-{!empty_var}              // negation — render when falsy
-  No items found
-{/empty_var}
-
-{>partial_template}       // include
-{>>dynamic_template_var}  // dynamic include
-```
-
 ## API Reference
 
 ### Core Classes (Global Namespace)
@@ -181,6 +161,7 @@ Simple template engine with `.tpl` files:
 | `Cookie` | Cookie get/set with Swoole support |
 | `Session` | Per-request session store |
 | `Env` | Environment detection, config compilation |
+| `Coro` | Coroutine-local state (safe per-request state under Swoole) |
 | `Fetch` | HTTP client (single + multi/parallel requests) |
 | `Result` | Ok/Err result type for error handling |
 | `Secret` | AES-256-GCM encryption/decryption |
@@ -205,7 +186,7 @@ Simple template engine with `.tpl` files:
 
 **`Plugin\Data\DB`** — MySQL with connection pooling, parameter binding, transactions, sharding.
 
-**`Plugin\Data\Model`** — Abstract ORM: CRUD, validation, caching, field transformers.
+**`Plugin\Data\Model`** — Abstract ORM: CRUD, validation, caching, field transformers. ID strategies via `NumericIdTrait` / `StringIdTrait`.
 
 **`Plugin\List\Fetcher`** — Entity batch loading with pagination.
 
@@ -234,6 +215,7 @@ bin/php-exec script.php    # Execute PHP file in app context
 bin/php-exec-one script    # Same but with file locking (single instance)
 bin/cron script [timeout]  # Run script in loop with optional sleep between runs
 bin/watcher                # Watch files, rebuild maps, reload Swoole workers
+bin/test                   # Built-in test runner (KC\Test) for app tests
 bin/codestyle-check        # PHPCS code style check
 bin/codestyle-fix          # PHPCS auto-fix
 bin/codestyle-analyze      # PHPStan level 9 analysis
@@ -250,6 +232,19 @@ KissCore runs as a memory-resident Swoole HTTP server. Files are loaded once at 
 - `Request::current(fn)` — fresh request metadata
 
 **Hot reload** during development: `bin/watcher` watches for file changes, rebuilds maps, and sends `USR1` to Swoole to reload workers.
+
+**Static files** are served directly by Swoole's static handler from `app/static/`.
+
+## API Clients
+
+Client libraries for the `[err, data]` response protocol live in [clients/](clients/README.md): TypeScript (`@muvon/kisscore-client`), Python, and PHP.
+
+## Documentation
+
+- [doc/routing.md](doc/routing.md) — routing reference
+- [doc/database.md](doc/database.md) — `Plugin\Data\DB`
+- [doc/model.md](doc/model.md) — `Plugin\Data\Model`
+- [doc/http-client.md](doc/http-client.md) — `Fetch` HTTP client
 
 ## Docker
 
