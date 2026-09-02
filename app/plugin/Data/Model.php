@@ -356,7 +356,10 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 * @return array<string,mixed>
 	 */
 	public static function getDefault(): array {
-		return array_map(static fn (array $v): mixed => static::castDefault($v['type'], $v['default']), static::fields(true));
+		return array_map(
+			static fn (array $v): int|float|string|null => static::castDefault($v['type'], $v['default']),
+			static::fields(true)
+		);
 	}
 
 	protected static function castDefault(string $type, ?string $default): int|float|string|null {
