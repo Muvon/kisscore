@@ -140,7 +140,7 @@ final class Fetcher {
 			return;
 		}
 
-		/** @var class-string<Model> $model */
+		/** @var class-string<Model<array<string,mixed>>> $model */
 		$model = $this->model;
 		$Obj = $model::new();
 		$args = $this->args ?? [];
@@ -199,7 +199,7 @@ final class Fetcher {
 		$sk = $Fetcher->src_key;
 		$rk = $Fetcher->root_key ? explode('.', $Fetcher->root_key) : [];
 
-		/** @var class-string<Model> $model_class */
+		/** @var class-string<Model<array<string,mixed>>> $model_class */
 		$model_class = $Fetcher->model;
 		$Obj = $model_class::new();
 
@@ -254,7 +254,7 @@ final class Fetcher {
 
 	/**
 	 * @param array<mixed> $data
-	 * @param Model $Obj
+	 * @param Model<array<string,mixed>> $Obj
 	 * @param array<string> $rk
 	 * @param string $sk
 	 * @param string $dk
@@ -299,7 +299,7 @@ final class Fetcher {
 
 	/**
 	 * @param array<mixed> $data
-	 * @param Model $Obj
+	 * @param Model<array<string,mixed>> $Obj
 	 * @param array<string> $rk
 	 * @param string $sk
 	 * @param string $dk
