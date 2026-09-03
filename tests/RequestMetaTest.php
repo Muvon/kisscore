@@ -66,6 +66,22 @@ final class RequestMetaTest extends TestCase {
 		self::assertSame('203.0.113.7', Request::realIp());
 	}
 
+	public function testExplicitRealIpOverridesForwardedForDerivation(): void {
+		// A deployment behind a trusted proxy resolves the client itself (right-
+		// walking the chain, honouring CF-Connecting-IP, failing closed on an
+		// untrusted peer). Its value must win over the forgeable first token.
+		Request::init(ip: '10.0.0.1', xff: '1.2.3.4, 198.51.100.9', real_ip: '198.51.100.9');
+
+		self::assertSame('10.0.0.1', Request::ip());
+		self::assertSame('198.51.100.9', Request::realIp());
+	}
+
+	public function testExplicitRealIpWinsWhenNoForwardedForPresent(): void {
+		Request::init(ip: '10.0.0.1', real_ip: '203.0.113.50');
+
+		self::assertSame('203.0.113.50', Request::realIp());
+	}
+
 	public function testHeaderLookupIsCaseInsensitiveWithDefault(): void {
 		Request::init(headers: ['x-api-key' => 'secret']);
 

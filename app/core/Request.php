@@ -35,7 +35,11 @@ final class Request {
 
 	/**
 	 * Populate the current coroutine's request metadata (call once per request
-	 * from the server entry point). real_ip is derived from ip/xff here.
+	 * from the server entry point).
+	 *
+	 * real_ip defaults to the first X-Forwarded-For token, which ANY client can
+	 * forge. Deployments that stamp it on audit records or gate on it must pass
+	 * their own trusted-proxy-resolved value via $real_ip, which wins when set.
 	 *
 	 * @param array<string,string> $headers lowercase header names
 	 * @return void
@@ -54,10 +58,13 @@ final class Request {
 		string $user_agent = '',
 		array $headers = [],
 		bool $is_ajax = false,
+		string $real_ip = '',
 	): void {
-		$real_ip = $ip;
-		if ($xff !== '' && $xff !== $ip) {
-			$real_ip = trim(strtok($xff, ','));
+		if ($real_ip === '') {
+			$real_ip = $ip;
+			if ($xff !== '' && $xff !== $ip) {
+				$real_ip = trim(strtok($xff, ','));
+			}
 		}
 
 		$bag = &Coro::bag('request_meta', static fn(): array => []);
