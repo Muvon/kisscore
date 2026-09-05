@@ -436,6 +436,31 @@ final class DB {
 	}
 
 	/**
+	 * Close every connection and drop all pooled state.
+	 *
+	 * Must be called before forking: a child that inherits a live mysqli socket
+	 * shares it with the parent and corrupts the wire protocol for both. The
+	 * next query in either process opens a fresh connection.
+	 *
+	 * @return void
+	 */
+	public static function disconnect(): void {
+		foreach ([static::$bound, static::$free] as $registry) {
+			foreach ($registry as $connections) {
+				foreach ($connections as $DB) {
+					static::closeQuietly($DB);
+				}
+			}
+		}
+
+		static::$bound = [];
+		static::$free = [];
+		static::$try = [];
+		static::$in_transaction = [];
+		static::$allow_reconnect = [];
+	}
+
+	/**
 	 * @param mysqli $DB
 	 * @param mixed $item
 	 * @return string|int|float

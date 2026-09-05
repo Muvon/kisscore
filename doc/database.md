@@ -87,3 +87,14 @@ DB::query('SELECT * FROM orders WHERE id = :id', ['id' => 42], $shard_id);
 ## Connection Management
 
 Connections are pooled per-shard and auto-reconnect on failure. `DB::ping()` tests the connection.
+
+`DB::disconnect()` closes every connection and drops the pool. Call it before forking — a child that
+inherits a live mysqli socket shares it with the parent and corrupts the wire protocol for both:
+
+```php
+$rows = SomeModel::getList();  // opens a connection
+DB::disconnect();              // close it before we fork
+for ($i = 0; $i < $workers; $i++) {
+  (new Process(fn() => /* child opens its own connection on first query */))->start();
+}
+```
