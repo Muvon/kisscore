@@ -2,18 +2,20 @@
 
 # Resolve to physical path (avoids macOS case-sensitivity issues with require_once)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+if [[ -f "$SCRIPT_DIR/../../../autoload.php" ]]; then
+	# Inside vendor/muvon/kisscore/bin/ — go up to project root
+	PROJECT_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd -P)"
+else
+	# Standalone or copied to project bin/
+	PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+fi
 cd "$PROJECT_DIR" || exit 1
 
-if [ $# -eq 0 ]; then
-	paths=(app/core app/lib app/plugin)
-else
-	paths=("$@")
-fi
-
 # PHPStan is not compatible with opcache — use enable_cli=0
-vendor/bin/phpstan \
-	--memory-limit=-1 \
-	analyse \
-	-c phpstan.neon \
-	-- "${paths[@]}"
+# With no arguments the analysed paths come from phpstan.neon, which is per-project;
+# hardcoding defaults here would impose kisscore's own layout on every consumer.
+if [ $# -eq 0 ]; then
+	vendor/bin/phpstan --memory-limit=-1 analyse -c phpstan.neon
+else
+	vendor/bin/phpstan --memory-limit=-1 analyse -c phpstan.neon -- "$@"
+fi

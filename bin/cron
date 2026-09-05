@@ -7,7 +7,15 @@ if [[ -z "$1" ]]; then
   exit 1
 fi
 
-PROJECT_DIR="$(dirname "$(dirname "$(readlink -f "$0")")")"
+# Determine project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+if [[ -f "$SCRIPT_DIR/../../../autoload.php" ]]; then
+  # Inside vendor/muvon/kisscore/bin/ — go up to project root
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd -P)"
+else
+  # Standalone or copied to project bin/
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+fi
 file="$PROJECT_DIR/$1"
 if [[ ! -f "$file" || ! -x "$file" ]]; then
   >&2 echo "File should exists and be executable (chmod 700): $file"

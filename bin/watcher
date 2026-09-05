@@ -1,17 +1,27 @@
 #!/usr/bin/env bash
 set -e
 
+# Determine project root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+if [[ -f "$SCRIPT_DIR/../../../autoload.php" ]]; then
+  # Inside vendor/muvon/kisscore/bin/ — go up to project root
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd -P)"
+else
+  # Standalone or copied to project bin/
+  PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+fi
+# The container mounts the project at its own root, so the bin path relative to
+# PROJECT_DIR is the one `docker exec` needs — it holds for both layouts.
+BIN_REL="${SCRIPT_DIR#"$PROJECT_DIR"/}"
 
 # Detect if running inside Docker
 if [[ -f /.dockerenv ]]; then
-  INIT_CMD="$PROJECT_DIR/bin/init"
+  INIT_CMD="$SCRIPT_DIR/init"
   RELOAD_CMD="kill -USR1 \$(cat $PROJECT_DIR/env/run/swoole.pid 2>/dev/null)"
 else
   source "$PROJECT_DIR/docker/.yodarc" 2>/dev/null || true
   CONTAINER="${COMPOSE_PROJECT_NAME:-php}.php"
-  INIT_CMD="docker exec $CONTAINER bin/init"
+  INIT_CMD="docker exec $CONTAINER $BIN_REL/init"
   RELOAD_CMD="docker exec $CONTAINER kill -USR1 1"
 fi
 
