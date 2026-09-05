@@ -157,6 +157,14 @@ final class Response {
 	}
 
 	/**
+	 * Headers set so far, including the default security set
+	 * @return array<string,string>
+	 */
+	public function getHeaders(): array {
+		return $this->headers;
+	}
+
+	/**
 	 * Send stacked headers to output
 	 * @return self
 	 */

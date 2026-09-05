@@ -196,7 +196,7 @@ final class App {
 		}
 
 		if (is_string($response)) {
-			$Response->header('Content-type', 'text/plain;charset=utf-8');
+			static::defaultContentType($Response, 'text/plain;charset=utf-8');
 			return $response;
 		}
 
@@ -232,8 +232,27 @@ final class App {
 			return $encoded;
 		}
 
-		$Response->header('Content-type', 'text/plain;charset=utf-8');
+		static::defaultContentType($Response, 'text/plain;charset=utf-8');
 		return (string)$response;
+	}
+
+	/**
+	 * Default the response Content-type ONLY when no Content-type header is
+	 * set yet — an unconditional set silently clobbers a type the action picked
+	 * explicitly (HTML docs page, a generated JSON document, …), and that
+	 * explicit choice must win over the framework default.
+	 *
+	 * @param Response $Response
+	 * @param string $value
+	 * @return void
+	 */
+	private static function defaultContentType(Response $Response, string $value): void {
+		$names = array_map('strtolower', array_keys($Response->getHeaders()));
+		if (in_array('content-type', $names, true)) {
+			return;
+		}
+
+		$Response->header('Content-type', $value);
 	}
 
 	/**
