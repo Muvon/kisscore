@@ -5,6 +5,8 @@ final class Cli {
 	const LEVEL_WARNING = 1;
 	const LEVEL_INFO = 2;
 
+	protected static string $prefix = '';
+
 	/**
 	 * This function reads hidden input (password) from stdin
 	 *
@@ -24,6 +26,17 @@ final class Cli {
 	}
 
 	/**
+	 * Set the prefix printed before every line, e.g. the symbol a worker
+	 * is currently processing; empty string disables it
+	 *
+	 * @param string $prefix
+	 * @return void
+	 */
+	public static function prefix(string $prefix): void {
+		static::$prefix = $prefix;
+	}
+
+	/**
 	 * @param string|string[] $lines
 	 * @param int $level
 	 * @return void
@@ -38,8 +51,20 @@ final class Cli {
 		}
 		$date = gmdate('[Y-m-d H:i:s T]');
 		foreach ($lines as $line) {
-			echo $date . ' ' . rtrim($line) . PHP_EOL;
+			$prefix = $date . (static::$prefix ? ' [' . static::$prefix . '] ' : '');
+			echo $prefix . ' ' . rtrim($line) . PHP_EOL;
 		}
+	}
+
+	/**
+	 * Print a sprintf-formatted line
+	 *
+	 * @param string $line
+	 * @param bool|float|int|string|null ...$args
+	 * @return void
+	 */
+	public static function printf(string $line, bool|float|int|string|null ...$args): void {
+		static::print(sprintf($line, ...$args));
 	}
 
 	/**
