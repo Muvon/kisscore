@@ -53,4 +53,11 @@ final class ResponseTest extends TestCase {
 		$this->assertArrayHasKey('X-Frame-Options', $captured);
 		$this->assertArrayHasKey('X-Content-Type-Options', $captured);
 	}
+
+	public function testGetHeadersReturnsHeaderMap(): void {
+		$response = Response::current(true);
+		$response->header('Content-type', 'application/json;charset=utf-8');
+
+		$this->assertSame('application/json;charset=utf-8', $response->getHeaders()['Content-type'] ?? null);
+	}
 }
