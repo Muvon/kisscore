@@ -67,6 +67,14 @@ $Server->set([
 	'compression_min_length' => 20,
 ]);
 
+// Generated ids carry a worker field so that two workers minting for the same
+// model in the same millisecond cannot produce the same id. Swoole hands each
+// worker a distinct number here, which is exactly what that field wants — a
+// server that skips this leaves every worker as worker 0 and they collide.
+$Server->on('WorkerStart', static function (Swoole\Server $Server, int $worker_id): void {
+	Plugin\Data\IdWorker::set($worker_id);
+});
+
 $Server->on('request', function (Swoole\Http\Request $Request, Swoole\Http\Response $Response) {
 	try {
 		// Reset per-request state

@@ -4,14 +4,11 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Router matching against a fixture route map + config (no app bootstrap).
- * config() memoizes per-process; this is the only suite that exercises it, so
- * pointing CONFIG_DIR at the fixtures before the first call is sufficient.
+ * CONFIG_DIR is set in tests/bootstrap.php: config() memoizes per process, so
+ * it has to be pointed at the fixtures before ANY suite reads config, not just
+ * before this one.
  */
 final class RouterTest extends TestCase {
-	public static function setUpBeforeClass(): void {
-		putenv('CONFIG_DIR=' . __DIR__ . '/fixtures/router');
-	}
-
 	protected function setUp(): void {
 		Router::clearCache();
 	}

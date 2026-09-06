@@ -23,15 +23,34 @@ trait StringIdTrait {
 	 */
 	public static function generateId(string $value = ''): string {
 		static $seq = 0;
+		static $last = 0;
 		$shard_id = static::dbShardId($value);
 		$epoch = config('common.epoch') * 1000;
+		// Canonical snowflake sequencing: the counter belongs to a millisecond and
+		// resets when the clock moves on, so a (timestamp, worker, sequence) triple
+		// is only ever used once. Twitter's version busy-waits for the next
+		// millisecond when the counter is spent; advancing the timestamp instead
+		// gives the same guarantee without blocking a worker that has no coroutine
+		// hooks, and it self-corrects as soon as the wall clock catches up. This
+		// also covers a clock that steps backwards, which would otherwise re-mint
+		// ids already handed out.
 		$now = (int)(microtime(true) * 1000);
-		$seq = (++$seq % 2048);
+		if ($now > $last) {
+			$last = $now;
+			$seq = 0;
+		} else {
+			$seq = ($seq + 1) % IdWorker::SEQ_SLOTS;
+			if ($seq === 0) {
+				$last++;
+			}
+		}
 
-		// Generate components
-		$time_component = dechex($now - $epoch);
+		// Generate components. `$seq` counts per process, so the trailing field
+		// pairs it with this process's worker id — without that, two workers
+		// minting for the same model in the same millisecond produce the same id.
+		$time_component = dechex($last - $epoch);
 		$shard_component = dechex($shard_id);
-		$seq_component = dechex($seq);
+		$seq_component = dechex((IdWorker::id() << IdWorker::SEQ_BITS) | $seq);
 
 		// Combine all components
 		return sprintf(

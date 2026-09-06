@@ -1,0 +1,10 @@
+# Inherits `level` + infer flags from the kisscore base (single source of truth
+# for the Muvon PHPStan standard). Only paths belong here — the base is
+# deliberately path-free. Override any inherited value below to diverge.
+includes:
+	- vendor/muvon/kisscore/phpstan-base.neon
+
+parameters:
+	paths:
+		- app/src
+		- app/actions
