@@ -22,17 +22,34 @@ final class Env {
 	 * @return void
 	 */
 	public static function init(?string $root = null): void {
-		static::initLocalEnv($root);
-		App::$debug = getenv('APP_ENV') === 'dev';
-		App::$log_level = Cli::LEVEL_DEBUG;
-		static::configure(getenv('APP_DIR') . '/config/app.yml.tpl');
-		static::compileConfig();
+		static::initConfig($root);
 		static::generateActionMap();
 		static::generateURIMap();
 		static::generateParamMap();
 		static::generateTriggerMap();
 		static::generateConfigs();
 		static::prepareDirs();
+	}
+
+	/**
+	 * Render the config templates into CONFIG_DIR and compile config.php.
+	 *
+	 * The prefix of init() that has to happen before config() returns anything:
+	 * no action/URI/param/trigger maps, no DB, no session dirs. Split out because
+	 * a process that runs BEFORE init — a migration runner, a bootstrap script —
+	 * needs a way to make its OWN config current. waitInit() cannot serve that
+	 * case: init is the only thing that ever writes the file waitInit waits for,
+	 * so a first-in-the-chain process waiting on it waits forever.
+	 *
+	 * @param ?string $root Project root directory
+	 * @return void
+	 */
+	public static function initConfig(?string $root = null): void {
+		static::initLocalEnv($root);
+		App::$debug = getenv('APP_ENV') === 'dev';
+		App::$log_level = Cli::LEVEL_DEBUG;
+		static::configure(getenv('APP_DIR') . '/config/app.yml.tpl');
+		static::compileConfig();
 	}
 
 	/**
@@ -65,7 +82,14 @@ final class Env {
 
 	// This method should be called in CLI only
 	/**
-	 * @param int $timeout
+	 * Block until somebody ELSE has rendered the config, then return.
+	 *
+	 * For a process that starts alongside the one running init(). A process that
+	 * is itself first in the boot chain must call initConfig() instead — nothing
+	 * else is going to write the file this waits for, and the wait then always
+	 * ends in the error below.
+	 *
+	 * @param int $timeout seconds to wait before giving up
 	 * @param ?string $root Project root directory
 	 * @return void
 	 */
@@ -73,18 +97,59 @@ final class Env {
 		$t = time();
 		Env::initLocalEnv($root);
 		$cnf_file = getenv('CONFIG_DIR') . '/config.php';
+		$tpl_file = getenv('APP_DIR') . '/config/app.yml.tpl';
 		do {
-			$tpl_ts = filemtime(getenv('APP_DIR') . '/config/app.yml.tpl');
-			$cnf_ts = file_exists($cnf_file) ? filemtime($cnf_file) : 0;
-
-			if ($cnf_ts > $tpl_ts) {
+			// Re-stat every pass: the point is to observe another process writing.
+			if (static::isConfigCurrent($cnf_file, $tpl_file)) {
 				return;
 			}
 
-			usleep(250000); // 25ms
+			usleep(250000); // 250ms
 		} while ((time() - $t) <= $timeout);
 
-		Cli::error('Env: wait init timeouted');
+		$cnf_ts = file_exists($cnf_file) ? filemtime($cnf_file) : false;
+		$tpl_ts = file_exists($tpl_file) ? filemtime($tpl_file) : false;
+		Cli::error(
+			'Env: config still stale after ' . $timeout . 's' . PHP_EOL
+			. '  config:   ' . $cnf_file . ' (' . static::describeMtime($cnf_ts) . ')' . PHP_EOL
+			. '  template: ' . $tpl_file . ' (' . static::describeMtime($tpl_ts) . ')' . PHP_EOL
+			. 'waitInit() only WAITS; Env::init()/Env::initConfig() is what writes the config. If this'
+			. ' process is the one bootstrapping — nothing else is running init — call'
+			. ' Env::initConfig($root) instead of waitInit().'
+		);
+	}
+
+	/**
+	 * Is the compiled config at least as new as the template it comes from?
+	 *
+	 * @param string $cnf_file compiled config path (CONFIG_DIR/config.php)
+	 * @param string $tpl_file source template path (APP_DIR/config/app.yml.tpl)
+	 * @return bool
+	 */
+	protected static function isConfigCurrent(string $cnf_file, string $tpl_file): bool {
+		$cnf_ts = file_exists($cnf_file) ? filemtime($cnf_file) : false;
+		if ($cnf_ts === false) {
+			return false;
+		}
+
+		$tpl_ts = file_exists($tpl_file) ? filemtime($tpl_file) : false;
+		if ($tpl_ts === false) {
+			return true; // nothing to render from — whatever config exists is it
+		}
+
+		// >=, not >: mtime granularity is one second, so an init that lands in the
+		// same second as a template edit is indistinguishable from a stale config.
+		// With `>` that tie is a PERMANENT deadlock (only init writes config.php),
+		// which is far worse than the one stale boot `>=` can cost.
+		return $cnf_ts >= $tpl_ts;
+	}
+
+	/**
+	 * @param int|false $ts
+	 * @return string
+	 */
+	protected static function describeMtime(int|false $ts): string {
+		return $ts === false ? 'missing' : gmdate('Y-m-d H:i:s', $ts) . ' UTC';
 	}
 
 	/**
