@@ -39,9 +39,22 @@ $php $OPTS <<EOF
   Env::init('$PROJECT_DIR');
 
   // Rebuild the model field-schema cache on the Env::init path (NOT App::start,
-  // which reads this cache and would deadlock a cold env). No DB -> skip; ping
-  // throws when it's down. Build is unguarded so a real failure aborts init.
-  try { Plugin\Data\DB::ping(); } catch (\Throwable \$e) { return; }
+  // which reads this cache and would deadlock a cold env). A project without a
+  // DB skips it. A configured DB that does not answer is an init FAILURE: a
+  // silent skip left the app dying later on the missing cache with a misleading
+  // "include_once env/etc/model/…" error, hiding the real cause (DB down, wrong
+  // credentials). Build is unguarded so a real failure aborts init.
+  \$has_db = config('mysql.use_env') ? (string)getenv('DB_IP') !== '' : (array)config('mysql.shard') !== [];
+  if (!\$has_db) {
+    echo 'Model schema cache: skipped (no DB configured)' . PHP_EOL;
+    return;
+  }
+  try {
+    Plugin\Data\DB::ping();
+  } catch (\Throwable \$e) {
+    fwrite(STDERR, 'Model schema cache: DB ping failed — ' . \$e->getMessage() . PHP_EOL);
+    exit(1);
+  }
   echo 'Model schema cache: ' . Plugin\Data\Model::generateSchemaCache() . ' models' . PHP_EOL;
 EOF
 
