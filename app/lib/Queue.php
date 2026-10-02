@@ -23,10 +23,13 @@ final class Queue {
 			[
 			'host' => $host,
 			'port' => $port,
+			'persistent' => false,
 			]
 		);
 		/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
-		$Self->Client->connect();
+		if (!$Self->Client->connect()) {
+			throw new \RuntimeException("Failed to connect to queue at {$host}:{$port}");
+		}
 		return $Self;
 	}
 
@@ -46,10 +49,11 @@ final class Queue {
 			}
 
 			/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
-			$this->Client->useTube($ns);
+			if ($this->Client->useTube($ns) === false) {
+				return false;
+			}
 			/** @phpstan-ignore-next-line optional dependency: Beanstalk\Client */
-			$this->Client->put(0, $delay, $ttr, base64_encode(msgpack_pack($job)));
-			return true;
+			return $this->Client->put(0, $delay, $ttr, base64_encode(msgpack_pack($job))) !== false;
 		};
 
 		return $func();
