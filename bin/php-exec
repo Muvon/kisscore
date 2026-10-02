@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 [[ -z "$1" ]] && echo 'Usage: php-exec [code | php_file]' && exit 1
 
@@ -19,7 +20,7 @@ if [[ -f $config ]]; then
   OPTS='-c '$config
 fi
 code=$(test -f "$1" && echo "include '$1'" || echo "$1");
-$php $OPTS <<EOF
+exec $php $OPTS <<EOF
 <?php
   require_once '$PROJECT_DIR/vendor/autoload.php';
   try {
@@ -41,6 +42,6 @@ $php $OPTS <<EOF
     echo 'Error: ' . \$E->getMessage() . PHP_EOL . PHP_EOL;
     echo \$E->getTraceAsString() . PHP_EOL . PHP_EOL;
     echo 'More info: tail -f ' . getenv('LOG_DIR') . '/' . gmdate('Ymd') . '-error.log';
+    exit(1);
   }
 EOF
-echo

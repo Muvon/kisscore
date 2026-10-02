@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 if [[ -z "$1" ]]; then
   echo "Usage: $0 [path-to-file]"
   exit 1
@@ -13,17 +14,12 @@ else
 fi
 
 lockfile="$PROJECT_DIR/env/run/${1##*/}.lock"
-trap release SIGSEGV SIGINT SIGTERM
-release() {
-  rm -f "$lockfile"
-}
-
 exec 9> "$lockfile"
 flock -x -n 9 || {
   >&2 echo 'Instance is running already'
-  >&2 echo "You can remove lock file to fix it: $lockfile"
   exit 1
 }
 
-"$SCRIPT_DIR/php-exec" "$1" "${@:2}"
-release
+# Keep the inode stable: unlinking a flock file allows concurrent holders on
+# different inodes. The kernel releases the lock when the process exits.
+exec "$SCRIPT_DIR/php-exec" "$1" "${@:2}"

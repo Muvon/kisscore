@@ -118,7 +118,10 @@ final class App {
 		set_error_handler([static::class, 'handleError'], E_ALL);
 
 		// Handle uncatched exceptions
-		set_exception_handler([static::class, 'handleException']);
+		set_exception_handler(static function (Throwable $Exception): never {
+			static::handleException($Exception);
+			exit(1);
+		});
 
 		// Register default Exception handler
 		static::setExceptionHandler(Throwable::class, static::createExceptionHandler());
