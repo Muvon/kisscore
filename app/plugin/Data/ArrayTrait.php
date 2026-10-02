@@ -4,7 +4,7 @@ namespace Plugin\Data;
 
 trait ArrayTrait {
 	/**
-	 * @param mixed $k
+	 * @param string $k
 	 * @param mixed $v
 	 * @return void
 	 */
@@ -13,7 +13,7 @@ trait ArrayTrait {
 	}
 
 	/**
-	 * @param mixed $k
+	 * @param string $k
 	 * @return mixed
 	 */
 	public function offsetGet(mixed $k): mixed {
@@ -21,7 +21,7 @@ trait ArrayTrait {
 	}
 
 	/**
-	 * @param mixed $k
+	 * @param string $k
 	 * @return bool
 	 */
 	public function offsetExists(mixed $k): bool {
@@ -29,7 +29,7 @@ trait ArrayTrait {
 	}
 
 	/**
-	 * @param mixed $k
+	 * @param string $k
 	 * @return void
 	 */
 	public function offsetUnset(mixed $k): void {

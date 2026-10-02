@@ -124,4 +124,11 @@ final class IdGenerationTest extends TestCase {
 		$this->assertSame(20, strlen($a));
 		$this->assertSame(20, strlen($b));
 	}
+
+	public function testSetIdCastsToTheTraitIdType(): void {
+		// setId() once discarded typify()'s result, so a DB or input id of the
+		// other scalar type hit the typed property and threw a TypeError.
+		$this->assertSame(42, (new NumericIdSubject)->setId('42')->getId());
+		$this->assertSame('42', (new StringIdSubject)->setId(42)->getId());
+	}
 }

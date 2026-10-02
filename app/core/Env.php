@@ -197,7 +197,9 @@ final class Env {
 		foreach ($Iterator as $leaf_value) {
 			$keys = [];
 			foreach (range(0, $Iterator->getDepth()) as $depth) {
-				$keys[] = $Iterator->getSubIterator($depth)->key();
+				/** @var int|string $key */
+				$key = $Iterator->getSubIterator($depth)->key();
+				$keys[] = $key;
 			}
 			$config[join('.', $keys)] = $leaf_value;
 		}
@@ -269,7 +271,7 @@ final class Env {
  *
  * @param array<string,mixed> $config
  * @param string $prefix
- * @param array<string,mixed> $array
+ * @param array<mixed> $array
  * @return array<string,mixed>
  */
 	protected static function recursiveAppendDotNotation(array $config, string $prefix, array $array): array {
@@ -345,6 +347,7 @@ final class Env {
 			$arrays["d$i"] = str_split($chars);
 		}
 
+		/** @var array<string,string> $paths */
 		foreach (array_cartesian($arrays) as $paths) {
 			$dir_path = $save_path . '/' . implode('/', $paths);
 			if (is_dir($dir_path)) {

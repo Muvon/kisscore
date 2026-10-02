@@ -65,7 +65,7 @@ final class Input {
 			}
 
 			global $argv;
-			$args = $argv ?? [];
+			$args = $argv;
 			array_shift($args); // strip script name
 			$action = array_shift($args);
 			// Keep positional args AND expose the action under ACTION. The action

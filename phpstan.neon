@@ -5,3 +5,11 @@ parameters:
 		- app/core
 		- app/lib
 		- app/plugin
+	ignoreErrors:
+		# Id traits are public API used only by consumer models: no class under the
+		# analysed paths uses them, so PHPStan has no context to analyse them in.
+		-
+			identifier: trait.unused
+			paths:
+				- app/plugin/Data/NumericIdTrait.php
+				- app/plugin/Data/StringIdTrait.php

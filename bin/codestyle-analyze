@@ -11,7 +11,15 @@ else
 fi
 cd "$PROJECT_DIR" || exit 1
 
-# PHPStan is not compatible with opcache — use enable_cli=0
+# PHPStan's bundled nette DI reads @property-read doc comments, which opcache strips
+# (save_comments=0 in the kisscore image), so analysis runs with opcache off. `php -d`
+# would reach only the main process: parallel workers start with `-c php.ini` and re-read
+# the scan dir, so append a scan dir whose ini wins over conf.d/opcache.ini.
+INI_DIR="$(mktemp -d)"
+trap 'rm -rf "$INI_DIR"' EXIT
+echo 'opcache.enable_cli=0' > "$INI_DIR/zz-phpstan.ini"
+export PHP_INI_SCAN_DIR="${PHP_INI_SCAN_DIR:-}:$INI_DIR"
+
 # With no arguments the analysed paths come from phpstan.neon, which is per-project;
 # hardcoding defaults here would impose kisscore's own layout on every consumer.
 if [ $# -eq 0 ]; then

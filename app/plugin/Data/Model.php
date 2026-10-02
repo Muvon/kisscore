@@ -85,7 +85,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	}
 
 	public static function new(): static {
-		/** @var static $Obj */
+		/** @var static<TRow> $Obj */
 		$Obj = new static;
 		return $Obj;
 	}
@@ -434,7 +434,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 	 * @throws InvalidArgumentException
 	 */
 	public static function getByFields(array $fields, array $order = []): static {
-		/** @var static $Self */
+		/** @var static<TRow> $Self */
 		$Self = new static;
 		/** @var array<string,mixed> $row */
 		$row = $Self->dbGet(static::fields(), $fields, $order);
@@ -514,7 +514,7 @@ abstract class Model implements ArrayAccess, JsonSerializable {
 		}
 
 		// This helps to prevent sisegv
-		/** @var static $Obj */
+		/** @var static<TRow> $Obj */
 		$Obj = new static;
 		static::transform($data, true);
 		$Obj->loadByData($data);

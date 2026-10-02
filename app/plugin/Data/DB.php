@@ -98,7 +98,6 @@ final class DB {
 		try {
 			/** @var Result<V> $result */
 			$result = $func();
-			assert($result instanceof Result);
 			// This throws exception if error
 			$result->unwrap();
 			$DB->commit();
@@ -109,12 +108,6 @@ final class DB {
 				$rollback();
 			}
 
-			// Do simple return in case if it's result
-			/** @phpstan-ignore-next-line Result may be thrown in legacy code paths */
-			if ($e instanceof Result) {
-				/** @var Result<V> $e */
-				return $e;
-			}
 			throw $e;
 		} finally {
 			$DB->autocommit(true);

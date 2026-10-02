@@ -260,7 +260,7 @@ final class Request {
 	 * @return string
 	 */
 	public function getRoute(): string {
-		return $this->route ?? '';
+		return $this->route;
 	}
 
 	/**

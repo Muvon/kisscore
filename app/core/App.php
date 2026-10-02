@@ -405,7 +405,7 @@ final class App {
 	 * @param	string  $file
 	 * @param	string	$line
 	 * @param	int	$code
-	 * @throws Exception
+	 * @throws Error
 	 */
 	public static function handleAssertion(string $file, string $line, ?int $code): void {
 		throw new Error('Assertion failed in file ' . $file . ' at line ' . $line . ' with code ' . $code);

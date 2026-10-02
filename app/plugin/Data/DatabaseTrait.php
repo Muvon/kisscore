@@ -28,6 +28,7 @@ trait DatabaseTrait {
 			if (is_string($param)) {
 				$data[] = '`' . $param . '` = ' . ($incremental ? '`' . $param . '` + ' : '' ) . ' :' . $param;
 			} else {
+				/** @var string $value an int key carries a bare field name */
 				$data[] = '`' . $value . '`';
 			}
 		}
@@ -496,8 +497,7 @@ trait DatabaseTrait {
 	 * @return array<string,mixed>
 	 */
 	protected function dbGetByField(array $fields, string $row, mixed $value): array {
-		$rows = $this->dbGetByFields($fields, $row, [$value]);
-		return array_shift($rows) ?? [];
+		return array_first($this->dbGetByFields($fields, $row, [$value])) ?? [];
 	}
 
 
@@ -544,7 +544,6 @@ trait DatabaseTrait {
 		int $limit = 10,
 		int $total = -1
 	): array {
-		assert(is_string($query));
 		$order_string = '';
 		if ($order) {
 			foreach ($order as $field => $sort) {

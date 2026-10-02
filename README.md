@@ -55,7 +55,7 @@ The server listens on port 80 by default — set `server.port` in
 
 | Requirement | Used for |
 |-------------|----------|
-| PHP 8.4+ | everything |
+| PHP 8.5+ | everything |
 | [Swoole](https://www.swoole.co.uk/) extension | HTTP server runtime |
 | `yaml` extension | config compilation (`bin/init`) |
 | `msgpack` extension | MessagePack request/response protocol |
@@ -333,7 +333,7 @@ composer analyze        # PHPStan level 9
 composer codestyle      # PHPCS check (auto-fix: bin/codestyle-fix)
 ```
 
-CI runs all three on PHP 8.4 and 8.5 — keep them green. See
+CI runs all three on PHP 8.5 — keep them green. See
 [INSTRUCTIONS.md](INSTRUCTIONS.md) for the code style guide.
 
 ## License

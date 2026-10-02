@@ -21,6 +21,7 @@ function config(string $param): mixed {
  * @param string $type int|uint|float|ufloat|bool|array|string
  * @return mixed
  */
+#[\NoDiscard]
 function typify(mixed $var, string $type): mixed {
 	/** @var scalar|null $s */
 	$s = $var;
@@ -153,7 +154,7 @@ function bchexdec(string $hex): string {
 }
 
 /**
- * @param string $dec
+ * @param numeric-string $dec
  * @return string
  */
 function bcdechex(string $dec): string {
@@ -196,7 +197,7 @@ function bench(?string $txt = null): ?array {
 	}
 
 	if ($txt && isset($t[$txt])) {
-		$r[$txt][] = $n - $t[$txt][array_key_last($t[$txt])];
+		$r[$txt][] = $n - array_last($t[$txt]);
 	}
 	$t[$txt][] = $n;
 
@@ -224,6 +225,9 @@ function &array_value_ref(array &$container, array|string $keys): mixed {
 	$reference = &$container;
 	$len = sizeof($keys);
 	for ($i = 0; $i < $len; $i++) {
+		if (!is_array($reference)) {
+			throw new Error('Cannot descend into a non-array value at ' . implode('.', array_slice($keys, 0, $i)));
+		}
 		$key = $keys[$i];
 		if (!isset($reference[$key]) && $i < $len) {
 			$reference[$key] = [];
@@ -304,6 +308,7 @@ function array_order_by(array $data, mixed ...$args): array {
  * @param T $res
  * @return Result<T>
  */
+#[\NoDiscard]
 function ok(mixed $res = null): Result {
 	return Result::ok($res);
 }
@@ -319,6 +324,7 @@ function ok(mixed $res = null): Result {
  *
  * @return Result<never>
  */
+#[\NoDiscard]
 function err(string $err, mixed $res = null): Result {
 	return Result::err($err, $res);
 }
@@ -331,6 +337,7 @@ function err(string $err, mixed $res = null): Result {
  * @param array<string> $errs
  * @return Result<never>
  */
+#[\NoDiscard]
 function err_list(array $errs): Result {
 	return Result::err('e_error_list', $errs);
 }
@@ -338,11 +345,16 @@ function err_list(array $errs): Result {
 if (!function_exists('defer')) {
 	/**
 	 * @param ?SplStack<object> $ctx
+	 * @param-out SplStack<object> $ctx
 	 * @param callable $cb
 	 * @return void
 	 */
 	function defer(?SplStack &$ctx, callable $cb): void {
-		$ctx = $ctx ?? new SplStack();
+		if ($ctx === null) {
+			/** @var SplStack<object> $stack */
+			$stack = new SplStack();
+			$ctx = $stack;
+		}
 
 		$ctx->push(
 			new class($cb) {

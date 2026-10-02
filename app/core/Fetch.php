@@ -6,6 +6,7 @@ final class Fetch {
 	protected int $request_timeout = 30;
 	protected int $request_ssl_verify = 0;
 	protected int $request_keepalive = 20;
+	/** @var non-empty-string */
 	protected string $request_useragent = 'KISSCore/Fetch v0.9.0';
 
 	// Accept-Encoding: identity, deflate, gzip. Empty string = all supported.
@@ -30,6 +31,7 @@ final class Fetch {
 
 	protected ?CurlMultiHandle $request_mh = null;
 
+	/** @var Closure(array<string,mixed>): string */
 	protected Closure $encoder_fn;
 	protected Closure $decoder_fn;
 
@@ -85,7 +87,7 @@ final class Fetch {
    * @param string $url
    * @param array<string,mixed> $payload
    * @param string $method Can be POST or GET only
-   * @param array<string> $headers Array with headers. Each entry as string
+   * @param array<int,string> $headers Array with headers. Each entry as string
    * @return Result<mixed>
    */
 	public function request(string $url, array $payload = [], string $method = 'POST', array $headers = []): Result {
@@ -101,7 +103,7 @@ final class Fetch {
 	 * @param string $url
 	 * @param array<string,mixed> $payload
 	 * @param string $method
-	 * @param array<string> $headers
+	 * @param array<int,string> $headers
 	 * @return self
 	 */
 	public function add(string $url, array $payload = [], string $method = 'POST', array $headers = []): self {
@@ -119,7 +121,7 @@ final class Fetch {
  * @param string $url
  * @param array<string,mixed> $payload
  * @param string $method
- * @param array<string> $headers
+ * @param array<int,string> $headers
  * @return CurlHandle
  */
 	protected function createCurlHandler(
@@ -142,15 +144,19 @@ final class Fetch {
 		};
 
 		$opts = [
-			CURLOPT_RETURNTRANSFER => 1,
-			CURLOPT_SSL_VERIFYPEER => $this->request_ssl_verify,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_SSL_VERIFYPEER => (bool)$this->request_ssl_verify,
 			CURLOPT_CONNECTTIMEOUT => $this->request_connect_timeout,
 			CURLOPT_TIMEOUT => $this->request_timeout,
 			CURLOPT_HTTPHEADER => $headers,
-			CURLOPT_ENCODING => $this->request_encoding,
 			CURLOPT_TCP_KEEPALIVE => $this->request_keepalive,
 			CURLOPT_USERAGENT => $this->request_useragent,
 		];
+
+		// null means no Accept-Encoding, which is curl's default when unset
+		if ($this->request_encoding !== null) {
+			$opts[CURLOPT_ENCODING] = $this->request_encoding;
+		}
 
 		if ($this->request_proxy !== []) {
 			/** @var array{host:string,port:int,user?:string,password?:string,type?:string} $proxy */
@@ -167,7 +173,7 @@ final class Fetch {
 		}
 
 		if ($method === 'POST') {
-			$opts[CURLOPT_POST] = 1;
+			$opts[CURLOPT_POST] = true;
 			$opts[CURLOPT_POSTFIELDS] = ($this->encoder_fn)($payload);
 		}
 

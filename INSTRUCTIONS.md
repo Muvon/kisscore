@@ -2,9 +2,9 @@
 
 ## PHP Version Requirement
 
-**KissCore requires PHP 8.4.x or higher.**
+**KissCore requires PHP 8.5.x or higher.**
 
-All code must be compatible with PHP 8.4+ features and syntax. Use modern PHP features when appropriate.
+All code must be compatible with PHP 8.5+ features and syntax. Use modern PHP features when appropriate.
 
 ## Naming Conventions
 

@@ -74,7 +74,7 @@ trait NumericIdTrait {
 	 */
 	public function setId(int|string $id): static {
 		/** @var int $id */
-		typify($id, static::$id_type);
+		$id = typify($id, static::$id_type);
 		$this->id = $id;
 		return $this;
 	}

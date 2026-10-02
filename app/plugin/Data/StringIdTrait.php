@@ -79,7 +79,7 @@ trait StringIdTrait {
 	 */
 	public function setId(int|string $id): static {
 		/** @var string $id */
-		typify($id, static::$id_type);
+		$id = typify($id, static::$id_type);
 		$this->id = $id;
 		return $this;
 	}

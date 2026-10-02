@@ -266,6 +266,7 @@ final class Fetcher {
 		$items = $Obj::getByIds($ids);
 
 		foreach ($data as &$item) {
+			/** @var array<mixed> $item list items are rows */
 			[$row, $keys] = $this->getRowDest($item, $rk, $sk, $dk);
 			if (!isset($row) || !isset($keys)) {
 				continue;
@@ -310,7 +311,7 @@ final class Fetcher {
 		if (!isset($row) || !isset($keys)) {
 			return;
 		}
-		$dest = &array_value_ref($this->data, $keys);
+		$dest = &array_value_ref($data, $keys);
 		if (is_array($row)) {
 			/** @var array<int|string> $row */
 			$dest = array_values($Obj::getByIds($row));

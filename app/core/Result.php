@@ -10,7 +10,7 @@
  *
  * @template-covariant T
  */
-final class Result {
+final readonly class Result {
 	/**
 	 * @param ?string $err
 	 * @param T $res
@@ -27,6 +27,7 @@ final class Result {
 	 * @param TValue $res
 	 * @return self<TValue>
 	 */
+	#[\NoDiscard]
 	public static function ok(mixed $res): self {
 		return new self(null, $res);
 	}
@@ -39,6 +40,7 @@ final class Result {
 	 * so the `never` narrowing is asserted here rather than inferred.
 	 * @return self<never>
 	 */
+	#[\NoDiscard]
 	public static function err(string $err, mixed $res = null): self {
 		/** @phpstan-ignore-next-line err() narrows the payload to never; see above */
 		return new self($err, $res);
@@ -68,6 +70,7 @@ final class Result {
 	 * @param TDefault $default
 	 * @return T|TDefault
 	 */
+	#[\NoDiscard]
 	public function unwrapOr(mixed $default): mixed {
 		if ($this->err) {
 			return $default;
@@ -80,8 +83,9 @@ final class Result {
 	/**
 	 * The function combines two or multiple results and return ok if all ok
 	 * or first error from first result that failed
-	 * @param Result<T> ...$Results
-	 * @return array<T>
+	 * @template TValue
+	 * @param Result<TValue> ...$Results
+	 * @return array<TValue>
 	 */
 	public static function unwrapAll(Result ...$Results): array {
 		return array_map(fn($Result) => $Result->unwrap(), $Results);

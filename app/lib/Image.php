@@ -19,6 +19,10 @@ final class Image {
 			return err('e_image_download_failed', 'Cant create curl handle');
 		}
 		$fp = fopen($path, 'wb');
+		if ($fp === false) {
+			/** @var Result<string> */
+			return err('e_image_download_failed', 'Cant open temp file');
+		}
 		curl_setopt($ch, CURLOPT_FILE, $fp);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
