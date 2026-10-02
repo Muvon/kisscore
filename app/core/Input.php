@@ -107,7 +107,7 @@ final class Input {
 	/**
 	 * Get request parameter(s).
 	 *
-	 * @param string|string[] $args
+	 * @param mixed ...$args a key and its default (any type), or a list of `name:type` specs
 	 * @return mixed
 	 */
 	public static function get(...$args): mixed {
